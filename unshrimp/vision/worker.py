@@ -12,6 +12,8 @@ to the inference rate exactly.
 from __future__ import annotations
 
 import time
+import threading
+import traceback
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -52,10 +54,18 @@ class VisionWorker(QThread):
         self.fps = fps
         self.inference_interval = 1.0 / fps  # UI-adjustable (adaptive rates)
         self.preview_enabled = False  # plain bool flip from the UI thread
+        self.inference_enabled = True  # set before starting; preview-only skips models
+        self.camera_state = "starting"
+        self.camera_error = ""
         self._stop = False
+        self._wake = threading.Event()
 
     def stop(self) -> None:
         self._stop = True
+        self._wake.set()
+
+    def wake(self) -> None:
+        self._wake.set()
 
     # ------------------------------------------------------------------
     def _emit_preview(self, rgb, overlay) -> None:
@@ -72,13 +82,9 @@ class VisionWorker(QThread):
 
         while not self._stop:
             try:
-                if cap is None:
-                    cap = open_camera(self.camera_index)
-                    if lm is None:
-                        lm = Landmarkers(self.models_dir)
-                    if in_error:
-                        self.cam_recovered.emit()
-                        in_error = False
+                cap = open_camera(self.camera_index)
+                if self.inference_enabled:
+                    lm = Landmarkers(self.models_dir)
 
                 fails = 0
                 t0 = time.perf_counter()
@@ -88,8 +94,11 @@ class VisionWorker(QThread):
                 last_overlay: tuple | None = None
 
                 while not self._stop:
+                    capture_start = time.perf_counter()
                     ok, frame = cap.read()
                     now = time.perf_counter()
+                    if self._stop:
+                        break
                     if not ok or frame is None:
                         fails += 1
                         if fails >= _READ_FAIL_LIMIT:
@@ -97,7 +106,20 @@ class VisionWorker(QThread):
                         continue
                     fails = 0
 
+                    if not self.inference_enabled:
+                        self.camera_state = "running"
+                        self.camera_error = ""
+                        if in_error:
+                            self.cam_recovered.emit()
+                            in_error = False
+                        if self.preview_enabled:
+                            self._emit_preview(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), None)
+                        self._wake.wait(max(0, 1 / _PREVIEW_FPS - (time.perf_counter() - now)))
+                        self._wake.clear()
+                        continue
+
                     if now - last_inf >= self.inference_interval:
+                        inference_start = time.perf_counter()
                         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                         ts = int((now - t0) * 1000)
                         if ts <= last_ts:  # keep MediaPipe VIDEO ts strictly rising
@@ -106,10 +128,22 @@ class VisionWorker(QThread):
 
                         sig, overlay = lm.signals_with_overlay(rgb, ts)
                         sig = replace(sig, luminance=float(frame.mean()))
+                        self.camera_error = ""
+                        self.camera_state = "running"
+                        from unshrimp import diag
+
+                        diag.sample("vision", capture_ms=round((now - capture_start) * 1000, 2),
+                                    inference_ms=round((time.perf_counter() - inference_start) * 1000, 2),
+                                    ok=sig.ok, fps=round(1 / self.inference_interval, 2),
+                                    pose_visibility=sig.pose_visibility,
+                                    pose_presence=sig.pose_presence,
+                                    rejection_reason=sig.rejection_reason)
+                        if in_error:
+                            self.cam_recovered.emit()
+                            in_error = False
                         self.frame.emit(sig)
                         last_inf = now
-                        if overlay is not None:
-                            last_overlay = overlay
+                        last_overlay = overlay
 
                         if self.preview_enabled:
                             self._emit_preview(rgb, last_overlay)
@@ -118,7 +152,8 @@ class VisionWorker(QThread):
                             # pace to the inference budget when nobody's watching
                             delay = (last_inf + self.inference_interval) - time.perf_counter()
                             if delay > 0:
-                                time.sleep(delay)
+                                self._wake.wait(delay)
+                                self._wake.clear()
                     elif (
                         self.preview_enabled
                         and now - last_prev >= 1.0 / _PREVIEW_FPS
@@ -128,25 +163,28 @@ class VisionWorker(QThread):
                         )
                         last_prev = now
 
-            except (CameraError, FileNotFoundError) as e:
+            except Exception as e:
                 if self._stop:
                     break
-                if cap is not None:
-                    cap.release()
-                cap = None
-                if lm is not None:
-                    lm.close()
-                    lm = None
+                self.camera_error = str(e) or type(e).__name__
+                self.camera_state = "reconnecting"
                 if not in_error:
                     from unshrimp import diag
 
                     diag.log(f"camera problem: {e} — retrying every few seconds")
+                    diag.log(traceback.format_exc())
                     self.cam_error.emit()
                     in_error = True
-                self.msleep(_RETRY_MS)
             finally:
-                if self._stop:
+                try:
                     if cap is not None:
                         cap.release()
+                finally:
                     if lm is not None:
                         lm.close()
+                cap = None
+                lm = None
+            if not self._stop:
+                self._wake.wait(_RETRY_MS / 1000)
+                self._wake.clear()
+        self.camera_state = "stopped"

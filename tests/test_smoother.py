@@ -50,13 +50,12 @@ def test_old_frames_expire_by_time_not_count():
     assert out.head_pitch == 1.0
 
 
-def test_low_rate_still_reaches_min_frames():
-    """Returning from away at 0.5 fps must not take 10 s to score — three
-    frames within the window suffice."""
+def test_away_rate_needs_a_faster_returning_rate():
+    """Presence checks alone cannot fill the smoothing window."""
     s = Smoother(window_s=2.5, min_frames=3)
-    assert s.push(fs(), now=0.0) is None
-    assert s.push(fs(), now=1.0) is None
-    assert s.push(fs(), now=2.0) is not None  # 2s window span, 3 frames
+    for now in (0., 2., 4., 6.):
+        assert s.push(fs(), now=now) is None
+    assert s.push(fs(), now=6.5) is not None
 
 
 def test_max_frames_cap():

@@ -23,6 +23,7 @@ from unshrimp.ui.hud import Hud
 from unshrimp.ui.mascot import MascotWindow
 from unshrimp.ui.preview import PreviewWindow
 from unshrimp.ui.settings import SettingsDialog
+from unshrimp.ui.main_window import MainWindow
 from unshrimp.ui.tray import Tray
 from unshrimp.vision.worker import PreviewPayload
 
@@ -76,13 +77,12 @@ def shot_hud_states(app: QApplication) -> None:
 
 def shot_calibration(app: QApplication) -> None:
     hud = Hud()
-    hud.set_status("calibrating", "TALL 6/10s")
-    hud._sweep_pos = 6
+    hud.set_status("calibrating", "setup 2/5")
 
     pv = PreviewWindow()
     frame = _synthetic_frame()
     pv.update_frame(PreviewPayload(frame, (100, 168), (218, 168), (134, 70), (186, 70)))
-    pv.set_instruction("SIT TALL", "Spine long · shoulders back & down · chin gently tucked")
+    pv.set_instruction("Get comfortable", "Sit facing the camera and look at the center of your screen.")
     pv.set_caption("2/5 · gaze ✗ · you look DOWN at the camera — raise it toward eye level")
 
     img = _canvas(max(hud.width(), pv.width()) + 80, hud.height() + 14 + pv.height() + 80)
@@ -104,6 +104,18 @@ def shot_menu(app: QApplication) -> None:
 
 class _StubApp:
     """Just the hooks SettingsDialog needs — no camera, no worker."""
+
+    def __init__(self, cfg):
+        from types import SimpleNamespace
+        from unshrimp.core.states import State
+        self.cfg = cfg
+        self.worker = SimpleNamespace(isRunning=lambda: False)
+        self.machine = SimpleNamespace(state=State.PAUSED)
+        self._cal = self.baseline = None
+        self._suspended = self._idle_stopped = self._restart_pending = False
+
+    def open_camera_preview(self):
+        pass
 
     class _Log:
         def day_summaries(self, days):
@@ -134,11 +146,39 @@ def shot_settings(app: QApplication) -> None:
     import config
 
     cfg = {k: (dict(v) if isinstance(v, dict) else v) for k, v in config.DEFAULTS.items()}
-    dlg = SettingsDialog(cfg, _StubApp())
+    dlg = SettingsDialog(cfg, _StubApp(cfg))
     dlg.resize(560, 640)
     pm = dlg.grab()
     pm.save(str(OUT / "settings.png"))
     print("settings.png")
+
+
+def shot_dashboard(app: QApplication) -> None:
+    import copy
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+    import config
+    from unshrimp.core.breaks import BreakReminder
+    from unshrimp.core.states import State
+
+    controller = SimpleNamespace(
+        cfg=copy.deepcopy(config.DEFAULTS), machine=SimpleNamespace(state=State.PAUSED),
+        worker=Mock(), baseline=None, _suspended=False, _idle_stopped=False,
+        _cal=None, _display_deviation=None, _restart_pending=False,
+        breaks=BreakReminder(True, 2400), log=Mock(),
+        _open_settings=Mock(), _open_settings_page=Mock(), _on_pause_toggled=Mock(),
+        start_calibration=Mock(), open_camera_preview=Mock(), restart_camera=Mock(),
+        _take_break=Mock(), _snooze_break=Mock(), _skip_break=Mock(), _end_break=Mock(),
+    )
+    controller.log.day_summaries.return_value = []
+    controller.worker.isRunning.return_value = False
+    dashboard = MainWindow(controller)
+    dashboard.resize(760, 680)
+    dashboard.show()
+    app.processEvents()
+    dashboard.grab().save(str(OUT / "dashboard.png"))
+    dashboard.hide()
+    print("dashboard.png")
 
 
 def shot_mascot(app: QApplication) -> None:
@@ -163,8 +203,9 @@ def main() -> int:
     shot_calibration(app)
     shot_menu(app)
     shot_settings(app)
+    shot_dashboard(app)
     shot_mascot(app)
-    print(f"→ {OUT}")
+    print(f"Screenshots saved to {OUT}")
     return 0
 
 

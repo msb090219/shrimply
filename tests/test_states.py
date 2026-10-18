@@ -136,3 +136,28 @@ def test_camera_error_lifecycle():
     assert events == []
     assert m.camera_ok(5.0) == ["cam_recovered"]
     assert m.state is State.GOOD
+
+
+def test_absence_at_start_eventually_becomes_away():
+    m = PostureStateMachine()
+    m.mark_calibrated()
+    m.update(None, 0.)
+    state, events = m.update(None, 16.)
+    assert state is State.AWAY
+    assert EVENT_WENT_AWAY in events
+
+
+def test_drifting_and_missing_data_interrupt_good_recovery():
+    for interruption in (1.2, None):
+        m = PostureStateMachine()
+        m.mark_calibrated()
+        m.update(2., 0.)
+        m.update(2., 46.)
+        m.update(.2, 47.)
+        _, events = m.update(interruption, 53.)
+        assert EVENT_RECOVERED not in events
+        m.update(.2, 54.)
+        _, events = m.update(.2, 58.)
+        assert EVENT_RECOVERED not in events
+        _, events = m.update(.2, 65.)
+        assert EVENT_RECOVERED in events

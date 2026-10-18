@@ -99,6 +99,9 @@ class PostureStateMachine:
         events: list[str] = []
 
         if dev is None:
+            self._good_since = None
+            if self._last_seen is None:
+                self._last_seen = now
             if (
                 self._last_seen is not None
                 and now - self._last_seen > self.thr.away_s
@@ -141,7 +144,9 @@ class PostureStateMachine:
             # running (the slouch hasn't actually resolved).
             if band is State.GOOD:
                 self._bad_since = None
-            if self._alerted:
+            if band is State.DRIFTING:
+                self._good_since = None
+            if self._alerted and band is State.GOOD:
                 if self._good_since is None:
                     self._good_since = now
                 if now - self._good_since >= self.thr.recovery_s:

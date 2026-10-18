@@ -15,6 +15,7 @@ def test_power_save_only_after_stable_streak():
 
 def test_near_idle_when_away():
     assert inference_rate("away", 99) == 0.5
+    assert inference_rate("away", 0, returning=True) == 2.0
 
 
 def test_unknown_states_default():

@@ -1,14 +1,15 @@
-"""Posture history — SQLite at %APPDATA%\\OSA\\log.db. Numbers only.
+"""Posture history — SQLite at %APPDATA%\\Unshrimp\\log.db. Numbers only.
 
-One row per monitored minute (frames scored / good / drifting / bad and the
-mean deviation). Away and paused time simply produces no rows. Local-time
-day bucketing happens in Python, so timezones can't corrupt summaries.
+Timed rows store observed seconds per state. The original frame-based rows are
+preserved separately as legacy estimates. Local days use calendar boundaries.
 """
 from __future__ import annotations
 
 import sqlite3
+import math
 import threading
 import time
+from datetime import date, timedelta
 from pathlib import Path
 
 _SCHEMA = """
@@ -24,6 +25,12 @@ CREATE TABLE IF NOT EXISTS minute_rollup (
     drifting INTEGER NOT NULL,
     bad INTEGER NOT NULL,
     avg_dev REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS duration_rollup (
+    minute_ts REAL PRIMARY KEY,
+    good_s REAL NOT NULL,
+    drifting_s REAL NOT NULL,
+    bad_s REAL NOT NULL
 );
 """
 
@@ -70,6 +77,24 @@ class PostureLog:
         with self._lock:
             self._conn.close()
 
+    def record_duration(self, minute_ts: float, good_s: float, drifting_s: float, bad_s: float) -> None:
+        values = (good_s, drifting_s, bad_s)
+        if not math.isfinite(minute_ts) or minute_ts % 60 != 0:
+            raise ValueError("History timestamp must be a finite minute boundary")
+        if any(not math.isfinite(value) or value < 0 for value in values):
+            raise ValueError("Observed durations must be finite and nonnegative")
+        if sum(values) == 0:
+            return
+        with self._lock, self._conn:
+            self._conn.execute(
+                "INSERT INTO duration_rollup VALUES (?,?,?,?) "
+                "ON CONFLICT(minute_ts) DO UPDATE SET "
+                "good_s=good_s+excluded.good_s, "
+                "drifting_s=drifting_s+excluded.drifting_s, "
+                "bad_s=bad_s+excluded.bad_s",
+                (minute_ts, *values),
+            )
+
     # -- reads ------------------------------------------------------------
     def _rows_since(self, ts: float) -> list[tuple]:
         with self._lock:
@@ -86,14 +111,18 @@ class PostureLog:
 
     def day_summaries(self, days: int = 7) -> list[dict]:
         """Most recent `days` local days, oldest first (incl. empty days)."""
-        today0 = self._day_start(time.time())
+        today = date.fromtimestamp(time.time())
         buckets: dict[float, dict] = {}
         for i in range(days):
-            d0 = today0 - i * 86400
-            buckets[d0] = {"scorable": 0, "good": 0, "minutes": 0, "dev_sum": 0.0}
+            day = today - timedelta(days=i)
+            d0 = time.mktime((day.year, day.month, day.day, 0, 0, 0, 0, 0, -1))
+            buckets[d0] = {"scorable": 0, "good": 0, "legacy_minutes": 0,
+                           "seconds": 0., "good_s": 0., "drifting_s": 0., "bad_s": 0.}
+        if not buckets:
+            return []
 
         for minute_ts, scorable, good, _drift, _bad, avg_dev in self._rows_since(
-            today0 - (days - 1) * 86400
+            min(buckets)
         ):
             d0 = self._day_start(minute_ts)
             b = buckets.get(d0)
@@ -101,8 +130,20 @@ class PostureLog:
                 continue
             b["scorable"] += scorable
             b["good"] += good
-            b["minutes"] += 1
-            b["dev_sum"] += avg_dev
+            b["legacy_minutes"] += 1
+
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT minute_ts, good_s, drifting_s, bad_s FROM duration_rollup "
+                "WHERE minute_ts >= ? ORDER BY minute_ts", (min(buckets),),
+            ).fetchall()
+        for minute_ts, good_s, drifting_s, bad_s in rows:
+            b = buckets.get(self._day_start(minute_ts))
+            if b is not None:
+                b["seconds"] += good_s + drifting_s + bad_s
+                b["good_s"] += good_s
+                b["drifting_s"] += drifting_s
+                b["bad_s"] += bad_s
 
         out = []
         for d0 in sorted(buckets):
@@ -111,8 +152,15 @@ class PostureLog:
                 {
                     "date": time.strftime("%a", time.localtime(d0 + 3600)),
                     "ts": d0,
-                    "minutes": b["minutes"],
-                    "pct_good": (100.0 * b["good"] / b["scorable"]) if b["scorable"] else None,
+                    "minutes": b["seconds"] / 60 if b["seconds"] else b["legacy_minutes"],
+                    "seconds": b["seconds"],
+                    "good_s": b["good_s"],
+                    "drifting_s": b["drifting_s"],
+                    "bad_s": b["bad_s"],
+                    "legacy_minutes": b["legacy_minutes"],
+                    "measurement": "time" if b["seconds"] else "legacy_samples" if b["scorable"] else "none",
+                    "pct_good": (100 * b["good_s"] / b["seconds"] if b["seconds"] else
+                                 100 * b["good"] / b["scorable"] if b["scorable"] else None),
                 }
             )
         return out

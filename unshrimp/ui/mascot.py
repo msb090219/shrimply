@@ -15,8 +15,8 @@ from __future__ import annotations
 import math
 import time
 
-from PySide6.QtCore import QRectF, Qt, QTimer
-from PySide6.QtGui import QColor, QPainter
+from PySide6.QtCore import QRectF, Qt, QTimer, QObject
+from PySide6.QtGui import QColor, QPainter, QGuiApplication
 from PySide6.QtWidgets import QWidget
 
 from . import assets
@@ -65,6 +65,10 @@ class MascotWindow(QWidget):
         self._max_opacity = 0.87
         self._scale = 1.0
         self._bob_on = True
+        self.reduce_motion = False
+        self.position = "center"
+        self.screen_name = ""
+        self.target_screen = None
         self._art = None  # pre-scaled mascot art — the paint loop only blits
 
         self._cur = 0.0  # eased opacity
@@ -84,8 +88,15 @@ class MascotWindow(QWidget):
         # precompute the art at draw size — the 30fps paint loop must never
         # load from disk or rescale
         w = int(_W * 0.92 * self._scale)
+        screen = self.target_screen
+        if screen is not None:
+            area = screen.availableGeometry()
+            w = min(w, max(1, area.width() - 48),
+                    max(1, int((area.height() - 110 - _BOB_PX - 2 * _BOTTOM_MARGIN - 12) / .62)))
         self._art = assets.shrimp_mascot(w, int(w * 0.62))
+        self.setFixedSize(w + 24, int(w * .62) + 110 + _BOB_PX + _BOTTOM_MARGIN + 12)
         if self.isVisible():
+            self._anchor()
             self.update()
 
     def set_level(self, dev: float | None) -> None:
@@ -108,25 +119,32 @@ class MascotWindow(QWidget):
 
     # ------------------------------------------------------------------
     def _anchor(self) -> None:
-        """Place the window once: bottom-center of the current screen."""
-        screen = self.screen()
-        if screen is None:
-            from PySide6.QtGui import QGuiApplication
-
-            screen = QGuiApplication.primaryScreen()
+        """Place the window once at the selected point of the current screen."""
+        screen = self.target_screen or next((s for s in QGuiApplication.screens() if s.name() == self.screen_name),
+                      QGuiApplication.primaryScreen())
         if screen is None:
             return
         g = screen.availableGeometry()
-        self.move(g.center().x() - _W // 2, g.bottom() - _H - _BOTTOM_MARGIN)
+        x = (g.left() + 24 if self.position in ("left", "top_left") else
+             g.right() - self.width() - 23 if self.position in ("right", "top_right") else
+             g.center().x() - self.width() // 2)
+        y = (g.top() + 24 if self.position.startswith("top_") else
+             g.center().y() - self.height() // 2 if self.position == "middle" else
+             g.bottom() - self.height() - _BOTTOM_MARGIN)
+        self.move(max(g.left(), min(x, g.right() - self.width() + 1)),
+                  max(g.top(), min(y, g.bottom() - self.height() + 1)))
 
     def _tick(self) -> None:
         t_op, t_lift = self._target
         self._cur += (t_op - self._cur) * _EASE
-        self._cur_lift += (t_lift - self._cur_lift) * _EASE
+        self._cur_lift = t_lift if self.reduce_motion else self._cur_lift + (t_lift - self._cur_lift) * _EASE
         if t_op == 0.0 and self._cur < 0.02:
             self._timer.stop()
             self.hide()
             return
+        if self.reduce_motion and abs(t_op - self._cur) < .01:
+            self._cur = t_op
+            self._timer.stop()
         self.update()
 
     # ------------------------------------------------------------------
@@ -150,27 +168,95 @@ class MascotWindow(QWidget):
 
         if art is not None:
             aw, ah = art.width(), art.height()
-            x = (_W - aw) // 2
-            y = _H - _BOTTOM_MARGIN - ah - self._cur_lift - bob
+            x = (self.width() - aw) // 2
+            y = self.height() - _BOTTOM_MARGIN - ah - self._cur_lift - bob
             # ground shadow
             p.setOpacity(self._cur * 0.22)
             p.setPen(Qt.NoPen)
             p.setBrush(QColor(0, 0, 0, 90))
-            p.drawEllipse(QRectF(_W * 0.28, _H - _BOTTOM_MARGIN - 16, _W * 0.44, 14))
+            p.drawEllipse(QRectF(self.width() * 0.28, self.height() - _BOTTOM_MARGIN - 16, self.width() * 0.44, 14))
             p.setOpacity(self._cur)
             p.drawPixmap(x, int(y), art)
         else:
-            sw = _W * 0.9 * self._scale
+            sw = self.width() - 24
             sh = sw * 0.62
             rect = QRectF(
-                (_W - sw) / 2,
-                _H - _BOTTOM_MARGIN - sh - self._cur_lift - bob,
+                (self.width() - sw) / 2,
+                self.height() - _BOTTOM_MARGIN - sh - self._cur_lift - bob,
                 sw,
                 sh,
             )
             p.setOpacity(self._cur * 0.22)
             p.setPen(Qt.NoPen)
             p.setBrush(QColor(0, 0, 0, 90))
-            p.drawEllipse(QRectF(_W * 0.28, _H - _BOTTOM_MARGIN - 16, _W * 0.44, 14))
+            p.drawEllipse(QRectF(self.width() * 0.28, self.height() - _BOTTOM_MARGIN - 16, self.width() * 0.44, 14))
             p.setOpacity(self._cur)
             paint_shrimp(p, rect, QColor(SHRIMP))
+
+
+class MascotGroup(QObject):
+    """Share one posture value across the overlays for the selected displays."""
+    def __init__(self):
+        super().__init__(QGuiApplication.instance())
+        self.reduce_motion = False
+        self.position = "center"
+        self.screen_name = ""
+        self.windows = {}
+        self._options = (.87, "m", True)
+        self._level = None
+        self._t0 = time.monotonic()
+        app = QGuiApplication.instance()
+        app.screenAdded.connect(self._screen_added)
+        app.screenRemoved.connect(self._screen_removed)
+        for screen in app.screens():
+            screen.availableGeometryChanged.connect(self._sync)
+
+    def _screen_added(self, screen):
+        screen.availableGeometryChanged.connect(self._sync)
+        self._sync()
+
+    def _screen_removed(self, screen):
+        self._sync(excluded=screen)
+
+    def set_options(self, max_opacity, size_key, bob):
+        self._options = (max_opacity, size_key, bob)
+        self._sync()
+
+    def _sync(self, *_, excluded=None):
+        screens = [screen for screen in QGuiApplication.screens() if screen is not excluded]
+        primary = QGuiApplication.primaryScreen()
+        if primary not in screens:
+            primary = screens[0] if screens else None
+        selected = screens if self.screen_name == "*" else [next(
+            (screen for screen in screens if screen.name() == self.screen_name),
+            primary)]
+        selected = [screen for screen in selected if screen is not None]
+        for screen in list(self.windows):
+            if screen not in selected:
+                window = self.windows.pop(screen)
+                window.force_hide()
+                window.deleteLater()
+        for screen in selected:
+            if screen not in self.windows:
+                self.windows[screen] = MascotWindow()
+                self.windows[screen]._t0 = self._t0
+            window = self.windows[screen]
+            window.target_screen = screen
+            window.position = self.position
+            window.reduce_motion = self.reduce_motion
+            window.set_options(*self._options)
+            window._anchor()
+            window.set_level(self._level)
+
+    def set_level(self, dev):
+        self._level = dev
+        for window in self.windows.values():
+            window.set_level(dev)
+
+    def force_hide(self):
+        self._level = None
+        for window in self.windows.values():
+            window.force_hide()
+
+    def isVisible(self):
+        return any(window.isVisible() for window in self.windows.values())

@@ -19,12 +19,12 @@ VALUE_NAME = "Unshrimp"
 
 def _command() -> str:
     if getattr(sys, "frozen", False):  # packaged exe — it *is* the app
-        return f'"{sys.executable}"'
+        return f'"{sys.executable}" --background'
     py = Path(sys.executable)
     pyw = py.with_name("pythonw.exe")
     exe = str(pyw) if pyw.exists() else str(py)
     main = Path(__file__).resolve().parent.parent / "main.py"
-    return f'"{exe}" "{main}"'
+    return f'"{exe}" "{main}" --background'
 
 
 def is_enabled() -> bool:

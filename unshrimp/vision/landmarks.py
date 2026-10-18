@@ -39,7 +39,11 @@ class Landmarkers:
             output_facial_transformation_matrixes=True,
         )
         self._pose = Vision.PoseLandmarker.create_from_options(pose_opts)
-        self._face = Vision.FaceLandmarker.create_from_options(face_opts)
+        try:
+            self._face = Vision.FaceLandmarker.create_from_options(face_opts)
+        except Exception:
+            self._pose.close()
+            raise
 
     def signals(self, frame_rgb: np.ndarray, ts_ms: int) -> FrameSignals:
         """Run both landmarkers on one RGB frame. ts_ms must strictly increase."""
@@ -65,7 +69,7 @@ class Landmarkers:
         sig = metrics.compute_signals(pose_lms, face_lms, face_mx)
 
         overlay = None
-        if pose_lms is not None:
+        if sig.ok:
             h, w = frame_rgb.shape[:2]
 
             def px(idx: int) -> tuple[int, int]:

@@ -23,7 +23,8 @@ Design notes:
 from __future__ import annotations
 
 import statistics
-from dataclasses import dataclass, field
+import math
+from dataclasses import dataclass, field, replace
 
 from ..vision.metrics import FrameSignals
 from .baseline import (
@@ -54,6 +55,7 @@ HUNCH_S = 6.0
 VERIFY_S = 12.0
 REJECT_RATIO_MAX = 0.30  # above this (and under TALL_MAX_S), keep collecting
 MIN_CLEAN = 3  # per-signal minimum after outlier filtering
+PREPARE_S = 3.0
 
 # absolute floors for the MAD threshold, so a perfectly still capture
 # (MAD=0) still tolerates measurement granularity
@@ -78,6 +80,10 @@ class StepResult:
     hint: str | None = None  # longer guidance for the current failing check
     events: list[str] = field(default_factory=list)
     baseline: Baseline | None = None
+    activity: str | None = None
+    elapsed_s: float = 0.0
+    duration_s: float = 0.0
+    pose_duration_s: float = 0.0
 
 
 def _mad_filter(values: list[float], abs_floor: float) -> list[float]:
@@ -91,7 +97,7 @@ def _mad_filter(values: list[float], abs_floor: float) -> list[float]:
 
 
 class CalibrationSession:
-    def __init__(self):
+    def __init__(self, *, prepare_s: float = PREPARE_S):
         self.phase = "setup"
         self.setup_report: dict = {c: False for c in CHECK_ORDER}
         self.degraded = False  # True if setup was skipped via Continue anyway
@@ -100,21 +106,61 @@ class CalibrationSession:
         self._streak_t0: float | None = None
         self._stuck_announced = False
         self._first = True
+        self._prepare_s = prepare_s
+        self._prepared = 0.0
+        self._last_capture_tick: float | None = None
+        self._capture_clock = 0.0
 
         self._tall: dict[str, list[float]] = {k: [] for k in SIGNALS}
         self._tall_total = 0
         self._normal: dict[str, list[float]] = {k: [] for k in SIGNALS}
         self._hunch: dict[str, list[float]] = {k: [] for k in SIGNALS}
         self._verify_devs: list[float] = []
+        self._verify_times: list[float] = []
         self._candidate: Baseline | None = None
 
     # ------------------------------------------------------------------
     def feed(self, sig: FrameSignals, now: float) -> StepResult:
+        return self._with_timing(self._feed(sig, now))
+
+    def _with_timing(self, result: StepResult) -> StepResult:
+        durations = {"tall": TALL_S, "normal": NORMAL_S, "hunch": HUNCH_S, "verify": VERIFY_S}
+        duration = durations.get(result.phase)
+        if duration is None:
+            return result
+        preparing = self._prepared < self._prepare_s
+        elapsed = self._prepared if preparing else max(0., self._capture_clock - self._t0)
+        activity = ("paused" if result.progress == "Collection paused" else
+                    "preparing" if preparing else
+                    "checking" if elapsed >= duration else "capturing")
+        return replace(result, activity=activity, elapsed_s=elapsed,
+                       duration_s=self._prepare_s if preparing else duration,
+                       pose_duration_s=duration)
+
+    def _feed(self, sig: FrameSignals, now: float) -> StepResult:
         if self._first:
             self._t0 = now
             self._first = False
         if self.phase == "setup":
             return self._setup(sig, now)
+        if self.phase in ("tall", "normal", "hunch", "verify"):
+            previous = self._last_capture_tick
+            self._last_capture_tick = now if self._gated(sig) else None
+            if not self._gated(sig):
+                hint = ("Keep your face and shoulders visible in the preview."
+                        if not sig.ok else "Face the camera and keep your head level.")
+                return StepResult(self.phase, "Collection paused", hint)
+            # Never count an unseen interval, including stalled camera delivery.
+            delta = now - previous if previous is not None else 0.0
+            delta = delta if 0 <= delta <= 2.0 else 0.0
+            if self._prepared < self._prepare_s:
+                self._prepared = min(self._prepare_s, self._prepared + delta)
+                return StepResult(self.phase,
+                                  (f"Get ready · {math.ceil(self._prepare_s - self._prepared)}s"
+                                   if self._prepared < self._prepare_s else "Ready to collect"),
+                                  "Settle into this pose. No samples are being collected yet.")
+            self._capture_clock += delta
+            now = self._capture_clock
         if self.phase == "tall":
             return self._tall_step(sig, now)
         if self.phase == "normal":
@@ -131,13 +177,20 @@ class CalibrationSession:
             return StepResult(self.phase)
         self.degraded = True
         self._enter("tall", now)
-        return StepResult("tall", "TALL 0s", events=["enter_tall"])
+        return self._with_timing(StepResult("tall", self._ready_progress("TALL"), events=["enter_tall"]))
+
+    def _ready_progress(self, label: str) -> str:
+        return f"Get ready · {self._prepare_s:g}s" if self._prepare_s else f"{label} 0s"
 
     # ------------------------------------------------------------------
     def _enter(self, phase: str, now: float) -> None:
         self.phase = phase
+        self._first = False
         self._t0 = now
         self._streak_t0 = None
+        self._prepared = 0.0
+        self._last_capture_tick = None
+        self._capture_clock = now
 
     @staticmethod
     def _gated(sig: FrameSignals) -> bool:
@@ -188,7 +241,7 @@ class CalibrationSession:
             if now - self._streak_t0 >= SETUP_PASS_S:
                 self._enter("tall", now)
                 return StepResult(
-                    "tall", "TALL 0s",
+                    "tall", self._ready_progress("TALL"),
                     events=["enter_tall", "setup_ok"],
                 )
         else:
@@ -224,7 +277,7 @@ class CalibrationSession:
                 return self._fail("too_few", "couldn't get a clean read — hold steadier")
             self._tall = filtered
             self._enter("normal", now)
-            return StepResult("normal", "NORMAL 0s", events=["enter_normal"])
+            return StepResult("normal", self._ready_progress("NORMAL"), events=["enter_normal"])
 
         hint = "hold steady…" if ratio > REJECT_RATIO_MAX else None
         return StepResult("tall", f"TALL {min(int(elapsed), int(TALL_S))}/{int(TALL_S)}s", hint)
@@ -238,7 +291,7 @@ class CalibrationSession:
             if min(len(v) for v in self._normal.values()) < MIN_CLEAN:
                 return self._fail("too_few", "couldn't see you enough")
             self._enter("hunch", now)
-            return StepResult("hunch", "HUNCH 0s", events=["enter_hunch"])
+            return StepResult("hunch", self._ready_progress("HUNCH"), events=["enter_hunch"])
         return StepResult("normal", f"NORMAL {int(now - self._t0)}/{int(NORMAL_S)}s")
 
     # --- phase 3: hunch + candidate build ------------------------------------
@@ -263,6 +316,9 @@ class CalibrationSession:
 
             if abs(delta) < HUNCH_MIN_DELTA[k]:
                 # hunch looked like tall — no direction to learn
+                bad_dir, value, tol = 0, t_med, TOL_FLOOR[k]
+                anchors[k] = "excluded"
+            elif delta * (h_med - n_med) < 0:
                 bad_dir, value, tol = 0, t_med, TOL_FLOOR[k]
                 anchors[k] = "excluded"
             elif abs(h_med - n_med) >= HUNCH_MIN_DELTA[k]:
@@ -297,7 +353,7 @@ class CalibrationSession:
             },
         )
         self._enter("verify", now)
-        return StepResult("verify", "CHECK 0s", events=["enter_verify"])
+        return StepResult("verify", self._ready_progress("CHECK"), events=["enter_verify"])
 
     # --- phase 4: verify + auto-tune -----------------------------------------
     def _verify_step(self, sig: FrameSignals, now: float) -> StepResult:
@@ -306,16 +362,30 @@ class CalibrationSession:
             dev = self._candidate.deviation(sig)
             if dev is not None:
                 self._verify_devs.append(dev)
+                self._verify_times.append(now)
         if now - self._t0 < VERIFY_S:
             return StepResult("verify", f"CHECK {int(now - self._t0)}/{int(VERIFY_S)}s")
 
-        if not self._verify_devs:
+        if (len(self._verify_devs) < MIN_CLEAN
+                or self._verify_times[-1] - self._verify_times[0] < VERIFY_S * 0.75
+                or self._verify_times[0] - self._t0 > 2.0
+                or now - self._verify_times[-1] > 2.0
+                or any(b - a > 2.0 for a, b in zip(self._verify_times, self._verify_times[1:]))):
             return self._fail("too_few", "couldn't see you enough")
 
         med = statistics.median(self._verify_devs)
         tune = 1.0
         if med > VERIFY_TRIGGER:
             tune = min(med / VERIFY_TARGET, TUNE_CAP)
+        hunch = replace(sig, ok=True, **{
+            k: statistics.median(self._hunch[k]) for k in SIGNALS
+        })
+        hunch_dev = self._candidate.deviation(hunch)
+        if hunch_dev < 1.5:
+            return self._fail(
+                "separation", "normal and hunched posture are too similar; repeat calibration",
+            )
+        tune = min(tune, hunch_dev / 1.5)
         for cal in self._candidate.signals.values():
             cal.tol *= tune
 

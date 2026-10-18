@@ -1,105 +1,77 @@
-"""Welcome / About — the brand card.
-
-Shown on first run (instead of a bare toast) and from the tray's
-About Unshrimp. Dark rounded card, the shrimp, the promise.
-"""
-from __future__ import annotations
-
+"""Welcome and About use the same compact desktop surfaces as the rest of the app."""
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPixmap
 from PySide6.QtWidgets import (
-    QDialog,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
+    QDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea, QVBoxLayout, QWidget,
 )
 
-from . import assets, theme
-from .shrimp import shrimp_pixmap
-
-_W = 480
+from unshrimp import __version__
+from . import theme
+from .sections import section
 
 
 class WelcomeDialog(QDialog):
-    """Modal card. `calibrate_requested` is True when the user chose to
-    calibrate straight away."""
-
-    def __init__(self, parent=None, about_mode: bool = False):
+    def __init__(self, parent=None, about_mode=False):
         super().__init__(parent)
         self.calibrate_requested = False
-        self.setWindowTitle("About Unshrimp" if about_mode else "Welcome")
-        self.setFixedWidth(_W)
-        self.setStyleSheet(
-            f"QDialog {{ background: #121418; border-radius: 14px; }}"
-            f"QLabel {{ color: {theme.TEXT}; font-family: 'Segoe UI'; }}"
-        )
-
-        art = assets.welcome_art(360, 220)
-        if art is None:
-            art = shrimp_pixmap(360, 210, theme.SHRIMP)
-        art_lbl = QLabel()
-        art_lbl.setPixmap(art)
-        art_lbl.setAlignment(Qt.AlignHCenter)
-
-        name = QLabel("Unshrimp")
-        name.setAlignment(Qt.AlignHCenter)
-        name.setStyleSheet(
-            f"font-size: 30px; font-weight: 800; color: {theme.TEXT};"
-        )
-        tagline = QLabel("Don't get shrimped.")
-        tagline.setAlignment(Qt.AlignHCenter)
-        tagline.setStyleSheet(
-            f"font-size: 15px; font-weight: 600; color: {theme.SHRIMP};"
-            " padding-bottom: 10px;"
-        )
-        body = QLabel(
-            "A local posture guard for people with forward head posture.\n"
-            "It watches your webcam on-device, learns what your normal and\n"
-            "your hunch look like, and fades in a very large shrimp when\n"
-            "you slouch. No cloud. No accounts. No frames on disk — nothing\n"
-            "ever leaves this machine."
-        )
-        body.setAlignment(Qt.AlignHCenter)
-        body.setStyleSheet(
-            f"font-size: 12px; color: {theme.TEXT_MUTED}; line-height: 1.5;"
-        )
-
-        btns = QHBoxLayout()
+        self.setWindowTitle("About" if about_mode else "Welcome")
+        self.resize(480, 380 if about_mode else 540)
+        self.setMinimumWidth(420)
+        theme.apply_desktop_theme(self)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
+        body = QWidget()
+        content = QVBoxLayout(body)
+        content.setContentsMargins(0, 0, 0, 0)
+        content.setSpacing(12)
+        scroll = QScrollArea()
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(body)
+        layout.addWidget(scroll, 1)
+        brand, form = section("Unshrimp" if about_mode else "Welcome to Unshrimp")
         if about_mode:
-            close = QPushButton("Close")
-            close.clicked.connect(self.reject)
-            btns.addStretch(1)
-            btns.addWidget(close)
-            btns.addStretch(1)
-        else:
-            cal = QPushButton("Calibrate now")
-            cal.setCursor(Qt.PointingHandCursor)
-            cal.setStyleSheet(
-                f"background: {theme.SHRIMP}; color: #121418; font-weight: 700;"
-                "border-radius: 8px; padding: 9px 22px;"
-            )
-            later = QPushButton("Later")
-            later.setStyleSheet(
-                f"color: {theme.TEXT_MUTED}; border: 1px solid #2a2e36;"
-                "border-radius: 8px; padding: 9px 18px;"
-            )
-            cal.clicked.connect(self._calibrate)
-            later.clicked.connect(self.reject)
-            btns.addStretch(1)
-            btns.addWidget(later)
-            btns.addWidget(cal)
+            form.addRow(QLabel(f"Version {__version__}"))
+        description = QLabel("A private posture companion for your desk. Gentle posture cues and break reminders help you notice your sitting habits.")
+        description.setWordWrap(True)
+        form.addRow(description)
+        content.addWidget(brand)
+        if not about_mode:
+            setup, form = section("A minute to get set up")
+            for text in (
+                "Keep your face and both shoulders visible. The live mirror will help you check your framing.",
+                "Sit tall to show your upright range, sit normally to set your everyday baseline, then demonstrate a comfortable slouch so Unshrimp can tell them apart.",
+                "Finally, sit normally again to check the result. Preparation cues guide each pose; setup may take longer if tracking is interrupted.",
+            ):
+                label = QLabel(text)
+                label.setWordWrap(True)
+                form.addRow(label)
+            content.addWidget(setup)
+        privacy, form = section("Camera and privacy")
+        text = (
+            "Camera frames are processed on this device and are not saved. "
+            "Your settings and posture history are stored locally. No account is needed."
+        )
+        if not about_mode:
+            text += " You can pause tracking at any time. Choosing Later leaves the camera off."
+        body = QLabel(text)
+        body.setWordWrap(True)
+        form.addRow(body)
+        content.addWidget(privacy)
+        content.addStretch()
+        buttons = QHBoxLayout()
+        buttons.addStretch()
+        close = QPushButton("Close" if about_mode else "Later")
+        close.clicked.connect(self.reject)
+        buttons.addWidget(close)
+        if not about_mode:
+            calibrate = QPushButton("Calibrate now")
+            calibrate.setDefault(True)
+            calibrate.clicked.connect(self._calibrate)
+            buttons.addWidget(calibrate)
+        layout.addLayout(buttons)
 
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(28, 24, 28, 24)
-        lay.addWidget(art_lbl)
-        lay.addWidget(name)
-        lay.addWidget(tagline)
-        lay.addWidget(body)
-        lay.addSpacing(14)
-        lay.addLayout(btns)
-
-    def _calibrate(self) -> None:
+    def _calibrate(self):
         self.calibrate_requested = True
         self.accept()

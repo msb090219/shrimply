@@ -6,14 +6,23 @@ right-click by default); right-click still works too.
 """
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QObject, QRectF, Qt, QTimer, Signal, QSignalBlocker
 from PySide6.QtGui import QAction, QColor, QCursor, QIcon, QPainter, QPixmap
-from PySide6.QtWidgets import QMenu, QSystemTrayIcon, QWidget, QHBoxLayout, QLabel
+from PySide6.QtWidgets import QMenu, QSystemTrayIcon, QWidget, QHBoxLayout, QVBoxLayout, QLabel
 
 from . import theme
 from .shrimp import paint_shrimp
 
 STATE_COLORS = theme.STATE_COLORS
+STATE_LABELS = {
+    "good": "Sitting comfortably", "drifting": "Posture drifting",
+    "bad": "Time to adjust", "away": "Away from the desk",
+    "paused": "Tracking paused", "camera_error": "Camera unavailable",
+    "uncalibrated": "Calibration required", "starting": "Finding your posture",
+    "calibrating": "Calibration in progress", "idle": "Camera off while idle",
+    "sleeping": "System sleeping", "break": "Break in progress",
+    "preview": "Tracking paused · camera preview active",
+}
 
 
 def shrimp_icon(color_hex: str) -> QIcon:
@@ -60,9 +69,11 @@ def shrimp_pixmap_sized(size: int, color_hex: str) -> QPixmap:
 
 
 class Tray(QObject):
+    open_requested = Signal()
     calibrate_requested = Signal()
     pause_toggled = Signal(bool)  # True = now paused
     hud_toggled = Signal(bool)  # True = now visible
+    compact_toggled = Signal(bool)
     settings_requested = Signal()
     quit_requested = Signal()
     about_requested = Signal()
@@ -81,7 +92,7 @@ class Tray(QObject):
         from . import theme
 
         self.menu = QMenu()
-        self.menu.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.menu.setMinimumWidth(248)
         self.menu.setStyleSheet(theme.MENU_QSS)
 
         # status header: tinted mini shrimp + state name (not clickable)
@@ -93,10 +104,18 @@ class Tray(QObject):
         self._header_shrimp.setPixmap(
             shrimp_pixmap_sized(22, STATE_COLORS["uncalibrated"])
         )
-        self._header_text = QLabel("starting…")
-        self._header_text.setStyleSheet("font-weight: 700; border: none;")
+        self._header_text = QLabel("Finding your posture")
+        self._header_text.setStyleSheet("font-weight: 600; border: none;")
         hrow.addWidget(self._header_shrimp)
-        hrow.addWidget(self._header_text)
+        labels = self._header_labels = QVBoxLayout()
+        labels.setSpacing(3)
+        labels.setAlignment(Qt.AlignTop)
+        labels.addWidget(QLabel("Unshrimp"))
+        labels.addWidget(self._header_text)
+        self._break_text = QLabel()
+        self._break_text.hide()
+        labels.addWidget(self._break_text)
+        hrow.addLayout(labels)
         hrow.addStretch(1)
         from PySide6.QtWidgets import QWidgetAction
 
@@ -104,33 +123,39 @@ class Tray(QObject):
         header_action.setDefaultWidget(self._header_widget)
 
         self.cal_action = QAction("&Calibrate…", self.menu)
-        self.cont_action = QAction("Continue &anyway (skip setup checks)", self.menu)
+        self.open_action = QAction("&Open Unshrimp", self.menu)
+        self.cont_action = QAction("Continue setup &anyway…", self.menu)
         self.cont_action.setVisible(False)
-        self.pause_action = QAction("&Pause (meetings)", self.menu)
-        self.hud_action = QAction("Show &HUD", self.menu)
+        self.pause_action = QAction("&Pause tracking", self.menu)
+        self.hud_action = QAction("Posture &indicator", self.menu)
+        self.hud_action.setCheckable(True)
+        self.hud_action.setChecked(True)
         self.mascot_action = QAction("Floating &shrimp", self.menu)
         self.mascot_action.setCheckable(True)
         self.mascot_action.setChecked(True)
+        self.compact_action = QAction("&Hide brief adjustment cue", self.menu)
+        self.compact_action.setCheckable(True)
+        self.compact_action.toggled.connect(self.compact_toggled.emit)
         self.settings_action = QAction("&Settings…", self.menu)
         self.about_action = QAction("&About Unshrimp", self.menu)
         self.quit_action = QAction("&Quit", self.menu)
 
         self.menu.addAction(header_action)
         self.menu.addSeparator()
-        for a in (
-            self.cal_action,
-            self.pause_action,
-            self.hud_action,
-            self.mascot_action,
-            self.settings_action,
-            self.about_action,
-            self.menu.addSeparator(),
-            self.quit_action,
-        ):
-            if a is not None and a not in self.menu.actions():
-                self.menu.addAction(a)
+        for action in (self.open_action, self.pause_action, self.cal_action,
+                       self.cont_action, self.settings_action):
+            self.menu.addAction(action)
+        self.menu.addSeparator()
+        self.menu.addAction(self.compact_action)
+        self.visibility_menu = self.menu.addMenu("&Visibility")
+        self.visibility_menu.addAction(self.hud_action)
+        self.visibility_menu.addAction(self.mascot_action)
+        self.menu.addAction(self.about_action)
+        self.menu.addSeparator()
+        self.menu.addAction(self.quit_action)
 
         self.cal_action.triggered.connect(self.calibrate_requested)
+        self.open_action.triggered.connect(self.open_requested)
         self.cont_action.triggered.connect(self.continue_anyway.emit)
         self.pause_action.triggered.connect(self._on_pause)
         self.hud_action.triggered.connect(self._on_hud)
@@ -143,6 +168,7 @@ class Tray(QObject):
 
         self._paused = False
         self._hud_visible = True
+        self._state_key = None
 
     def _on_activated(self, reason) -> None:
         if reason == QSystemTrayIcon.ActivationReason.Trigger:  # left click
@@ -180,27 +206,46 @@ class Tray(QObject):
 
     def sync_hud_action(self, visible: bool) -> None:
         self._hud_visible = visible
-        self.hud_action.setText("Hide &HUD" if visible else "Show &HUD")
+        with QSignalBlocker(self.hud_action):
+            self.hud_action.setChecked(visible)
+
+    def sync_compact_action(self, compact: bool) -> None:
+        with QSignalBlocker(self.compact_action):
+            self.compact_action.setChecked(compact)
 
     def show_continue(self, visible: bool) -> None:
         self.cont_action.setVisible(visible)
 
     def set_mascot_checked(self, on: bool) -> None:
-        self.mascot_action.setChecked(on)
+        with QSignalBlocker(self.mascot_action):
+            self.mascot_action.setChecked(on)
 
     def set_paused_ui(self, paused: bool) -> None:
         self._paused = paused
-        self.pause_action.setText("&Resume" if paused else "&Pause (meetings)")
+        self.pause_action.setText("&Resume tracking" if paused else "&Pause tracking")
+
+    def set_break_text(self, text: str) -> None:
+        self._break_text.setText(text)
+        self._break_text.setVisible(bool(text))
+        self._header_labels.invalidate()
+        self._header_widget.layout().invalidate()
+        self._header_widget.setFixedHeight(self._header_widget.layout().sizeHint().height())
+
+    def set_controls(self, calibrating: bool, suspended: bool) -> None:
+        self.cal_action.setText("View &calibration…" if calibrating else "&Calibrate…")
+        self.cal_action.setEnabled(not suspended)
+        self.pause_action.setEnabled(not suspended)
 
     # ------------------------------------------------------------------
     def set_state(self, key: str, detail: str) -> None:
         color = STATE_COLORS.get(key, STATE_COLORS["uncalibrated"])
-        self.icon.setIcon(shrimp_icon(color))
-        self._header_shrimp.setPixmap(shrimp_pixmap_sized(22, color))
-        label = key.replace("_", " ")
-        text = f"Unshrimp · {label}" + (f" · {detail}" if detail else "")
-        self._header_text.setText(text)
-        self.icon.setToolTip(text)
+        if key != self._state_key:
+            self.icon.setIcon(shrimp_icon(color))
+            self._header_shrimp.setPixmap(shrimp_pixmap_sized(22, color))
+            self._state_key = key
+        label = STATE_LABELS.get(key, "Finding your posture")
+        self._header_text.setText(label)
+        self.icon.setToolTip(f"Unshrimp · {label}")
 
     def toast(self, title: str, body: str, seconds: int = 6) -> None:
         self.icon.showMessage(title, body, QSystemTrayIcon.Information, seconds * 1000)

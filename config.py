@@ -49,6 +49,8 @@ def migrate_legacy() -> None:
 
 DEFAULTS: dict = {
     "camera_index": 0,
+    "tracking_paused": False,
+    "welcome_seen": False,
     "fps": 2.0,
     "sensitivity": 1.0,
     # mirrors core.Thresholds; kept flat for a human-editable file
@@ -64,8 +66,13 @@ DEFAULTS: dict = {
     "mascot_size": "m",  # s | m | l
     "mascot_opacity": 0.87,
     "mascot_bob": True,
+    "mascot_position": "center",
+    "mascot_screen": "",
+    "reduce_motion": False,
+    "theme_mode": "dark",
     "reminder_enabled": True,
     "reminder_interval_min": 40,
+    "reminder_break_min": 2,
     "exercises": [
         {
             "name": "Chin tucks",
@@ -88,7 +95,7 @@ DEFAULTS: dict = {
             "how": "Draw shoulder blades down and together. Hold 5s × 10.",
         },
     ],
-    "hud": {"x": None, "y": None, "visible": True},
+    "hud": {"x": None, "y": None, "visible": True, "compact": False, "size": "m", "opacity": 1.0},
     "baseline": None,  # Baseline.to_dict() once calibrated
 }
 

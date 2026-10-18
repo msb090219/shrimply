@@ -3,8 +3,8 @@
 Every branded surface (mascot, welcome art, banner) checks assets/brand/
 first; if the PNG isn't there yet, the in-code drawn shrimp is used. That
 means a designer can iterate by replacing files — no code, no rebuild of
-the logic, and nothing ever breaks when a file is missing. See ASSETS.md
-in the repo root for the exact spec.
+the logic, and nothing ever breaks when a file is missing. See docs/ASSETS.md
+in the repository for the exact spec.
 
 Everything is cached: each PNG loads from disk once per run, and scaled /
 tinted variants are memoised — the mascot animates at 30 fps and must

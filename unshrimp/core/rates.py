@@ -19,8 +19,10 @@ RATES = {
 DEFAULT_RATE = 2.0
 
 
-def inference_rate(state: str, good_streak: int) -> float:
+def inference_rate(state: str, good_streak: int, returning: bool = False) -> float:
     """Posture state name (machine State.value) + current good streak → fps."""
+    if state == "away" and returning:
+        return DEFAULT_RATE
     if state == "good":
         return RATES["good"] if good_streak >= GOOD_STREAK_NEEDED else DEFAULT_RATE
     return RATES.get(state, DEFAULT_RATE)
