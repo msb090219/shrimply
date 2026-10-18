@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
+from PySide6.QtCore import QRect
 from PySide6.QtWidgets import QApplication, QComboBox, QPushButton
 from PySide6.QtWidgets import QWidget
 from PySide6.QtWidgets import QTabWidget
@@ -179,6 +180,7 @@ def test_hidden_settings_does_not_disable_parent_or_probe_cameras(qt_app, monkey
     monkeypatch.setattr(settings, "available_cameras", probe)
     monkeypatch.setattr(autostart, "is_enabled", lambda: False)
     parent = QWidget()
+    monkeypatch.setattr(parent, "screen", lambda: SimpleNamespace(availableGeometry=lambda: QRect(0, 0, 1024, 720)))
     controller = SimpleNamespace(cfg=copy.deepcopy(config.DEFAULTS), log=Mock(), hud=parent,
                                  main_window=parent,
                                  _settings_dlg=None, _reset_baseline=Mock(), start_calibration=Mock(),

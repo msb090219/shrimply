@@ -6,7 +6,7 @@ import time
 import math
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QTimer
+from PySide6.QtCore import QObject, QPoint, QTimer
 
 import config as config_mod
 from unshrimp.core.baseline import Baseline
@@ -965,12 +965,13 @@ class UnshrimpApp(QObject):
             dlg.finished.connect(dlg.deleteLater)
         # Settings must not disable the HUD, even if Windows hides the dialog.
         main = self.main_window
+        dlg.show()
         screen = main.screen()
         if screen is not None:
             area = screen.availableGeometry()
             frame = main.frameGeometry()
             gap = 12
-            width, height = dlg.width(), dlg.height()
+            width, height = dlg.frameGeometry().width(), dlg.frameGeometry().height()
             right = frame.right() + gap + 1
             left = frame.left() - gap - width
             if right + width <= area.right() + 1:
@@ -980,8 +981,7 @@ class UnshrimpApp(QObject):
             else:
                 x = max(area.left(), min(frame.left(), area.right() - width + 1))
             y = max(area.top(), min(frame.top(), area.bottom() - height + 1))
-            dlg.move(x, y)
-        dlg.show()
+            dlg.windowHandle().setFramePosition(QPoint(x, y))
         dlg.raise_()
         dlg.activateWindow()
 
