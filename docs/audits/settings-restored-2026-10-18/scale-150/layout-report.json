@@ -1,0 +1,316 @@
+{
+  "scale": "1.5",
+  "screens": [
+    {
+      "screen": "900-tracking-top",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "900-tracking-bottom",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "900-reminders-top",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "900-reminders-bottom",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "900-appearance-top",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "900-appearance-bottom",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "900-general-top",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "900-general-bottom",
+      "size": [
+        900,
+        700
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-tracking-top",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-tracking-bottom",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-reminders-top",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-reminders-bottom",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-appearance-top",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-appearance-bottom",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-general-top",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "760-general-bottom",
+      "size": [
+        760,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-tracking-top",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-tracking-bottom",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-reminders-top",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-reminders-bottom",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-appearance-top",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-appearance-bottom",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-general-top",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-general-bottom",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-appearance-large",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-appearance-disabled",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-save-error",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "620-reminders-disabled",
+      "size": [
+        620,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "reminder-example",
+      "size": [
+        340,
+        207
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "break-example",
+      "size": [
+        340,
+        190
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "suggestions",
+      "size": [
+        620,
+        360
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    }
+  ],
+  "ok": true
+}

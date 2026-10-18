@@ -1,0 +1,149 @@
+{
+  "scale": "1",
+  "screens": [
+    {
+      "screen": "01-welcome",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "02-welcome-compact",
+      "pixel_ratio": 1.0,
+      "size": [
+        420,
+        400
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "03-setup",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        680
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "03-setup-details",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        680
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "03-tall",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        680
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "03-normal",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        680
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "03-hunch",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        680
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "04-ready",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        680
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "04-how-it-works",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        680
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "05-ready-compact",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "06-retry-compact",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "06-camera-error-compact",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "07-about",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        380
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    }
+  ],
+  "ok": true
+}

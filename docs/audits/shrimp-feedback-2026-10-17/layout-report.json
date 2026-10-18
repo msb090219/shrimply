@@ -1,0 +1,155 @@
+{
+  "scale": "1",
+  "motion": {
+    "preparation_moves": true,
+    "reduced_motion_static": true,
+    "meter_moves": true,
+    "hidden_hud_animation_stopped": true
+  },
+  "screens": [
+    {
+      "screen": "01-prepare",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "02-capture",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "03-paused",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "04-verify-compact",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "05-extra-quality",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "06-camera-error",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "07-preview-only",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        420
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "08-main-paused-preview",
+      "pixel_ratio": 1.0,
+      "size": [
+        752,
+        620
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "09-appearance",
+      "pixel_ratio": 1.0,
+      "size": [
+        752,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "10-hud-low",
+      "pixel_ratio": 1.0,
+      "size": [
+        351,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "11-hud-high",
+      "pixel_ratio": 1.0,
+      "size": [
+        351,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "12-hud-unknown",
+      "pixel_ratio": 1.0,
+      "size": [
+        351,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    },
+    {
+      "screen": "13-complete",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": []
+    }
+  ],
+  "ok": true
+}

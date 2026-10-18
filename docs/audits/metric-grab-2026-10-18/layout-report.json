@@ -1,0 +1,310 @@
+{
+  "scale": "1",
+  "motion": {
+    "preparation_moves": true,
+    "reduced_motion_static": true,
+    "meter_fills": true
+  },
+  "screens": [
+    {
+      "screen": "00-setup-neutral",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 0
+    },
+    {
+      "screen": "00-setup-details-expanded",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 0
+    },
+    {
+      "screen": "01-prepare",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 8
+    },
+    {
+      "screen": "02-eight-start",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 8
+    },
+    {
+      "screen": "02-capture",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 8
+    },
+    {
+      "screen": "03-paused",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        540
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 8
+    },
+    {
+      "screen": "04-verify-compact",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 12
+    },
+    {
+      "screen": "05-extra-quality",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 10
+    },
+    {
+      "screen": "06-camera-error",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 10
+    },
+    {
+      "screen": "07-preview-only",
+      "pixel_ratio": 1.0,
+      "size": [
+        540,
+        420
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "08-main-paused-preview",
+      "pixel_ratio": 1.0,
+      "size": [
+        752,
+        620
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "09-appearance",
+      "pixel_ratio": 1.0,
+      "size": [
+        752,
+        640
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "10-hud-low",
+      "pixel_ratio": 1.0,
+      "size": [
+        374,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "10-hud-middle",
+      "pixel_ratio": 1.0,
+      "size": [
+        355,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "11-hud-high",
+      "pixel_ratio": 1.0,
+      "size": [
+        350,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "12-hud-unknown",
+      "pixel_ratio": 1.0,
+      "size": [
+        378,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "15-hud-compact",
+      "pixel_ratio": 1.0,
+      "size": [
+        265,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "16-hud-compact-paused",
+      "pixel_ratio": 1.0,
+      "size": [
+        265,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "17-hud-compact-error",
+      "pixel_ratio": 1.0,
+      "size": [
+        375,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "18-hud-compact-uncalibrated",
+      "pixel_ratio": 1.0,
+      "size": [
+        377,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "19-hud-calibrating",
+      "pixel_ratio": 1.0,
+      "size": [
+        330,
+        40
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": null,
+      "used_slots": null
+    },
+    {
+      "screen": "13-complete",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 0
+    },
+    {
+      "screen": "14-complete-help",
+      "pixel_ratio": 1.0,
+      "size": [
+        480,
+        500
+      ],
+      "short_buttons": [],
+      "short_labels": [],
+      "horizontal_overflow": [],
+      "calibration_slots": 12,
+      "used_slots": 0
+    }
+  ],
+  "ok": true
+}
