@@ -26,7 +26,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: pip install -e .
       - run: python fetch_models.py
-      - run: pytest -q
+      - run: python -m pytest -q
 
       - name: build with PyInstaller
         run: python -m PyInstaller unshrimp.spec --noconfirm --clean
