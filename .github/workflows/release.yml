@@ -31,6 +31,19 @@ jobs:
       - name: build with PyInstaller
         run: python -m PyInstaller unshrimp.spec --noconfirm --clean
 
+      - name: smoke test Windows executable
+        if: runner.os == 'Windows'
+        timeout-minutes: 2
+        shell: pwsh
+        run: |
+          $reportPath = Join-Path $env:RUNNER_TEMP 'unshrimp-smoke.json'
+          $exePath = Join-Path $PWD 'dist/unshrimp/unshrimp.exe'
+          $process = Start-Process -FilePath $exePath -ArgumentList @('--smoke-test', "`"$reportPath`"") -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode -ne 0) { throw "Executable smoke test failed: $($process.ExitCode)" }
+          $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
+          if (-not $report.ok -or -not $report.frozen) { throw 'Packaged resources or inference check failed' }
+          Get-Content -LiteralPath $reportPath
+
       - name: package (windows)
         if: runner.os == 'Windows'
         shell: pwsh

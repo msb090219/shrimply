@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# PyInstaller spec for OSA — shared by Windows and macOS release builds.
+# PyInstaller spec for Unshrimp; Windows is the supported release target.
 # One-dir layout (fast startup; onefile would unpack ~150 MB per launch).
 import sys
 from pathlib import Path
@@ -63,7 +63,7 @@ if sys.platform == "darwin":
         info_plist={
             # without this macOS denies (or crashes on) camera access
             "NSCameraUsageDescription": (
-                "OSA uses the camera locally to measure your posture. "
+                "Unshrimp uses the camera locally to measure your posture. "
                 "No video ever leaves your machine."
             ),
             "LSUIElement": True,  # tray app: no Dock icon
