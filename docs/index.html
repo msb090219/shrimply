@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>unshrimp — don't get shrimped.</title>
+  <meta name="description" content="Personal OSA posture calibration, live posture feedback, and sitting-based break reminders. Unshrimp helps you notice the hunch, entirely on your device.">
+  <link rel="icon" href="assets/unshrimp.ico">
+  <meta name="theme-color" content="#121418">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#top">Skip to content</a>
+
+
+  <header>
+    <div class="wrap bar">
+      <a class="wordmark" href="#top">
+        <img src="assets/unshrimp.ico" alt="">unshrimp
+      </a>
+      <nav aria-label="Main">
+        <a class="nav-link" href="#tracking">features</a>
+        <a class="nav-link" href="#privacy">privacy</a>
+        <a class="github-link" href="https://github.com/msb090219/unshrimp" target="_blank" rel="noopener">github ↗</a>
+        <a class="btn btn-coral" href="#download">download</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top" tabindex="-1">
+
+    <!-- ======================== hero ======================== -->
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="kicker">a little nudge. a lot less hunch.</p>
+        <h1 id="hero-title">don't get shrimped<span class="dot">.</span></h1>
+        <p class="lede">
+          Posture checks that learn your normal. A shrimp when you slouch.
+          A reminder when it’s time to move.
+          <strong>Your desk habits, gently nudged.</strong>
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-coral" href="https://github.com/msb090219/unshrimp/releases" target="_blank" rel="noopener">download for windows</a>
+          <a class="btn btn-ghost" href="#tracking">explore the features <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="hero-note">Uses your webcam · No account · No cloud</p>
+      </div>
+      <div class="hero-visual">
+        <img class="drift-shrimp" src="assets/shrimp_mascot.png" alt="" aria-hidden="true" fetchpriority="high">
+        <figure class="hero-shot">
+          <img src="shots/landing/meter.webp" width="464" height="70" alt="The current Unshrimp meter: coloured shrimp segments, Pause, and More controls.">
+          <figcaption>Your posture at a glance. Your work, uninterrupted.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ======================== posture tracking ======================== -->
+    <section class="section feature-section" id="tracking" aria-labelledby="tracking-title">
+      <div class="wrap how-grid">
+        <div>
+          <p class="kicker">01 / the OSA posture system</p>
+          <h2 id="tracking-title" data-reveal>catch the drift.<br>before the hunch.</h2>
+          <p class="feature-lede" data-reveal>Deep in your work, it’s easy to forget how you’re sitting. Unshrimp keeps an eye on your posture so you don’t have to.</p>
+          <ul class="feature-points">
+            <li><strong>More than a head tilt.</strong> OSA combines head angle, head-to-shoulder position, and forward-lean signals, compared with your own baseline.</li>
+            <li><strong>Built for ordinary movement.</strong> Smoothing softens momentary spikes, while head-turn filtering avoids scoring readings it can’t trust.</li>
+            <li><strong>A nudge you can notice.</strong> The shrimp meter shows the drift. Keep slouching and the floating shrimp appears, with optional notifications and sound.</li>
+          </ul>
+        </div>
+        <figure class="product-shot" data-reveal>
+          <img src="shots/landing/tracking.webp" width="1201" height="376" alt="Current Unshrimp tracking panel showing posture, pause, calibration, and camera controls." loading="lazy" decoding="async">
+          <figcaption>The current tracking panel, shown with example state.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ======================== personal calibration ======================== -->
+    <section class="section feature-section" id="how" aria-labelledby="calibration-title">
+      <div class="wrap how-grid">
+        <div>
+          <p class="kicker">02 / personal OSA calibration</p>
+          <h2 id="calibration-title" data-reveal>your posture.<br>your starting point.</h2>
+          <p class="feature-lede" data-reveal>A generic “sit straight” rule only goes so far. OSA learns the difference between your comfortable posture and your hunch.</p>
+          <div class="steps">
+            <div class="step"><span class="n">01</span><div><h3>Get your setup right</h3><p>Guided checks help with camera position, framing, and lighting before collecting your baseline.</p></div></div>
+            <div class="step"><span class="n">02</span><div><h3>Sit tall. Sit normally. Hunch.</h3><p>Follow the pose instructions and shrimp countdown. Usable readings drive progress; losing tracking pauses collection.</p></div></div>
+            <div class="step"><span class="n">03</span><div><h3>Verify, then start tracking</h3><p>A final check tests the baseline against your normal sitting. Recalibrate whenever you move your camera or change your setup.</p></div></div>
+          </div>
+          <p class="feature-note">About a minute to set up. A baseline built around you.</p>
+        </div>
+        <figure class="product-shot calibration-shot" data-reveal>
+          <img src="shots/landing/calibration.webp" width="980" height="1190" alt="Unshrimp calibration window learning normal posture, illustrated with an AI-generated person wearing a coral shirt." loading="lazy" decoding="async">
+          <figcaption>Actual calibration UI · illustrative AI-generated camera image.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ======================== break reminders ======================== -->
+    <section class="section feature-section breaks-section" id="breaks" aria-labelledby="breaks-title">
+      <div class="wrap how-grid">
+        <div>
+          <p class="kicker">03 / time to come up for air</p>
+          <h2 id="breaks-title" data-reveal>less sitting.<br>more moving.</h2>
+          <p class="feature-lede" data-reveal>A better desk habit includes leaving the desk. Get a gentle reminder after the sitting time you choose.</p>
+          <ul class="feature-points">
+            <li><strong>Counts sitting, not just the clock.</strong> Time away, pauses, calibration, sleep, and camera outages don’t advance your reminder.</li>
+            <li><strong>A break that fits your day.</strong> Set the interval, choose a 1–30 minute break, and add your own stretch suggestions.</li>
+            <li><strong>You’re in control.</strong> Start the countdown, snooze for 5 or 10 minutes, or skip until the next full interval.</li>
+          </ul>
+          <p class="feature-note">During a break, posture alerts and the sitting timer pause. Camera tracking continues.</p>
+        </div>
+        <div class="break-examples" data-reveal>
+          <figure class="product-shot">
+            <img src="shots/landing/break-reminder.webp" width="595" height="210" alt="Break reminder suggesting chin tucks, with Start and Later actions." loading="lazy" decoding="async">
+            <figcaption>A small prompt when a break is due.</figcaption>
+          </figure>
+          <figure class="product-shot">
+            <img src="shots/landing/break-countdown.webp" width="595" height="238" alt="Active break countdown with an End break action." loading="lazy" decoding="async">
+            <figcaption>A countdown to make a little room for yourself.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== supporting features ======================== -->
+    <section class="section feature-section" id="everyday" aria-labelledby="everyday-title">
+      <div class="wrap">
+        <p class="kicker">the little things, taken care of</p>
+        <h2 id="everyday-title" data-reveal>fits into your workday.</h2>
+        <div class="support-grid">
+          <div>
+            <figure class="product-shot progress-shot" data-reveal>
+              <img src="shots/landing/progress.webp" width="1138" height="378" alt="Today's monitored duration and weekly comfortable, drifting, and adjust-posture breakdown, shown with example data." loading="lazy" decoding="async">
+              <figcaption>Local progress summaries · illustrative example data.</figcaption>
+            </figure>
+          </div>
+          <ul class="feature-points">
+            <li><strong>See your patterns.</strong> Monitored time, a weekly posture breakdown, and a 12-week activity calendar, stored locally.</li>
+            <li><strong>Pause when you need to.</strong> Quick controls on the meter and in the tray. Preview your camera separately while posture tracking is paused.</li>
+            <li><strong>Quietly in the background.</strong> Close the dashboard and tracking stays in the tray. Optional start-at-login keeps it out of your way.</li>
+            <li><strong>Make the nudge your own.</strong> Adjust sensitivity, notifications, meter size, shrimp visibility and placement. Reduced motion and multiple displays are supported.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== privacy ======================== -->
+    <section class="section privacy" id="privacy">
+      <div class="wrap">
+        <h2 data-reveal>your camera stays yours</h2>
+        <ul>
+          <li data-reveal>
+            <span class="shrimp-icon" aria-hidden="true"></span>
+            <span><strong>No cloud, no accounts, no telemetry.</strong> There is nothing to sign into and nowhere for your data to go.</span>
+          </li>
+          <li data-reveal>
+            <span class="shrimp-icon" aria-hidden="true"></span>
+            <span><strong>All pose estimation runs on-device</strong> via MediaPipe. Your webcam frames are processed locally.</span>
+          </li>
+          <li data-reveal>
+            <span class="shrimp-icon" aria-hidden="true"></span>
+            <span><strong>No frames, images or video are ever written to disk</strong> — only anonymous landmark coordinates in memory.</span>
+          </li>
+          <li data-reveal>
+            <span class="shrimp-icon" aria-hidden="true"></span>
+            <span><strong>Your posture history is a small local file.</strong> It never leaves your machine.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ======================== download ======================== -->
+    <section class="section download" id="download">
+      <div class="wrap">
+        <p class="kicker">your next good desk habit</p>
+        <h2 data-reveal>less hunch.<br>more you.</h2>
+        <div data-reveal>
+          <a class="btn btn-coral" href="https://github.com/msb090219/unshrimp/releases" target="_blank" rel="noopener">download for windows</a>
+        </div>
+        <p class="note" data-reveal>
+          Grab <code>unshrimp-win64.zip</code> from Releases, unzip, double-click
+          <code>unshrimp.exe</code> — no installs; the posture models ship inside.
+          A webcam is required. The Windows download is unsigned, so Windows may show a SmartScreen warning.
+          macOS isn't packaged yet; see GitHub for running from source.
+        </p>
+      </div>
+    </section>
+    <div class="closing-shrimp wrap" aria-hidden="true">
+      <img src="assets/shrimp_mascot.png" alt="" loading="lazy" decoding="async">
+      <p>stay a little less shrimp.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="wordmark" href="#top"><img src="assets/unshrimp.ico" alt="">unshrimp</a>
+          <p>A little posture awareness.<br>A little room to move.<br>All on your device.</p>
+        </div>
+        <div class="footer-links">
+          <h2>the app</h2>
+          <a href="#tracking">Posture tracking</a>
+          <a href="#how">OSA calibration</a>
+          <a href="#breaks">Break reminders</a>
+          <a href="#privacy">Privacy</a>
+        </div>
+        <div class="footer-links">
+          <h2>get unshrimp</h2>
+          <a href="#download">Download for Windows</a>
+          <a href="https://github.com/msb090219/unshrimp/releases" target="_blank" rel="noopener">Release notes ↗</a>
+          <a href="https://github.com/msb090219/unshrimp" target="_blank" rel="noopener">Source on GitHub ↗</a>
+          <a href="https://github.com/msb090219/unshrimp/issues" target="_blank" rel="noopener">Report an issue ↗</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>A habit nudge, not a medical device. Pair it with professional advice if you have neck or back concerns.</p>
+        <span>MIT licensed · built for your desk.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

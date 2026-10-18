@@ -8,10 +8,11 @@ changes, no rebuild. Missing files quietly fall back to the drawn shrimp.
 
 | # | File | Size (px) | Where it appears | Color rules |
 |---|---|---|---|---|
-| 1 | `shrimp_master.png` | **1024 × 1024** | Everywhere tinted: tray icon, the 10 HUD meter shrimp, app icon | **One flat solid color on transparency** (any color — the app re-tints per posture state). Details as shape/cutout, not different colors |
+| 1 | `shrimp_master.png` | **1024 × 1024** | State-colored shrimp in the tray and HUD meter | **One flat solid color on transparency** (the app re-tints per posture state). |
 | 2 | `shrimp_mascot.png` | **1280 × 800** | The big shrimp that fades in when you slouch | Full color, go wild. Wide horizontal composition (the hunch arch); generous margins — the whole image fades/bobs |
 | 3 | `welcome_art.png` | **900 × 520** | Welcome / About card | Full color. No text in the image (the card lays text itself) |
 | 4 | `banner.png` | **1280 × 640** | GitHub social preview (README top) | Full color. Text allowed if you want it in the banner; keep it out of the outer ~64 px (GitHub crops slightly) |
+| 5 | `unshrimp.png` / `unshrimp.ico` | **256 × 256 PNG**, multi-size ICO | App identity in Windows title bars and task switcher | Full-color real shrimp, derived from `shrimp_mascot.png`; the state-colored tray shrimp stays separate |
 
 ## Design guidance
 

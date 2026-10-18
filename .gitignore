@@ -22,8 +22,8 @@ models/*.task
 # Packaging build output (the PyInstaller spec itself IS tracked)
 build/
 dist/
+diagnostics/
 
 # Tooling
-.zcode/
 .idea/
 .vscode/
