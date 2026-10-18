@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 — 18 October 2026
+
+The Windows executable and website favicon now use the same realistic shrimp
+as the app window. The color-changing tray shrimp is unchanged.
+
 ## 1.2.0 — 18 October 2026
 
 The Windows app now has a single Dashboard for tracking, break reminders and

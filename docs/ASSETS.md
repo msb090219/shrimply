@@ -2,9 +2,10 @@
 
 Unshrimp's built-in art is drawn in code, but **designed art always wins**:
 drop PNGs into `assets/brand/` and the app uses them instead — no code
-changes, no rebuild. Missing files quietly fall back to the drawn shrimp.
+changes. Missing files quietly fall back to the drawn shrimp. After changing
+the app icon PNG, run `python tools/make_icon.py` and rebuild the executable.
 
-## The four deliverables
+## The five deliverables
 
 | # | File | Size (px) | Where it appears | Color rules |
 |---|---|---|---|---|
