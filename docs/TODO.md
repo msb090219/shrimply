@@ -1,6 +1,6 @@
 # Unshrimp work list
 
-Last reviewed: 18 October 2026.
+Last reviewed: 19 October 2026.
 
 This is the shared list of outstanding work from the tracking review and local
 webcam checks. Completed tasks stay checked below so progress remains visible.
@@ -13,7 +13,7 @@ machine; they do not establish reliability on other devices.
 
 Implemented tracking fixes and first-pass results are recorded in [the 16 October report](audits/tracking-2026-10-16.md). Hardware verification follows [the Windows test procedure](TESTING.md).
 
-## Current priorities — 18 October audit
+## Current priorities — 19 October update
 
 Settings now autosaves with Done, keeps break suggestions visible in **Alerts and
 breaks**, and shows an isolated reminder preview. Main combines tracking, breaks,
@@ -47,9 +47,18 @@ See the [progress audit](audits/progress-2026-10-18.md) for evidence and scope.
 4. **One consolidated desktop walkthrough:** U01/U02/U04/U05/U07/R02 plus Settings
    first-click/dragging. Verify the latest UI together rather than repeating every
    old build's checks. Include calibration interruption, completion, and preview.
-5. **Before release:** resolve/characterize T08 occlusion, then finish H01–H06,
+5. **U12 — make the large shrimp respond to sustained posture.** Keep the meter
+   live, but let the mascot appear only after posture has stayed poor and fade
+   away smoothly on recovery. Verify timing and interruptions on Windows and Mac.
+6. **Before release:** resolve/characterize T08 occlusion, then finish H01–H06,
    clean-machine distribution P01, and W01. Earlier sleep/wake successes remain
-   evidence; they do not close all lifecycle scenarios. macOS remains deferred.
+   evidence; they do not close all lifecycle scenarios. Mac packaging and first-run
+   checks are being worked on separately.
+
+For cross-platform changes, implement shared behavior once, add a platform-neutral
+regression test, and record Windows and Mac hands-on results separately under the
+task. CI runs the tests on both systems; it does not replace testing the packaged
+app, its camera permissions, or its overlays on each desktop.
 
 ## Completed implementation milestones
 
@@ -379,6 +388,18 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     entries migrate to the background flag without enabling disabled startup.
   - Remaining acceptance: real Windows login and foreground activation checks.
     [Evidence](audits/startup-flow-2026-10-17/README.md).
+
+- [ ] **U12 — Make the large shrimp respond to sustained posture.**
+  - Feedback from 19 October: the large shrimp appears too directly from the
+    meter score. Keep the meter responsive, but require several seconds of
+    sustained poor posture before the mascot fades in; let it fade away on
+    recovery. Brief score fluctuations should not make it pop in and out.
+  - Keep immediate suppression for pause, away, camera loss, calibration, and
+    breaks. The existing 45-second alert grace period remains independent.
+  - [ ] Add a shared timing regression covering sustained posture, recovery,
+    interrupted tracking, and Reduce motion.
+  - [ ] Verify the packaged Windows app with a live camera.
+  - [ ] Verify the packaged Mac app with a live camera and desktop overlays.
 
 ## Break reminders
 
