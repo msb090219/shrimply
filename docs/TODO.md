@@ -5,6 +5,9 @@ Last reviewed: 19 October 2026.
 This is the shared list of outstanding work from the tracking review and local
 webcam checks. Completed tasks stay checked below so progress remains visible.
 Keep task IDs unchanged; partially verified hardware tasks remain open.
+Before application-code changes, follow the feature handoff rule in
+[`AGENTS.md`](../AGENTS.md): review this list, add new feature tasks and linked
+Mac checks before implementation, then record each platform's result separately.
 
 **Evidence:** Confirmed means reproduced with a small logic check. Code review
 means the behavior follows from the code but has not been exercised through the
