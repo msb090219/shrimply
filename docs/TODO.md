@@ -49,16 +49,18 @@ See the [progress audit](audits/progress-2026-10-18.md) for evidence and scope.
    old build's checks. Include calibration interruption, completion, and preview.
 5. **U12 — make the large shrimp respond to sustained posture.** Keep the meter
    live, but let the mascot appear only after posture has stayed poor and fade
-   away smoothly on recovery. Verify timing and interruptions on Windows and Mac.
+   away smoothly on recovery. Verify on Windows, then follow the linked Mac task
+   M01 below.
 6. **Before release:** resolve/characterize T08 occlusion, then finish H01–H06,
    clean-machine distribution P01, and W01. Earlier sleep/wake successes remain
    evidence; they do not close all lifecycle scenarios. Mac packaging and first-run
    checks are being worked on separately.
 
 For cross-platform changes, implement shared behavior once, add a platform-neutral
-regression test, and record Windows and Mac hands-on results separately under the
-task. CI runs the tests on both systems; it does not replace testing the packaged
-app, its camera permissions, or its overlays on each desktop.
+regression test, and record Windows and Mac hands-on results under linked tasks.
+The Mac task should name the Windows task and implementation commit once it exists.
+CI runs the tests on both systems; it does not replace testing the packaged app,
+its camera permissions, or its overlays on each desktop.
 
 ## Completed implementation milestones
 
@@ -399,7 +401,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
   - [ ] Add a shared timing regression covering sustained posture, recovery,
     interrupted tracking, and Reduce motion.
   - [ ] Verify the packaged Windows app with a live camera.
-  - [ ] Verify the packaged Mac app with a live camera and desktop overlays.
+  - Mac handoff: M01 below. Add the implementation commit to M01 when U12 lands.
 
 ## Break reminders
 
@@ -436,6 +438,23 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     clean removal. Confirm bundled notices/model licensing before distribution.
   - This is a newly explicit release gap, not a claim that an installer is required.
     macOS CI packaging remains deliberately paused pending its own human verification.
+
+## New features to check on Mac
+
+Queue Windows features here for Mac follow-up. Once the Windows implementation
+lands, pull its referenced commit on the Mac. Shared Python code
+should normally work on both systems; change platform-specific code only if the
+Mac check reveals a difference. Keep the Windows and Mac results separate.
+
+- [ ] **M01 — Sustained large-shrimp appearance (from U12).**
+  - Windows reference: U12 above; implementation commit **pending**. The behavior
+    has been proposed but has not yet been changed or verified on Windows.
+  - [ ] Pull the U12 implementation commit and run its timing test on Mac.
+  - [ ] In the packaged Mac app, check delayed appearance during sustained poor
+    posture, smooth recovery, brief score fluctuations, Reduce motion, and
+    immediate hiding on pause, away, camera loss, calibration, and breaks.
+  - [ ] Record any Mac-only overlay or permission issue here, along with the fix
+    commit and a final live-camera result. Check M01 only after that result passes.
 
 ## Landing page
 
