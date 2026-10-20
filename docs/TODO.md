@@ -534,7 +534,8 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     now use two compact rows; focused Windows regressions pass. Check the
     packaged layouts on both platforms.
   - [x] Check page-edge alignment without relying on a visible scrollbar;
-    macOS can hide an unused native scrollbar. Mac CI layout regression pending.
+    macOS can hide an unused native scrollbar. The Mac CI layout regression
+    passes with this check.
   - [ ] Check the packaged Windows app at narrow and wide sizes, Light/Dark,
     keyboard navigation, and high DPI. Mac handoff: M06 below; implementation
     commit `2b22b16`.
@@ -649,6 +650,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     packaging. The release script built the committed app source and passed
     its frozen icon/model/native-inference smoke test; the separately extracted
     candidate also passed from a path containing spaces. `uv pip check` passed.
+    Source commit `7cdf805` passes Windows and Mac CI.
   - [ ] Check the eventual tagged GitHub build and downloaded ZIP.
   - [ ] Record packaged Windows results. Shared Mac follow-up: M10; commit `2b22b16`.
     Full local suite: 504 passed (one existing Qt deprecation warning).
@@ -656,10 +658,12 @@ implementation or acceptance work, not a request to rebuild those surfaces.
 - [ ] **P01 — Validate the release delivery on a clean Windows machine.**
   - [x] Portable executable/ZIP builds, embedded icon/models, synthetic native
     inference smoke, and a draft-release CI workflow exist. Latest local build
-    matches the checked HUD source; the v1.3.0 candidate ZIP also passes
+    matches the v1.3.0 app source; the v1.3.0 candidate ZIP also passes
     extracted-path smoke (including bundled notice files). The release script
     produced `dist/unshrimp-win64.zip` with a matching version guard and smoke
-    result. No release was published in this audit.
+    result. SHA256: `56083d2c01b5cbc927987fd0c08959bc64eaa75a70349113eb885dd90a72316a`.
+    This local ZIP is a staging artifact, not the future tag-built download.
+    No release was published in this audit.
   - [x] Use the existing portable ZIP delivery for this Windows release.
   - [ ] Run the current packaged ZIP from an isolated fresh `%APPDATA%` folder;
     record first-run UI/process behavior separately from the synthetic smoke test.
@@ -769,8 +773,8 @@ the matching M task rather than duplicating shared Python behavior.
 
 - [ ] **M06 — Settings navigation and previews (from U17).**
   - Windows reference: U17 above; implementation commit `2b22b16`, with the
-    narrow Break suggestions editor fix in `7cc276b`. The cross-platform
-    page-edge test update is pending its commit.
+    narrow Break suggestions editor fix in `7cc276b` and the cross-platform
+    page-edge test update in `7cdf805`.
   - Windows code to inspect: `unshrimp/ui/settings.py` (`_SettingsTabs`, page
     scroll areas, `_preview_area`, `_refresh_samples`),
     `unshrimp/ui/break_prompt.py` (shared live/example popup), and
