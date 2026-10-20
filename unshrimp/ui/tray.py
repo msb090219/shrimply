@@ -69,6 +69,7 @@ def shrimp_pixmap_sized(size: int, color_hex: str) -> QPixmap:
 
 
 class Tray(QObject):
+    unavailable = Signal()
     open_requested = Signal()
     calibrate_requested = Signal()
     pause_toggled = Signal(bool)  # True = now paused
@@ -183,7 +184,7 @@ class Tray(QObject):
             self.icon.show()
             diag.log("tray: shown (system tray available)")
         else:
-            diag.log("tray: unavailable — retrying once in 3s")
+            diag.log("tray: unavailable — retrying in 3s")
             QTimer.singleShot(3000, self._retry_show)
 
     def _retry_show(self) -> None:
@@ -193,7 +194,9 @@ class Tray(QObject):
             self.icon.show()
             diag.log("tray: shown on retry")
         else:
-            diag.log("tray: unavailable after retry — HUD menu is the fallback")
+            diag.log("tray: still unavailable — retrying in 3s")
+            self.unavailable.emit()
+            QTimer.singleShot(3000, self._retry_show)
 
     # ------------------------------------------------------------------
     def _on_pause(self):

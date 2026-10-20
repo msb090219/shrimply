@@ -45,9 +45,7 @@ h1 .dot { color: var(--coral); }
 .hero-shot img { display: block; width: 100%; border-radius: 0.5rem; }
 figcaption { padding: 0.75rem 0.25rem 0.125rem; color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
 .section { padding-block: clamp(4rem, 7vw, 6.5rem); }
-.feature-section { border-top: 1px solid var(--hairline); }
 h2 { font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.12; letter-spacing: -0.045em; font-weight: 650; text-wrap: balance; }
-.how-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; align-items: center; gap: clamp(2rem, 6vw, 6rem); }
 .steps { display: grid; gap: 2rem; margin-top: 2.5rem; }
 .step { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 1rem; }
 .n { padding-top: 0.15rem; color: var(--coral); font-size: 0.8125rem; font-weight: 650; font-variant-numeric: tabular-nums; }
@@ -57,27 +55,7 @@ h2 { font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.12; letter-spacing: -0
 .feature-points { display: grid; gap: 1.5rem; padding: 0; margin: 2rem 0 0; list-style: none; color: var(--muted); font-size: 0.9375rem; }
 .feature-points strong { color: var(--text); font-weight: 600; }
 .feature-note { max-width: 47ch; margin-top: 1.5rem; color: var(--muted); font-size: 0.8125rem; }
-.product-shot { min-width: 0; margin: 0; padding: 0.75rem; background: var(--plate-raised); border: 1px solid var(--hairline); border-radius: 1rem; }
-.product-shot img { display: block; width: 100%; height: auto; border-radius: 0.5rem; }
-.calibration-shot { max-width: 30rem; margin-inline: auto; }
-.break-examples { display: grid; gap: 1.5rem; min-width: 0; }
-.breaks-section { background: linear-gradient(135deg, var(--plate), #1d1a1b); }
-.support-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; margin-top: 2.5rem; }
-.support-grid .feature-points { margin: 0; }
-.shrimp-icon { display: inline-block; flex-shrink: 0; width: 1.625rem; height: 1.0625rem; mask: url("assets/shrimp_master.png") center / contain no-repeat; -webkit-mask: url("assets/shrimp_master.png") center / contain no-repeat; }
-.privacy .wrap { display: grid; grid-template-columns: 1fr 1.2fr; gap: 3rem; }
-.privacy h2 { max-width: 12ch; }
-.privacy ul { display: grid; gap: 1.75rem; list-style: none; padding: 0; margin: 0; }
-.privacy li { display: grid; grid-template-columns: 1.625rem minmax(0,1fr); gap: 1rem; color: var(--muted); font-size: 0.9375rem; }
-.privacy .shrimp-icon { margin-top: 0.25rem; background: var(--coral); }
-.privacy strong { display: block; margin-bottom: 0.3rem; color: var(--text); font-weight: 600; }
-.download { text-align: center; border-top: 1px solid var(--hairline); }
-.download .btn { margin-top: 2rem; }
-.download .note { max-width: 55ch; margin: 1.5rem auto 0; color: var(--muted); font-size: 0.875rem; }
 code { color: var(--text); font-size: 0.92em; overflow-wrap: anywhere; }
-.closing-shrimp { padding-block: 1rem clamp(4rem, 8vw, 7rem); text-align: center; }
-.closing-shrimp img { display: block; width: min(100%, 48rem); margin-inline: auto; }
-.closing-shrimp p { margin-top: 2rem; color: var(--coral); font-size: clamp(1.75rem, 4vw, 3rem); font-weight: 650; line-height: 1.15; letter-spacing: -0.04em; }
 footer { padding-block: 3.5rem 1.5rem; border-top: 1px solid var(--hairline); }
 .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem; }
 .footer-brand p { margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; }
@@ -87,6 +65,47 @@ footer { padding-block: 3.5rem 1.5rem; border-top: 1px solid var(--hairline); }
 .footer-links a:hover { color: var(--text); text-decoration: underline; }
 .footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--hairline); color: var(--muted); font-size: 0.75rem; }
 .footer-bottom p { max-width: 65ch; }
+
+/* Each feature uses the composition that best explains it. */
+.tracking-section { padding-block: 6rem 7rem; }
+.tracking-intro { max-width: 48rem; margin-inline: auto; text-align: center; }
+.tracking-intro h2 { font-size: clamp(2.5rem, 5.2vw, 4.5rem); }
+.tracking-intro .feature-lede { max-width: 48ch; margin: 1.5rem auto 0; }
+.tracking-display { max-width: 56rem; margin: 3.5rem auto 0; }
+.tracking-display img, .calibration-shot img, .progress-shot img, .break-examples img { display: block; width: 100%; height: auto; border-radius: 0.5rem; }
+.tracking-display figcaption { text-align: center; }
+.tracking-details, .everyday-details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem; padding: 0; margin: 3rem 0 0; list-style: none; }
+.tracking-details h3, .everyday-details h3 { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; line-height: 1.4; }
+.tracking-details p, .everyday-details p { margin-top: 0.65rem; color: var(--muted); font-size: 0.9375rem; }
+.calibration-section { background: #191b20; padding-block: clamp(4rem, 8vw, 8rem); }
+.calibration-layout { display: grid; grid-template-columns: 0.95fr 1fr; gap: clamp(2rem, 7vw, 7rem); align-items: center; }
+.calibration-shot { min-width: 0; max-width: 28rem; }
+.calibration-copy h2 { font-size: clamp(2.5rem, 4.5vw, 4rem); }
+.calibration-copy .steps { gap: 1.5rem; }
+.breaks-section { --text: #292420; --muted: #635b54; --coral: #9b492e; color: var(--text); background: #f0ebe5; padding-block: clamp(4rem, 8vw, 7.5rem); }
+.breaks-heading { max-width: 48rem; margin-inline: auto; text-align: center; }
+.breaks-heading h2 { font-size: clamp(2.75rem, 5.5vw, 4.75rem); }
+.breaks-layout { display: grid; grid-template-columns: 0.9fr 1fr; gap: clamp(2rem, 7vw, 7rem); align-items: center; margin-top: 3.5rem; }
+.breaks-copy .feature-lede { margin-top: 0; color: var(--text); font-size: 1.1875rem; }
+.break-examples { min-width: 0; display: grid; gap: 2rem; }
+.break-examples figure:last-child { width: 88%; margin-left: auto; }
+.break-examples img { box-shadow: 0 1.25rem 2.5rem rgb(45 34 25 / 12%); }
+.break-examples figcaption { padding-left: 0; }
+.progress-layout { display: grid; grid-template-columns: 0.75fr 1.25fr; gap: 3rem; align-items: center; }
+.progress-shot { min-width: 0; }
+.everyday-details { margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--hairline); }
+.privacy { padding-block: clamp(5rem, 10vw, 10rem); }
+.privacy h2 { max-width: 15ch; margin-inline: auto; text-align: center; font-size: clamp(3rem, 6.5vw, 5.5rem); }
+.privacy ul { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem 4rem; max-width: 52rem; margin: 3rem auto 0; padding: 0; list-style: none; color: var(--muted); font-size: 0.9375rem; }
+.privacy strong { display: block; margin-bottom: 0.4rem; color: var(--text); font-weight: 600; }
+.download { background: #1b1d22; }
+.download-layout { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; max-width: 62rem; }
+.download-art img { display: block; width: min(100%, 20rem); margin-inline: auto; }
+.download-copy h2 { font-size: clamp(3rem, 5vw, 4.5rem); }
+.download .btn { margin-top: 1.75rem; }
+.download .note { max-width: 45ch; margin-top: 1.5rem; color: var(--muted); font-size: 0.875rem; }
+.download .feature-note { font-size: 0.75rem; }
+
 @media (hover: hover) and (pointer: fine) {
   nav a:not(.btn):hover { color: var(--text); }
   .btn-coral:hover { background: #f3a082; }
@@ -99,8 +118,16 @@ footer { padding-block: 3.5rem 1.5rem; border-top: 1px solid var(--hairline); }
   .hero-copy { max-width: 35rem; }
   .hero-visual { width: min(100%, 30rem); margin-inline: auto; padding-top: 0; }
   .hero-shot { margin-top: 0.5rem; }
-  .how-grid, .privacy .wrap, .support-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-  .privacy h2 { max-width: 20ch; }
+  .calibration-layout, .breaks-layout, .progress-layout, .download-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+  .calibration-copy { order: -1; }
+  .calibration-shot { width: 100%; margin-inline: auto; }
+  .tracking-details, .everyday-details { grid-template-columns: 1fr; gap: 1.75rem; }
+  .tracking-display { margin-top: 2.5rem; }
+  .breaks-layout { margin-top: 2.5rem; }
+  .privacy ul { grid-template-columns: 1fr; gap: 1.75rem; }
+  .download-layout { text-align: center; }
+  .download-art img { width: min(65%, 15rem); }
+  .download .note, .download .feature-note { margin-inline: auto; }
   .lede { max-width: 40ch; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
   .footer-brand { grid-column: 1 / -1; }

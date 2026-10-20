@@ -67,3 +67,11 @@ def test_stale_version_rejected():
     d["version"] = 3
     with pytest.raises(ValueError):
         Baseline.from_dict(d)
+
+
+@pytest.mark.parametrize("signals", [[], {"head_pitch": {"value": "bad", "tol": 8, "bad_dir": 1}},
+                                         {"head_pitch": {"value": 5, "tol": 0, "bad_dir": 1}},
+                                         {"head_pitch": {"value": 5, "tol": 8, "bad_dir": 0}}])
+def test_malformed_saved_baseline_is_rejected(signals):
+    with pytest.raises(ValueError):
+        Baseline.from_dict({"version": BASELINE_VERSION, "signals": signals})

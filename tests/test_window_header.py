@@ -1,7 +1,8 @@
 ﻿from types import SimpleNamespace
 
 import pytest
-from PySide6.QtCore import Qt
+import sys
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 from PySide6.QtTest import QTest
 
@@ -33,6 +34,29 @@ def test_windows_keep_standard_native_titlebar(qt_app):
         assert not window.windowFlags() & Qt.FramelessWindowHint
         assert window.windowFlags() & Qt.WindowTitleHint
         assert window.windowFlags() & Qt.WindowCloseButtonHint
+    finally:
+        window.close()
+        window.deleteLater()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows DWM title-bar colour")
+def test_dark_titlebar_uses_grey_on_show_and_activation(qt_app, monkeypatch):
+    seen = []
+    def set_attribute(_hwnd, attribute, value, _size):
+        seen.append((attribute, value._obj.value))
+
+    monkeypatch.setattr(theme.ctypes, "windll", SimpleNamespace(
+        dwmapi=SimpleNamespace(DwmSetWindowAttribute=set_attribute)))
+    monkeypatch.setattr(theme, "_MODE", "dark")
+    window = QMainWindow()
+    window.setAttribute(Qt.WA_DontShowOnScreen)
+    try:
+        window.show()
+        theme.apply_titlebar_theme(window)
+        theme._WindowsTitlebarTheme().eventFilter(window, QEvent(QEvent.WindowDeactivate))
+        assert (35, 0x242424) in seen
+        assert all(value == 0x242424 for attribute, value in seen if attribute == 35)
+        assert all(value == 0xFFFFFF for attribute, value in seen if attribute == 36)
     finally:
         window.close()
         window.deleteLater()

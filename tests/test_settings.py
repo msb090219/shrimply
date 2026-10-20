@@ -6,9 +6,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from PySide6.QtCore import QRect
+from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QApplication, QComboBox, QPushButton
-from PySide6.QtWidgets import QWidget
 from PySide6.QtWidgets import QTabWidget
 
 import config
@@ -62,6 +61,42 @@ def test_reduce_motion_preserves_saved_bobbing_preference(preferences):
     controller.apply_mascot_settings.assert_not_called()
     dialog.reduce_motion.setChecked(False)
     assert dialog.mascot_bob.isEnabled()
+
+
+def test_mascot_entrance_saves_independently_and_restore_defaults(preferences):
+    dialog, controller = preferences
+    dialog.mascot_entrance.setCurrentIndex(dialog.mascot_entrance.findData("fade"))
+    assert controller.cfg["mascot_entrance"] == "fade"
+    assert controller.cfg["mascot_bob"] is True
+    dialog.reduce_motion.setChecked(True)
+    assert not dialog.mascot_entrance.isEnabled()
+    assert controller.cfg["mascot_entrance"] == "fade"
+    dialog.reduce_motion.setChecked(False)
+    dialog.mascot_entrance.setCurrentIndex(dialog.mascot_entrance.findData("instant"))
+    assert controller.cfg["mascot_entrance"] == "instant"
+    dialog._restore_appearance()
+    assert controller.cfg["mascot_entrance"] == "rise"
+
+
+def test_text_cue_saves_updates_preview_and_restores_shrimp(preferences):
+    dialog, controller = preferences
+    dialog.mascot_style.setCurrentIndex(dialog.mascot_style.findData("text"))
+    assert controller.cfg["mascot_style"] == "text"
+    assert dialog.shrimp_preview.style == "text"
+    dialog._restore_appearance()
+    assert controller.cfg["mascot_style"] == "shrimp"
+    assert dialog.shrimp_preview.style == "shrimp"
+
+
+def test_mascot_response_delays_save_and_restore(preferences):
+    dialog, controller = preferences
+    dialog.mascot_bad_hold.setValue(0)
+    dialog.mascot_recovery_hold.setValue(8)
+    assert controller.cfg["mascot_bad_hold_s"] == 0
+    assert controller.cfg["mascot_recovery_hold_s"] == 8
+    dialog._restore_appearance()
+    assert controller.cfg["mascot_bad_hold_s"] == 2
+    assert controller.cfg["mascot_recovery_hold_s"] == 3
 
 
 @pytest.fixture
@@ -147,6 +182,23 @@ def test_settings_contains_only_configuration_and_can_open_a_specific_page(prefe
     controller.log.day_summaries.assert_not_called()
 
 
+def test_settings_categories_and_aligned_horizontal_navigation(preferences):
+    dialog, _ = preferences
+    expected = {
+        "Tracking": ["Camera", "Calibration", "Detection"],
+        "Alerts and breaks": ["Posture alerts", "Break reminders", "Break suggestions", "Reminder preview"],
+        "Appearance": ["Application theme", "Floating cue", "Posture meter"],
+        "General": ["Startup", "About", "Data and support"],
+    }
+    assert dialog.tabs.tabBar().expanding()
+    for index, (name, sections) in enumerate(expected.items()):
+        page = dialog.tabs.widget(index).widget()
+        assert dialog.tabs.tabText(index) == name
+        assert page.layout().contentsMargins().left() == 0
+        assert page.layout().contentsMargins().right() == 16
+        assert [label.text() for label in page.findChildren(settings.QLabel, "sectionTitle")] == sections
+
+
 def test_suggestion_editing_preserves_multiline_text_and_empty_list_state(preferences):
     dialog, controller = preferences
     dialog.cfg["exercises"] = []
@@ -172,37 +224,76 @@ def test_suggestion_editing_preserves_multiline_text_and_empty_list_state(prefer
     controller.restart_camera.assert_not_called()
 
 
-def test_hidden_settings_does_not_disable_parent_or_probe_cameras(qt_app, monkeypatch):
+def test_embedded_settings_reuses_main_window_without_probing_cameras(qt_app, monkeypatch):
     import unshrimp.autostart as autostart
+    from unshrimp.ui import theme
     from unshrimp.ui.app import UnshrimpApp
+    from unshrimp.ui.main_window import MainWindow
 
     probe = Mock(side_effect=AssertionError("Settings opening must not probe cameras"))
     monkeypatch.setattr(settings, "available_cameras", probe)
     monkeypatch.setattr(autostart, "is_enabled", lambda: False)
-    parent = QWidget()
-    monkeypatch.setattr(parent, "screen", lambda: SimpleNamespace(availableGeometry=lambda: QRect(0, 0, 1024, 720)))
-    controller = SimpleNamespace(cfg=copy.deepcopy(config.DEFAULTS), log=Mock(), hud=parent,
-                                 main_window=parent,
+    controller = SimpleNamespace(cfg=copy.deepcopy(config.DEFAULTS), log=Mock(), hud=Mock(),
                                  _settings_dlg=None, _reset_baseline=Mock(), start_calibration=Mock(),
                                  worker=Mock(), machine=SimpleNamespace(state=State.PAUSED),
                                  _suspended=False, _idle_stopped=False, _restart_pending=False,
-                                 _cal=None, baseline=None, open_camera_preview=Mock(), restart_camera=Mock())
+                                 _cal=None, baseline=None, open_camera_preview=Mock(), restart_camera=Mock(),
+                                 _open_settings=Mock(), _open_settings_page=Mock())
     controller.apply_preferences = Mock()
     controller.log.day_summaries.return_value = []
-    parent.show()
+    parent = controller.main_window = MainWindow(controller)
+    parent.setAttribute(settings.Qt.WA_DontShowOnScreen)
+    parent.resize(620, 600)
     try:
         UnshrimpApp._open_settings(controller)
         dialog = controller._settings_dlg
         qt_app.processEvents()
         assert dialog.isVisible()
-        assert not dialog.isModal()
-        bounds = parent.screen().availableGeometry()
-        frame = dialog.frameGeometry()
-        assert bounds.contains(frame.topLeft())
-        assert frame.right() <= bounds.right() and frame.bottom() <= bounds.bottom()
+        assert parent.isVisible()
+        assert parent.pages.currentWidget() is dialog
+        assert not dialog.isWindow()
+        assert parent.settings_heading.text() == "Settings"
+        assert parent.settings_heading.isVisible()
+        assert parent.settings_button.isChecked()
+        assert dialog.done_button.isHidden()
+        assert parent.width() == 620
         tabs = dialog.findChild(QTabWidget)
         assert [tabs.tabText(i) for i in range(tabs.count())] == [
             "Tracking", "Alerts and breaks", "Appearance", "General"]
+        assert all(tabs.widget(i).horizontalScrollBar().maximum() == 0
+                   for i in range(tabs.count()))
+        for width in (620, 960):
+            parent.resize(width, 600)
+            parent.pages.setCurrentWidget(parent.dashboard_page)
+            qt_app.processEvents()
+            dashboard_x = parent.dashboard_page.verticalScrollBar().mapTo(parent.pages, QPoint(0, 0)).x()
+            parent.pages.setCurrentWidget(dialog)
+            qt_app.processEvents()
+            assert dialog.width() <= parent.pages.width()
+            for index in range(tabs.count()):
+                tabs.setCurrentIndex(index)
+                qt_app.processEvents()
+                scroll = tabs.widget(index)
+                settings_x = scroll.verticalScrollBar().mapTo(parent.pages, QPoint(0, 0)).x()
+                assert abs(settings_x - dashboard_x) <= 2
+                card = scroll.widget().layout().itemAt(0).widget()
+                assert card.mapTo(scroll.viewport(), QPoint(card.width(), 0)).x() <= scroll.viewport().width()
+        tabs.setCurrentIndex(0)
+        qt_app.processEvents()
+        card = tabs.currentWidget().widget().layout().itemAt(0).widget()
+        right = card.mapTo(tabs, QPoint(card.width(), 0)).x()
+        image = tabs.grab().toImage()
+        scale = image.devicePixelRatio()
+        y = round(tabs.tabBar().geometry().bottom() * scale)
+        assert image.pixelColor(round((right - 5) * scale), y) != image.pixelColor(round((right + 5) * scale), y)
+        parent.resize(620, 600)
+        previous_mode = theme.mode()
+        try:
+            theme.set_mode("light" if previous_mode == "dark" else "dark")
+            assert all(theme.TEXT_MUTED in label.styleSheet()
+                       for label in dialog._theme_muted_labels)
+        finally:
+            theme.set_mode(previous_mode)
         controller.log.day_summaries.assert_not_called()
         controller.apply_breaks = Mock()
         dialog.reminder_min.setValue(45)
@@ -210,12 +301,19 @@ def test_hidden_settings_does_not_disable_parent_or_probe_cameras(qt_app, monkey
         assert controller.cfg["reminder_interval_min"] == 40
         assert dialog.cfg["reminder_interval_min"] == 45
         controller.apply_breaks.assert_not_called()
-        dialog.hide()  # reproduce a hidden Settings window without trapping HUD input
-        qt_app.processEvents()
         assert parent.isEnabled()
         probe.assert_not_called()
-        dialog.accept()
+        parent.dashboard_button.click()
         controller.apply_preferences.assert_called_once_with({"reminder_interval_min": 45}, startup=None)
+        assert controller._settings_dlg is None
+        assert parent.pages.currentWidget() is parent.dashboard_page
+        assert parent.dashboard_button.isChecked()
+        parent.showMinimized()
+        UnshrimpApp._open_settings(controller)
+        assert parent.pages.currentWidget() is controller._settings_dlg
+        assert not parent.isMinimized()
+        parent.close()
+        assert not parent.isVisible()
         assert controller._settings_dlg is None
     finally:
         parent.close()
@@ -268,6 +366,20 @@ def test_shrimp_positions_and_meter_transparency_save(preferences):
     assert controller.cfg["hud"]["opacity"] == .6
     assert dialog.hud_preview_opacity.opacity() == .6
     assert dialog.hud_op_label.text() == "40%"
+
+
+def test_vertical_meter_setting_updates_roomy_previews_and_restores_default(preferences, qt_app):
+    dialog, controller = preferences
+    dialog.hud_orientation.setCurrentIndex(dialog.hud_orientation.findData("vertical"))
+    qt_app.processEvents()
+    assert controller.cfg["hud"]["orientation"] == "vertical"
+    assert dialog.hud_preview.orientation == "vertical"
+    assert dialog.hud_preview.height() >= dialog.hud_preview.shrimp.height() + 50
+    assert dialog.reminder_meter_preview.orientation == "vertical"
+    assert dialog.reminder_sample.width() >= 340
+    dialog.defaults_button.click()
+    assert controller.cfg["hud"]["orientation"] == "horizontal"
+    assert dialog.hud_preview.orientation == "horizontal"
 
 
 def test_camera_selection_applies_before_rescan_and_skips_selected_device(preferences, monkeypatch):
@@ -445,6 +557,37 @@ def test_reminder_examples_and_tests_have_separate_effects(preferences, monkeypa
     controller.apply_preferences.assert_not_called()
     controller.restart_camera.assert_not_called()
     controller.log.day_summaries.assert_not_called()
+
+
+def test_previews_align_left_and_reminder_matches_live_width(preferences, qt_app):
+    dialog, _ = preferences
+    for sample in (dialog.shrimp_preview, dialog.hud_preview):
+        layout = sample.parentWidget().layout()
+        assert layout.itemAt(layout.indexOf(sample)).alignment() == settings.Qt.AlignLeft
+
+    dialog.select_page("Alerts and breaks")
+    dialog.show()
+    widths = []
+    bar_widths = []
+    for size in ("s", "m", "l"):
+        dialog.hud_size.setCurrentIndex(dialog.hud_size.findData(size))
+        qt_app.processEvents()
+        assert dialog.reminder_sample.width() == dialog.reminder_meter_preview.bar.width()
+        bar_widths.append(dialog.reminder_meter_preview.bar.width())
+        buttons = dialog.reminder_sample.take_button, dialog.reminder_sample.later_button
+        widths.append(buttons[0].width())
+        assert abs(buttons[0].x() - (dialog.reminder_sample.width() - buttons[1].geometry().right() - 1)) <= 3
+    assert widths == sorted(widths)
+    assert widths[-1] > widths[0], f"button widths {widths}; bar widths {bar_widths}"
+
+    previous_button_width = dialog.reminder_sample.take_button.width()
+    dialog.reminder_sample.take_button.click()
+    qt_app.processEvents()
+    assert dialog.reminder_sample.take_button.width() > previous_button_width
+    dialog.hud_visible.setChecked(False)
+    qt_app.processEvents()
+    assert dialog.reminder_meter_preview.isHidden()
+    assert dialog.reminder_sample.width() == 340
 
 
 def test_startup_failure_restores_os_state_control(preferences):

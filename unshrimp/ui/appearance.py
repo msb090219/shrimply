@@ -7,6 +7,7 @@ from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QWidget
 
 from . import assets
+from .mascot import TEXT_SIZES, paint_text_cue
 from .shrimp import paint_shrimp
 from .theme import SHRIMP
 
@@ -16,8 +17,9 @@ class ShrimpPreview(QWidget):
         super().__init__()
         self.setFixedHeight(150)
         self.setMinimumWidth(240)
-        self.setAccessibleName("Floating shrimp sample preview")
+        self.setAccessibleName("Floating cue sample preview")
         self.enabled = True
+        self.style = "shrimp"
         self.scale = 1.
         self.opacity = .87
         self.position = "center"
@@ -28,13 +30,16 @@ class ShrimpPreview(QWidget):
 
     def configure(self, cfg):
         self.enabled = cfg.get("mascot_enabled", True)
-        self.scale = {"s": .75, "m": 1., "l": 1.3}.get(cfg.get("mascot_size"), 1.)
+        self.style = cfg.get("mascot_style", "shrimp")
+        sizes = TEXT_SIZES if self.style == "text" else {"s": .75, "m": 1., "l": 1.3}
+        self.scale = sizes.get(cfg.get("mascot_size"), 1.)
         self.opacity = cfg.get("mascot_opacity", .87)
         self.position = cfg.get("mascot_position", "center")
         self.bob = cfg.get("mascot_bob", True) and not cfg.get("reduce_motion", False)
         self.setAccessibleDescription("Sample only; no camera. " +
-                                      ("Floating shrimp hidden." if not self.enabled else
-                                       f"{cfg.get('mascot_size', 'm')} size, {round(self.opacity * 100)}% opacity."))
+                                      ("Floating cue hidden." if not self.enabled else
+                                       f"{self.style} cue, {cfg.get('mascot_size', 'm')} size, "
+                                       f"{round(self.opacity * 100)}% opacity."))
         self._sync_timer()
         self.update()
 
@@ -57,7 +62,21 @@ class ShrimpPreview(QWidget):
         painter.fillRect(self.rect(), self.palette().base())
         if not self.enabled:
             painter.setPen(self.palette().text().color())
-            painter.drawText(self.rect(), Qt.AlignCenter, "Floating shrimp is hidden")
+            painter.drawText(self.rect(), Qt.AlignCenter, "Floating cue is hidden")
+            return
+        if self.style == "text":
+            scale = min(self.scale * .65, (self.width() - 24) / 220,
+                        (self.height() - 20) / 44)
+            cue_width = round(220 * scale)
+            cue_height = round(44 * scale)
+            x = (12 if self.position in ("left", "top_left") else self.width() - cue_width - 12
+                 if self.position in ("right", "top_right") else (self.width() - cue_width) // 2)
+            bob = 3 * math.sin(time.monotonic() * 2 * math.pi / 3) if self.bob else 0
+            y = (10 if self.position.startswith("top_") else
+                 self.height() - cue_height - 10 if self.position in ("left", "center", "right") else
+                 (self.height() - cue_height) / 2) + bob
+            painter.setOpacity(self.opacity * .87)
+            paint_text_cue(painter, QRectF(x, y, cue_width, cue_height), scale)
             return
         width = min(round(145 * self.scale), self.width() - 24)
         art = assets.shrimp_mascot(width, round(width * .62))

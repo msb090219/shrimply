@@ -1,5 +1,6 @@
 """Controller regressions without opening cameras or writing user settings."""
 import copy
+import sqlite3
 from types import MethodType, SimpleNamespace
 from unittest.mock import Mock, call
 from PySide6.QtCore import QRect, QObject, Signal
@@ -30,7 +31,8 @@ def controller(monkeypatch):
         _restart_pending=False, _cal=None, _good_streak=0, _settings_dlg=None, _about_dlg=None, _cal_was_paused=False,
         _camera_preview=None,
         _on_calibration_preview=Mock(),
-        smoother=Smoother(), history=HistoryAccumulator(), hud=Mock(), tray=Mock(), mascot=Mock(),
+        smoother=Smoother(), history=HistoryAccumulator(), _history_save_failed=False,
+        hud=Mock(), tray=Mock(), mascot=Mock(),
         preview_win=Mock(), _render=Mock(), _accumulate=Mock(),
         main_window=Mock(),
         _handle_event=Mock(), _toast=Mock(), _place_preview=Mock(),
@@ -50,6 +52,8 @@ def controller(monkeypatch):
                  "_reminder_fire", "_take_break", "_end_break", "_snooze_break", "_skip_break", "apply_breaks",
                  "_start_after_calibration", "_open_main_window", "_preview_changed"):
         setattr(app, name, MethodType(getattr(app_module.UnshrimpApp, name), app))
+    app._end_history_segment = MethodType(app_module.UnshrimpApp._end_history_segment, app)
+    app._try_flush_bucket = MethodType(app_module.UnshrimpApp._try_flush_bucket, app)
     monkeypatch.setattr(config, "save", Mock())
     return app
 
@@ -65,6 +69,17 @@ def test_compact_indicator_choice_is_applied_synced_and_saved(controller):
     controller.tray.sync_compact_action.assert_called_once_with(True)
     assert controller.cfg["hud"]["compact"] is True
     config.save.assert_called_once_with(controller.cfg)
+
+
+def test_mascot_response_controls_reach_live_overlay(controller):
+    controller.cfg.update(mascot_bad_hold_s=0, mascot_recovery_hold_s=8, bad=1.8)
+    app_module.UnshrimpApp.apply_motion_settings(controller)
+    assert controller.mascot.bad_hold_s == 0
+    assert controller.mascot.recovery_hold_s == 8
+    assert controller.mascot.set_options.call_args.args[-2:] == (1.8, "shrimp")
+    controller.cfg["mascot_style"] = "text"
+    app_module.UnshrimpApp.apply_motion_settings(controller)
+    assert controller.mascot.set_options.call_args.args[-1] == "text"
 
 
 def test_preference_patch_preserves_newer_baseline_pause_and_hud_position(controller):
@@ -141,6 +156,19 @@ def test_startup_visibility_and_saved_pause(controller, monkeypatch, background,
     assert (controller.machine.state is State.PAUSED) is paused
     controller.reminder_timer.start.assert_called_once()
     controller.idle_timer.start.assert_called_once()
+
+
+def test_missing_tray_with_hidden_meter_opens_controls(controller):
+    controller._open_main_window = Mock()
+    controller.hud.isVisible.return_value = False
+    controller.main_window.isVisible.return_value = False
+    app_module.UnshrimpApp._ensure_controls_visible(controller)
+    controller._open_main_window.assert_called_once()
+
+    controller._open_main_window.reset_mock()
+    controller.main_window.isVisible.return_value = True
+    app_module.UnshrimpApp._ensure_controls_visible(controller)
+    controller._open_main_window.assert_not_called()
 
 
 @pytest.mark.parametrize("paused", [False, True])
@@ -354,6 +382,22 @@ def test_break_prompt_matches_meter_and_stays_on_screen(controller, anchor, visi
         assert y == anchor.top() - 126 - 8
 
 
+def test_vertical_meter_keeps_break_prompt_readable(controller):
+    controller.break_prompt.isVisible.return_value = True
+    controller.break_prompt.width.return_value = 340
+    controller.break_prompt.height.return_value = 126
+    controller.break_prompt.setFixedWidth.side_effect = lambda width: setattr(
+        controller.break_prompt.width, "return_value", width)
+    controller.hud.orientation = "vertical"
+    controller.hud.isVisible.return_value = True
+    controller.hud.bar.width.return_value = 78
+    controller.hud.bar.height.return_value = 218
+    controller.hud.frameGeometry.return_value = QRect(500, 200, 78, 218)
+    controller.hud.screen.return_value.availableGeometry.return_value = QRect(0, 0, 1280, 800)
+    app_module.UnshrimpApp._position_break_prompt(controller)
+    assert controller.break_prompt.width() == 340
+
+
 @pytest.mark.parametrize("paused,idle", [(False, False), (True, False), (False, True)])
 def test_sleep_wake_restarts_capture_only_when_policy_allows(controller, monkeypatch, paused, idle):
     if paused:
@@ -391,7 +435,7 @@ def test_resume_after_quit_does_not_restart_worker(controller):
     controller._restart_worker.assert_not_called()
 
 
-def test_settings_is_modeless_reused_and_released_on_finish(controller, monkeypatch):
+def test_settings_opens_inside_main_and_reuses_page_until_done(controller, monkeypatch):
     import unshrimp.ui.settings as settings
 
     dialog = Mock()
@@ -400,16 +444,16 @@ def test_settings_is_modeless_reused_and_released_on_finish(controller, monkeypa
     controller._reset_baseline = Mock()
     controller._open_settings()
     controller._open_settings()
-    factory.assert_called_once()
-    assert dialog.show.call_count == 2
-    assert dialog.raise_.call_count == 2
-    assert dialog.activateWindow.call_count == 2
+    factory.assert_called_once_with(controller.cfg, controller, parent=controller.main_window.pages)
+    assert controller.main_window.show_settings.call_count == 2
+    dialog.setWindowFlags.assert_called_once_with(app_module.Qt.Widget)
     dialog.exec.assert_not_called()
     clear_reference = dialog.finished.connect.call_args_list[0].args[0]
     dialog.tabs.tabText.return_value = "Appearance"
     clear_reference(0)
     assert controller._settings_dlg is None
     assert controller._settings_page == "Appearance"
+    controller.main_window.show_dashboard.assert_called_once_with(dialog)
     assert dialog.finished.connect.call_args_list[1].args[0] == dialog.deleteLater
     controller._open_settings()
     dialog.select_page.assert_called_with("Appearance")
@@ -655,6 +699,22 @@ def test_resetting_calibration_preserves_pause(controller):
     controller.worker.start.assert_not_called()
 
 
+def test_failed_reset_keeps_previous_calibration(controller, monkeypatch):
+    original = controller.baseline
+    controller.cfg["baseline"] = original.to_dict()
+    monkeypatch.setattr(config, "save", Mock(side_effect=OSError("disk full")))
+    warning = Mock()
+    from PySide6.QtWidgets import QMessageBox
+    monkeypatch.setattr(QMessageBox, "warning", warning)
+
+    app_module.UnshrimpApp._reset_baseline(controller)
+
+    assert controller.baseline is original
+    assert controller.cfg["baseline"] == original.to_dict()
+    assert controller.machine.state is State.GOOD
+    warning.assert_called_once()
+
+
 def test_pause_cancels_pending_restart(controller, monkeypatch):
     controller.worker.isRunning.return_value = True
     controller._restart_worker()
@@ -707,6 +767,16 @@ def test_shutdown_defers_storage_close_until_worker_stops(controller):
     assert controller.shutdown() is True
     controller.log.close.assert_called_once()
     controller._flush_bucket.assert_called_once()
+
+
+def test_quit_finishes_when_final_writes_fail(controller):
+    controller.log.end_session.side_effect = sqlite3.OperationalError("database locked")
+    controller.log.close.side_effect = sqlite3.OperationalError("database locked")
+    config.save.side_effect = OSError("disk full")
+
+    assert controller.shutdown() is True
+    assert controller._shutdown_done
+    controller.hud.hide.assert_called_once()
 
 
 def test_resuming_opens_the_device_selected_while_paused(controller, monkeypatch):
@@ -770,6 +840,24 @@ def test_successful_calibration_waits_for_explicit_start(controller):
     controller._restart_worker.assert_called_once()
     controller.preview_win.hide.assert_called_once()
     controller.main_window.show.assert_called_once()
+
+
+def test_failed_calibration_write_keeps_previous_baseline_and_finishes_flow(controller):
+    old = controller.baseline
+    controller.cfg["baseline"] = old.to_dict()
+    controller._cal = CalibrationSession()
+    controller._accept_baseline = MethodType(app_module.UnshrimpApp._accept_baseline, controller)
+    config.save.side_effect = OSError("disk full")
+    candidate = Baseline(signals={"head_pitch": SignalCal(4., 9., 1)})
+
+    controller._apply_cal_result(StepResult("done", events=["calibrated"], baseline=candidate))
+
+    assert controller.baseline is old
+    assert controller.cfg["baseline"] == old.to_dict()
+    assert controller._cal is None
+    assert controller.worker.preview_enabled is False
+    assert controller.preview_win.show_result.call_args.args[0] is False
+    assert "not saved" in controller.preview_win.show_result.call_args.args[1]
 
 
 @pytest.mark.parametrize("mode", ["missing_baseline", "calibrating"])
@@ -877,6 +965,27 @@ def test_failed_history_write_retains_pending_time(controller):
     with pytest.raises(OSError):
         app_module.UnshrimpApp._flush_bucket(controller)
     assert controller.history.minutes[6000]["good"] == 1.
+
+
+def test_sqlite_failure_does_not_block_pause_and_retains_pending_time(controller):
+    controller._flush_bucket = MethodType(app_module.UnshrimpApp._flush_bucket, controller)
+    controller.history.minutes[6000] = {"good": 40., "drifting": 0., "bad": 0.}
+    controller.log.record_duration.side_effect = sqlite3.OperationalError("database locked")
+
+    controller._on_pause_toggled(True)
+
+    assert controller.machine.state is State.PAUSED
+    assert controller.history.minutes[6000]["good"] == 40.
+
+
+def test_pausing_flushes_pending_history_without_waiting_for_next_frame(controller):
+    controller._flush_bucket = MethodType(app_module.UnshrimpApp._flush_bucket, controller)
+    controller.history.minutes[6000] = {"good": 40., "drifting": 0., "bad": 0.}
+
+    controller._on_pause_toggled(True)
+
+    controller.log.record_duration.assert_called_once_with(6000, 40., 0., 0.)
+    assert controller.history.minutes == {}
 
 
 def test_unscorable_frame_breaks_history_continuity(controller, monkeypatch):

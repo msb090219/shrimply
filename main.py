@@ -3,8 +3,8 @@
 
 A private, local posture guard: watches your webcam on-device, compares
 against your personal calibrated baseline, and fades in a very large
-shrimp when you slouch. Nothing ever leaves your machine; no frames are
-ever written to disk.
+shrimp when you slouch. Camera frames are processed locally and are not
+written to disk. The bundled MediaPipe SDK sends usage metrics.
 """
 from __future__ import annotations
 

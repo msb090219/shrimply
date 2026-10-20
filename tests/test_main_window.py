@@ -4,8 +4,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QPoint, Qt
+from PySide6.QtWidgets import QApplication, QGroupBox, QLabel, QWidget
 from PySide6.QtGui import QFocusEvent
 from PySide6.QtCore import QEvent
 from PySide6.QtTest import QTest
@@ -23,7 +23,7 @@ def window():
     log.day_summaries.return_value = []
     controller = SimpleNamespace(
         cfg=copy.deepcopy(config.DEFAULTS), machine=SimpleNamespace(state=State.GOOD),
-        worker=Mock(), baseline=None, _suspended=False, _idle_stopped=False,
+        worker=Mock(), baseline=object(), _suspended=False, _idle_stopped=False,
         _cal=None, _display_deviation=.2, log=log, _restart_pending=False,
         breaks=BreakReminder(True, 2400), _take_break=Mock(), _snooze_break=Mock(),
         _skip_break=Mock(), _end_break=Mock(),
@@ -38,17 +38,12 @@ def window():
     application.processEvents()
 
 
-@pytest.mark.parametrize("state,label", [
-    (State.GOOD, "Sitting comfortably"), (State.DRIFTING, "Posture drifting"),
-    (State.BAD, "Time to adjust"), (State.AWAY, "Away from the desk"),
-    (State.PAUSED, "Tracking paused"), (State.CAMERA_ERROR, "Camera unavailable"),
-    (State.UNCALIBRATED, "Set up your posture baseline"),
-])
-def test_main_window_reports_real_state(window, state, label):
+@pytest.mark.parametrize("state", [State.GOOD, State.DRIFTING, State.BAD, State.AWAY, State.PAUSED])
+def test_normal_dashboard_stays_focused_on_progress(window, state):
     view, controller, _ = window
     controller.machine.state = state
     view.refresh()
-    assert view.status.text() == label
+    assert view.notice_card.isHidden()
     controller.worker.start.assert_not_called()
 
 
@@ -56,7 +51,7 @@ def test_missing_score_does_not_claim_good_posture(window):
     view, controller, _ = window
     controller._display_deviation = None
     view.refresh()
-    assert view.status.text() == "Finding your posture"
+    assert view.notice_card.isHidden()
 
 
 def test_daily_line_changes_only_with_local_date(window, monkeypatch):
@@ -69,7 +64,9 @@ def test_daily_line_changes_only_with_local_date(window, monkeypatch):
     monkeypatch.setattr(module, "date", SimpleNamespace(today=lambda: date(2026, 10, 18)))
     view.refresh()
     first = view.daily_line.text()
-    assert first == module.DAILY_LINES[date(2026, 10, 18).toordinal() % 20]
+    assert first == f"“{module.DAILY_LINES[date(2026, 10, 18).toordinal() % 20]}”"
+    assert view.daily_line.font().bold()
+    assert view.dashboard_heading.font().pointSize() > view.daily_line.font().pointSize()
     view.refresh()
     assert view.daily_line.text() == first
     monkeypatch.setattr(module, "date", SimpleNamespace(today=lambda: date(2026, 10, 19)))
@@ -77,45 +74,72 @@ def test_daily_line_changes_only_with_local_date(window, monkeypatch):
     assert view.daily_line.text() != first
 
 
-def test_today_shortcuts_open_the_relevant_preference_page(window):
+def test_camera_setup_shortcut_opens_the_relevant_preference_page(window):
     view, controller, _ = window
+    controller.machine.state = State.CAMERA_ERROR
+    view.refresh()
     view.tracking_settings.click()
     controller._open_settings_page.assert_called_with("Tracking")
-    view.reminder_settings.click()
-    controller._open_settings_page.assert_called_with("Alerts and breaks")
     controller.worker.start.assert_not_called()
 
 
-def test_main_camera_preview_retry_and_status_follow_worker_frames(window):
+def test_camera_failure_shows_one_recovery_card_and_clears_on_recovery(window):
     view, controller, _ = window
-    controller.worker.camera_state = "starting"
-    view.refresh()
-    assert "Starting" in view.camera.text()
-    view.camera_preview.click()
-    controller.open_camera_preview.assert_called_once()
+    controller.machine.state = State.CAMERA_ERROR
     controller.worker.camera_state = "reconnecting"
     controller.worker.camera_error = "Device disconnected."
     view.refresh()
-    assert "Reconnecting" in view.camera.text()
-    assert "Device disconnected" in view.camera_detail.text()
+    assert not view.notice_card.isHidden()
+    assert view.notice_heading.text() == "Camera unavailable"
+    assert "Device disconnected" in view.notice_detail.text()
     assert not view.camera_retry.isHidden()
+    assert view.calibrate.isHidden()
     view.camera_retry.click()
     controller.restart_camera.assert_called_once()
+    controller.machine.state = State.GOOD
     controller.worker.camera_state = "running"
     view.refresh()
-    assert "Running" in view.camera.text()
+    assert view.notice_card.isHidden()
+
+
+def test_missing_calibration_shows_setup_action_even_while_paused(window):
+    view, controller, _ = window
+    controller.baseline = None
+    controller.machine.state = State.PAUSED
+    view.refresh()
+    assert not view.notice_card.isHidden()
+    assert view.notice_heading.text() == "Set up posture tracking"
+    assert not view.calibrate.isHidden()
     assert view.camera_retry.isHidden()
-    assert view.camera_detail.isHidden()
+    view.calibrate.click()
+    controller.start_calibration.assert_called_once()
 
 
-def test_settings_cog_keeps_a_name_shortcut_and_existing_action(window):
+def test_camera_failure_takes_priority_over_missing_calibration(window):
+    view, controller, _ = window
+    controller.baseline = None
+    controller.machine.state = State.CAMERA_ERROR
+    controller.worker.camera_state = "reconnecting"
+    controller.worker.camera_error = "Device disconnected."
+    view.refresh()
+    assert view.notice_heading.text() == "Camera unavailable"
+    assert view.calibrate.isHidden()
+    controller.machine.state = State.UNCALIBRATED
+    view.refresh()
+    assert view.notice_heading.text() == "Set up posture tracking"
+    assert view.camera_retry.isHidden()
+    controller._suspended = True
+    view.refresh()
+    assert view.notice_card.isHidden()
+
+
+def test_sidebar_settings_keeps_a_name_shortcut_and_existing_action(window):
     view, controller, _ = window
     button = view.settings_button
-    assert button.text() == ""
+    assert button.text().strip() == "Settings"
     assert not button.icon().isNull()
     assert button.accessibleName() == "Settings"
     assert button.shortcut().toString() == "Alt+S"
-    assert view.tracking_settings.shortcut().toString() != "Alt+S"
     assert button.focusPolicy() == Qt.StrongFocus
     button.click()
     controller._open_settings.assert_called_once()
@@ -132,6 +156,64 @@ def test_settings_cog_border_is_for_keyboard_focus_only(window):
     assert not button.property("keyboardFocus")
 
 
+def test_sidebar_collapses_and_routes_between_pages(window):
+    view, controller, application = window
+    assert view.sidebar.width() == 168
+    assert not any(label.text() == "Unshrimp" for label in view.sidebar.findChildren(QLabel))
+    assert view.dashboard_button.text().startswith("\u2002")
+    assert view.settings_button.text().startswith("\u2002")
+    assert view.dashboard_button.isChecked()
+    assert not view.settings_button.isChecked()
+    assert view.dashboard_button.font().pointSize() == 11
+    assert view.dashboard_button.font().weight() == view.settings_button.font().weight()
+    assert view.dashboard_button.iconSize() == view.settings_button.iconSize()
+    assert view.dashboard_button.iconSize().width() == 20
+    assert view.dashboard_button.height() == view.settings_button.height() == 44
+    expanded_icon = view.sidebar_toggle.icon().pixmap(24, 24).toImage()
+    view.toggle_sidebar()
+    assert view.sidebar.width() == 56
+    assert view.sidebar_toggle.accessibleName() == "Expand menu"
+    collapsed_icon = view.sidebar_toggle.icon().pixmap(24, 24).toImage()
+    assert collapsed_icon == expanded_icon
+    point = QPoint(round(15 * collapsed_icon.devicePixelRatio()),
+                   round(12 * collapsed_icon.devicePixelRatio()))
+    assert collapsed_icon.pixelColor(point).alpha() == 0
+    assert view.dashboard_button.toolButtonStyle() == Qt.ToolButtonIconOnly
+    assert view.dashboard_button.accessibleName() == "Dashboard"
+    view.toggle_sidebar()
+    assert view.sidebar.width() == 168
+    assert view.dashboard_button.toolButtonStyle() == Qt.ToolButtonTextBesideIcon
+    assert not view.dashboard_button.icon().isNull()
+    view.resize(620, 600)
+    view.show()
+    application.processEvents()
+    assert view.sidebar_toggle.x() == 8
+    assert view.dashboard_page.horizontalScrollBar().maximum() == 0
+    view.toggle_sidebar()
+    application.processEvents()
+    assert view.sidebar_toggle.x() == 8
+    assert view.dashboard_page.horizontalScrollBar().maximum() == 0
+    view.hide()
+    view.show()
+    assert view.sidebar.width() == 56
+    assert view.sidebar_toggle.accessibleName() == "Expand menu"
+    view.settings_button.click()
+    controller._open_settings.assert_called_once()
+
+
+def test_dashboard_navigation_keeps_settings_selected_on_save_failure(window):
+    view, controller, _ = window
+    page = QWidget()
+    page.tabs = QWidget()
+    view.show_settings(page)
+    controller._settings_dlg = Mock()
+    controller._settings_dlg.accept.side_effect = lambda: None
+    view.dashboard_button.click()
+    assert view.pages.currentWidget() is page
+    assert view.settings_button.isChecked()
+    view.pages.setCurrentWidget(view.dashboard_page)
+
+
 def test_reopening_progress_refreshes_the_same_history_view(window):
     view, controller, _ = window
     view.show()
@@ -143,6 +225,33 @@ def test_reopening_progress_refreshes_the_same_history_view(window):
     assert "80%" in view.progress.today_lbl.text()
     assert "12 min monitored" in view.progress.today_lbl.text()
     controller.worker.stop.assert_not_called()
+
+
+def test_dashboard_leads_with_quote_and_progress(window):
+    view, controller, application = window
+    layout = view.dashboard_page.widget().layout()
+    assert layout.indexOf(view.dashboard_heading) < layout.indexOf(view.daily_line)
+    assert layout.indexOf(view.daily_line) < layout.indexOf(view.progress)
+    assert view.settings_heading.isHidden()
+    view.resize(620, 480)
+    view.show()
+    application.processEvents()
+    scroll = view.dashboard_page.verticalScrollBar()
+    scroll.setValue(scroll.maximum())
+    assert view.dashboard_heading.mapTo(view.dashboard_page.viewport(), QPoint(0, 0)).y() < 0
+    assert view.notice_card.isHidden()
+    assert not any(card.accessibleName() in ("Now", "Tracking", "Break reminders")
+                   for card in view.findChildren(QGroupBox))
+    controller.log.day_summaries.return_value = [{
+        "ts": datetime.combine(date.today(), datetime.min.time()).timestamp(),
+        "pct_good": 50., "seconds": 120., "good_s": 60.,
+        "drifting_s": 30., "bad_s": 30., "measurement": "time",
+    }]
+    view.progress.refresh()
+    assert view.progress.mix.height() == 22
+    assert [label.text() for label in view.progress.mix_values] == [
+        "Comfortable\n1 min", "Drifting\n<1 min", "Adjust\n<1 min"]
+    assert "Comfortable 1 min" in view.progress.mix.accessibleDescription()
 
 
 def test_main_window_close_keeps_tracking_and_reopen_restores_refresh(window):
@@ -159,17 +268,19 @@ def test_main_window_close_keeps_tracking_and_reopen_restores_refresh(window):
     assert view.timer.isActive()
 
 
-def test_pause_controls_route_to_existing_policy(window):
-    view, controller, _ = window
-    assert not view.pause.icon().isNull()
-    pause_icon = view.pause.icon().cacheKey()
-    view.pause.click()
-    controller._on_pause_toggled.assert_called_with(True)
-    controller.machine.state = State.PAUSED
-    view.refresh()
-    assert view.pause.icon().cacheKey() != pause_icon
-    view.pause.click()
-    controller._on_pause_toggled.assert_called_with(False)
+def test_main_window_stays_open_if_settings_cannot_finish(window):
+    view, controller, application = window
+    page = QWidget()
+    view.pages.addWidget(page)
+    view.pages.setCurrentWidget(page)
+    controller._settings_dlg = Mock()
+    controller._settings_dlg._finish_pending.return_value = False
+    view.show()
+    application.processEvents()
+    view.close()
+    assert view.isVisible()
+    controller._settings_dlg._finish_pending.assert_called_once()
+    view.pages.setCurrentWidget(view.dashboard_page)
 
 
 def test_progress_refresh_icon_is_named_and_refreshes_history(window):
@@ -184,12 +295,12 @@ def test_progress_refresh_icon_is_named_and_refreshes_history(window):
     assert button.isEnabled()
     view.progress._refresh_timer.stop()
     view.progress._finish_manual_refresh()
-    controller.log.day_summaries.assert_called_once_with(84)
+    controller.log.day_summaries.assert_called_once_with(182)
     assert button.text() == "Refresh"
 
 
 def test_progress_calendar_distinguishes_empty_day_from_zero_in_range(window):
-    view, controller, _ = window
+    view, controller, application = window
     today = date.today()
     controller.log.day_summaries.return_value = [{
         "ts": datetime(today.year, today.month, today.day).timestamp(),
@@ -199,10 +310,99 @@ def test_progress_calendar_distinguishes_empty_day_from_zero_in_range(window):
     }]
     view.progress.refresh()
     assert "0% in calibrated range" in view.progress.day_detail.text()
+    view.resize(620, 600)
+    view.show()
+    application.processEvents()
+    card = view.progress.calendar_card
+    date_y = view.progress.selected_date.mapTo(card, QPoint(0, 0)).y()
+    detail_y = view.progress.day_detail.mapTo(card, QPoint(0, 0)).y()
+    refresh_y = view.progress.refresh_button.mapTo(card, QPoint(0, 0)).y()
+    assert date_y < detail_y
+    assert abs(detail_y - refresh_y) <= view.progress.refresh_button.height()
+    assert view.dashboard_page.horizontalScrollBar().maximum() == 0
     assert "2 min monitored" in view.progress.week_lbl.text()
     yesterday = today - timedelta(days=1)
     view.progress._cells[yesterday].click()
     assert "No observations" in view.progress.day_detail.text()
+
+
+def test_progress_six_month_grid_and_timed_summary_exclude_legacy_estimates(window):
+    view, controller, application = window
+    view.resize(1000, 700)
+    view.show()
+    application.processEvents()
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    view.progress.refresh()
+    before_grid = min(view.progress._cells) - timedelta(days=1)
+    controller.log.day_summaries.return_value = [
+        {"ts": datetime.combine(today, datetime.min.time()).timestamp(),
+         "pct_good": 50., "seconds": 120., "good_s": 60., "measurement": "time"},
+        {"ts": datetime.combine(yesterday, datetime.min.time()).timestamp(),
+         "pct_good": 90., "measurement": "legacy_samples"},
+        {"ts": datetime.combine(before_grid, datetime.min.time()).timestamp(),
+         "pct_good": 100., "seconds": 3600., "good_s": 3600., "measurement": "time"},
+    ]
+    view.progress.refresh()
+    assert len(view.progress._cells) == 182
+    assert view.progress.tracked_days.text() == "2"
+    assert view.progress.monitored_time.text() == "2 min"
+    assert view.progress.in_range.text() == "50%"
+    assert min(view.progress._cells) < today - timedelta(days=160)
+
+
+def test_progress_calendar_fits_minimum_dashboard_width(window):
+    view, _, application = window
+    view.resize(620, 600)
+    view.show()
+    application.processEvents()
+    assert view.dashboard_page.horizontalScrollBar().maximum() == 0
+    card = view.progress.calendar_card
+    refresh = view.progress.refresh_button
+    assert card.width() - refresh.mapTo(card, QPoint(refresh.width(), 0)).x() <= 20
+    assert len(view.progress._cells) < 182
+    assert card.accessibleName() == f"Last {view.progress._weeks_shown} weeks"
+    last = view.progress._cells[max(view.progress._cells)]
+    assert last.mapTo(card, QPoint(last.width(), 0)).x() <= card.width() - 14
+    assert last.width() == last.height() == 20
+    yesterday = date.today() - timedelta(days=1)
+    view.progress._cells[yesterday].click()
+    view.resize(1200, 700)
+    application.processEvents()
+    view.progress.refresh()
+    assert len(view.progress._cells) == 182
+    assert view.progress._cells[max(view.progress._cells)].width() == 20
+    assert view.progress._selected == yesterday
+
+
+def test_context_card_fits_minimum_width(window):
+    view, controller, application = window
+    view.resize(620, 600)
+    view.show()
+    controller.machine.state = State.CAMERA_ERROR
+    controller.worker.camera_state = "reconnecting"
+    controller.worker.camera_error = "Device disconnected."
+    view.refresh()
+    application.processEvents()
+    assert view.dashboard_page.horizontalScrollBar().maximum() == 0
+    assert not view.camera_retry.isHidden()
+    controller.baseline = None
+    controller.machine.state = State.UNCALIBRATED
+    controller.worker.camera_state = "running"
+    view.refresh()
+    application.processEvents()
+    assert view.dashboard_page.horizontalScrollBar().maximum() == 0
+    assert not view.calibrate.isHidden()
+
+
+def test_break_states_keep_dashboard_focused_on_progress(window):
+    view, controller, _ = window
+    controller.breaks.pending = True
+    view.refresh()
+    assert view.notice_card.isHidden()
+    controller.breaks.take_break(0.)
+    view.refresh()
+    assert view.notice_card.isHidden()
 
 
 def test_progress_today_does_not_reuse_yesterdays_result(window):
@@ -234,7 +434,7 @@ def test_progress_calendar_arrow_keys_select_days_and_keep_one_tab_stop(window):
     assert view.progress._selected == today
 
 
-def test_progress_legacy_cell_has_visible_and_accessible_estimate_marker(window):
+def test_progress_empty_and_legacy_cells_are_neutral_without_marks(window):
     view, controller, _ = window
     today = date.today()
     controller.log.day_summaries.return_value = [{
@@ -243,39 +443,15 @@ def test_progress_legacy_cell_has_visible_and_accessible_estimate_marker(window)
     }]
     view.progress.refresh()
     cell = view.progress._cells[today]
-    assert cell.text() == "~"
+    empty = view.progress._cells[today - timedelta(days=1)]
+    assert cell.text() == empty.text() == ""
+    assert view.progress.palette().mid().color().name() in cell.styleSheet()
+    assert view.progress.palette().midlight().color().name() in empty.styleSheet()
     assert "older sample-based estimate" in cell.accessibleName()
     assert "60%" in view.progress.day_detail.text()
-
-
-def test_due_break_controls_are_available_in_the_main_window(window):
-    view, controller, _ = window
-    controller.breaks.pending = True
-    view.refresh()
-    assert "A break is due" in view.reminders.text()
-    assert not view.break_actions.isHidden()
-    view.take_break.click()
-    controller._take_break.assert_called_once()
-    view.later_break.menu().actions()[0].trigger()
-    controller._snooze_break.assert_called_once_with(5)
-    view.later_break.menu().actions()[2].trigger()
-    controller._skip_break.assert_called_once()
-    controller.breaks.configure(False, 2400)
-    view.refresh()
-    assert view.break_actions.isHidden()
-    assert "are off" in view.reminders.text()
-
-
-def test_active_break_has_countdown_and_end_action(window, monkeypatch):
-    view, controller, _ = window
-    monkeypatch.setattr("unshrimp.ui.main_window.time.monotonic", lambda: 30.)
-    controller.breaks.take_break(0.)
-    view.refresh()
-    assert "1:30 remaining" in view.reminders.text()
-    assert "End break" in view.take_break.text()
-    assert view.later_break.isHidden()
-    view.take_break.click()
-    controller._end_break.assert_called_once()
+    assert "older sample-based estimate" in view.progress.day_detail.text()
+    assert not any("Darker coral" in label.text() for label in
+                   view.progress.calendar_card.findChildren(QLabel))
 
 
 def test_break_card_switches_actions_and_restores_the_next_suggestion(window):
@@ -320,16 +496,16 @@ def test_break_card_shows_duration_and_later_menu_actions(window):
         prompt.deleteLater()
 
 
-def test_progress_shares_dashboard_and_calibration_is_single_flow(window):
+def test_progress_shares_dashboard_and_calibration_hides_setup_card(window):
     view, controller, _ = window
     view.show()
     assert view.progress.parent() is view.dashboard_page.widget()
-    controller.log.day_summaries.assert_called_once_with(84)
-    assert "No observations in the last 12 weeks" in view.progress.today_lbl.text()
+    controller.log.day_summaries.assert_called_once_with(182)
+    assert f"No observations in the {view.progress.calendar_heading.text().lower()}" in view.progress.today_lbl.text()
+    controller.baseline = None
     controller._cal = object()
     view.refresh()
-    assert not view.calibrate.isEnabled()
-    assert view.status.text() == "Calibration in progress"
+    assert view.notice_card.isHidden()
 
 
 def test_controller_wires_tray_to_main_window_without_opening_camera(window, monkeypatch):

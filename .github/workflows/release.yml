@@ -15,8 +15,7 @@ jobs:
         include:
           - os: windows-latest
             asset: unshrimp-win64.zip
-          # macOS packaging paused until its first-run UI issues are fixed
-          # and human-verified (tracked for a future release)
+          # Attach the separately verified Mac package to the draft before publishing.
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +25,13 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: pip install -e .
       - run: python fetch_models.py
+      - name: verify tag and dependency versions
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python -m pip check
+          python -c 'import importlib.metadata as m, os; tag = os.environ["RELEASE_TAG"]; version = "v" + m.version("unshrimp"); assert tag == version, f"Tag {tag} does not match {version}"'
       - run: python -m pytest -q
 
       - name: build with PyInstaller

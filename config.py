@@ -10,6 +10,7 @@ old folder on first run (the old folder is left untouched).
 from __future__ import annotations
 
 import json
+import math
 import os
 import shutil
 import sys
@@ -63,9 +64,13 @@ DEFAULTS: dict = {
     "sound_on": False,
     "toasts_enabled": True,
     "mascot_enabled": True,
+    "mascot_style": "shrimp",  # shrimp | text
     "mascot_size": "m",  # s | m | l
     "mascot_opacity": 0.87,
     "mascot_bob": True,
+    "mascot_entrance": "rise",  # rise | fade | instant
+    "mascot_bad_hold_s": 2,
+    "mascot_recovery_hold_s": 3,
     "mascot_position": "center",
     "mascot_screen": "",
     "reduce_motion": False,
@@ -95,9 +100,48 @@ DEFAULTS: dict = {
             "how": "Draw shoulder blades down and together. Hold 5s × 10.",
         },
     ],
-    "hud": {"x": None, "y": None, "visible": True, "compact": False, "size": "m", "opacity": 1.0},
+    "hud": {"x": None, "y": None, "visible": True, "compact": False, "size": "m", "orientation": "horizontal", "opacity": 1.0},
     "baseline": None,  # Baseline.to_dict() once calibrated
 }
+
+
+def _valid(key: str, value) -> bool:
+    choices = {
+        "theme_mode": ("dark", "light", "system"),
+        "mascot_style": ("shrimp", "text"),
+        "mascot_size": ("s", "m", "l"),
+        "mascot_entrance": ("rise", "fade", "instant"),
+        "mascot_position": ("left", "center", "right", "top_left", "top_center", "top_right", "middle"),
+        "size": ("s", "m", "l"),
+        "orientation": ("horizontal", "vertical"),
+    }
+    if key in choices:
+        return value in choices[key]
+    if key in ("fps", "sensitivity", "drift", "bad", "grace_s", "renag_s",
+               "away_s", "recovery_s", "mascot_opacity", "opacity"):
+        limit = (30 if key == "fps" else 1 if key in ("mascot_opacity", "opacity")
+                 else 10 if key in ("sensitivity", "drift", "bad") else 86400)
+        return (type(value) in (int, float) and math.isfinite(value)
+                and (value > 0 if key in ("fps", "sensitivity", "drift", "bad") else value >= 0)
+                and value <= limit)
+    if key in ("camera_index", "reminder_interval_min", "reminder_break_min",
+               "mascot_bad_hold_s", "mascot_recovery_hold_s"):
+        limit = (99 if key == "camera_index" else 15 if key.startswith("mascot_")
+                 else 180 if key == "reminder_interval_min" else 30)
+        minimum = 0 if key == "camera_index" or key.startswith("mascot_") else 1
+        return type(value) is int and minimum <= value <= limit
+    if key in ("x", "y"):
+        return value is None or (type(value) is int and abs(value) <= 1000000)
+    if key == "baseline":
+        return value is None or isinstance(value, dict)
+    if key == "exercises":
+        return (isinstance(value, list) and all(isinstance(item, dict)
+                and isinstance(item.get("name"), str) and isinstance(item.get("how"), str)
+                for item in value))
+    if key in ("mascot_screen",):
+        return isinstance(value, str)
+    default = DEFAULTS.get(key, DEFAULTS["hud"].get(key))
+    return type(value) is type(default)
 
 
 def load() -> dict:
@@ -105,13 +149,18 @@ def load() -> dict:
     try:
         with open(CONFIG_PATH, encoding="utf-8") as f:
             data = json.load(f)
-        for k, v in data.items():
-            if k in cfg:
-                if isinstance(cfg[k], dict) and isinstance(v, dict):
-                    cfg[k].update(v)
-                else:
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if k == "hud" and isinstance(v, dict):
+                    for name, item in v.items():
+                        if name in cfg["hud"] and _valid(name, item):
+                            cfg["hud"][name] = item
+                elif k in cfg and k != "hud" and _valid(k, v):
                     cfg[k] = v
-    except (OSError, json.JSONDecodeError):
+        if cfg["bad"] <= cfg["drift"]:
+            cfg["drift"] = DEFAULTS["drift"]
+            cfg["bad"] = DEFAULTS["bad"]
+    except (OSError, UnicodeError, json.JSONDecodeError):
         pass  # first run or corrupt file — defaults are fine
     return cfg
 

@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.3.0 — 20 October 2026
+
+The Windows Dashboard now puts today's monitored time, the weekly posture mix,
+and a square-cell activity calendar together. A collapsible sidebar opens
+Settings in the same window. Setup and camera-recovery actions appear only when
+needed.
+
+Appearance now offers a vertical posture meter and a discreet text cue as
+alternatives to the horizontal meter and large shrimp. The cue responds to
+sustained poor posture, with adjustable appearance and recovery delays, entrance
+style, size, position, transparency, and motion. Settings previews reflect the
+current choices.
+
+Startup settings and saved calibration are validated more carefully. Failed
+calibration saves keep the previous baseline; pause and Quit remain usable after
+storage errors. The Windows build checks dependencies and runs bundled icon,
+model, and inference smoke tests. The README and website now show the current UI.
+The welcome screen, README, and website now disclose MediaPipe SDK usage metrics,
+and the Windows package includes the upstream MediaPipe and OpenCV notices.
+
+Real-camera occlusion limits and remaining hardware checks are tracked in the
+[work list](docs/TODO.md). Unshrimp is a habit reminder, not a medical device.
+
 ## 1.2.1 — 18 October 2026
 
 The Windows executable and website favicon now use the same realistic shrimp

@@ -1,6 +1,6 @@
 # Unshrimp work list
 
-Last reviewed: 19 October 2026.
+Last reviewed: 20 October 2026.
 
 This is the shared list of outstanding work from the tracking review and local
 webcam checks. Completed tasks stay checked below so progress remains visible.
@@ -18,10 +18,10 @@ Implemented tracking fixes and first-pass results are recorded in [the 16 Octobe
 
 ## Current priorities — 19 October update
 
-Settings now autosaves with Done, keeps break suggestions visible in **Alerts and
-breaks**, and shows an isolated reminder preview. Main combines tracking, breaks,
-and history in one Dashboard with a daily shrimp line. The native Windows suite
-passes **460 tests**. Native monitor/DPI, notification delivery and accessibility
+Settings now autosaves with Done inside the main window, keeps break suggestions
+visible in **Alerts and breaks**, and shows an isolated reminder preview. Main
+focuses on the daily quote and progress; tray, Settings, and break prompt handle
+live actions. The local Windows suite passes **477 tests**. Native monitor/DPI, notification delivery and accessibility
 acceptance remain open. Earlier Settings captures are in [the Settings audit](audits/settings-refinement-2026-10-18/README.md).
 
 Latest user direction: keep the original boxed sections and single-column Settings
@@ -37,7 +37,7 @@ A checked implementation subtask does not mean its whole feature is release-veri
 Historical reports describe the build tested then; later reports supersede UI details.
 See the [progress audit](audits/progress-2026-10-18.md) for evidence and scope.
 
-1. **U08 — review Dashboard history.** A 12-week monitored-time heatmap,
+1. **U08 — review Dashboard history.** A 26-week monitored-time heatmap,
    selectable day details, and a weekly posture mix are implemented. Day details,
    keyboard arrow navigation, and the distinction between current, empty, and older
    history have had a focused code/UI pass. Check native layout, screen reader
@@ -52,10 +52,34 @@ See the [progress audit](audits/progress-2026-10-18.md) for evidence and scope.
    old build's checks. Include calibration interruption, completion, and preview.
 5. **U12 — make the large shrimp respond to sustained posture.** Keep the meter
    live, but let the mascot appear only after posture has stayed poor and fade
-   away smoothly on recovery. Verify on Windows, then follow the linked Mac task
+   away after sustained recovery. Verify on Windows, then follow the linked Mac task
    M01 below.
-6. **Before release:** resolve/characterize T08 occlusion, then finish H01–H06,
-   clean-machine distribution P01, and W01. Earlier sleep/wake successes remain
+6. **U13 — expand the Dashboard activity calendar.** Show six months of days,
+   including empty days, use the card width, and summarize tracked days, monitored
+   time, and in-range share. Verify on Windows, then follow Mac task M02.
+7. **U14 — choose the floating shrimp entrance.** Offer fade and rise, fade only,
+   or instant appearance independently of bobbing. Verify on Windows, then
+   follow Mac task M03.
+8. **U15 — focus the Dashboard.** Show the daily quote and progress, with a
+   compact action card only for setup or camera recovery. Follow the
+   [Dashboard layout plan](plans/dashboard-layout.md)
+   and Mac task M04.
+9. **U16 — open Settings in the main window.** Keep the existing Settings
+   categories and autosave, but navigate within one window. Follow Mac task M05.
+10. **U17 — refine Settings navigation and previews.** Keep the four existing
+    categories, align their content and previews, and make the selected horizontal
+    tab easier to identify. Follow Mac task M06.
+11. **U18 — add a collapsible main sidebar.** Keep Dashboard and Settings in one
+    window, with labelled icon navigation, a bottom Settings entry, and clear page
+    headings. Refine selected, hover, icon/text alignment, and the Windows dark
+    title bar. Follow Mac task M07.
+12. **U19 — offer a vertical posture meter.** Save orientation in Appearance,
+    keep ten shrimp and accessible controls, and show a roomy live preview.
+    Follow Mac task M08.
+13. **U20 — offer a discreet text posture cue.** Let users choose the familiar
+    shrimp or a compact “Unshrimp yourself” text cue. Follow Mac task M09.
+14. **Before release:** record the accepted T08 occlusion limitation, then finish
+   the feasible H01–H06 checks, clean-machine distribution P01, and W01. Earlier sleep/wake successes remain
    evidence; they do not close all lifecycle scenarios. Mac packaging and first-run
    checks are being worked on separately.
 
@@ -67,9 +91,9 @@ its camera permissions, or its overlays on each desktop.
 
 ## Completed implementation milestones
 
-- [x] One Dashboard for tracking, breaks and history; Settings contains configuration only.
+- [x] One progress Dashboard, with live actions in tray, Settings, and break prompt.
 - [x] Shared native dark title bars, real app icon, consistent sections and controls.
-- [x] Modeless Settings/About/editor and consolidated tray/HUD menu.
+- [x] Embedded Settings, modeless About/editor, and consolidated tray/HUD menu.
 - [x] Ten-shrimp bar with centred floating feedback, Pause/More, saved compact mode,
   balanced spacing, and open/closed grab cursors; no app button or grip.
 - [x] Unified calibration panel, pinned pose guidance, fixed twelve-slot countdown,
@@ -124,6 +148,9 @@ its camera permissions, or its overlays on each desktop.
 ## Correct scoring, history, and feedback
 
 - [ ] **T08 — Reject unreliable required landmarks.**
+  - Release decision (20 October): the user considers current posture reliability
+    sufficient for this launch. Keep the one-ear/partial-shoulder limitation open
+    for follow-up; do not describe it as solved or include it in calibration claims.
   - Implemented: required ears/shoulders need visibility and presence >= 0.5;
     missing, nonfinite, or out-of-frame required geometry is unscorable.
     Rejected frames cannot enter scoring/calibration or draw landmark overlays.
@@ -236,7 +263,8 @@ implementation or acceptance work, not a request to rebuild those surfaces.
 - [ ] **Settings first-click opening and blocked HUD dragging.**
   - [x] Found the invisible modal Settings window; implemented modeless reuse,
     foreground handling, deferred tray opening, and no camera probing on open.
-    Parent/input-block and window-reuse regressions pass.
+    Parent/input-block and window-reuse regressions pass. U16 now embeds
+    Settings in Main, removing the separate-window placement path entirely.
   - [ ] Confirm first-click opening and uninterrupted dragging in the latest build,
     including after sleep and with the HUD hidden. Earlier successful user feedback
     was followed by another freeze, so it does not establish the final fix.
@@ -287,8 +315,8 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     samples are camera-free; reminder examples do not affect live timers/history.
     Test sound/notification are explicit actions. General exposes About/data folder.
     Rescan skips the current camera; camera changes obey paused capture policy.
-  - [x] Main has one Dashboard with tracking, breaks and history. Its shortcuts
-    select the relevant Settings page and reuse its window.
+  - [x] Main has one progress Dashboard. Its Settings shortcut opens an
+    embedded page in the same window; tray and break prompt expose live actions.
   - [x] Tracking-loss delay under Advanced; posture timings in Alerts and breaks; last-tab
     session memory; numeric Enter does not close Settings. Layouts pass at three scales.
   - [ ] Native keyboard/accessibility and discoverability walkthrough.
@@ -354,14 +382,14 @@ implementation or acceptance work, not a request to rebuild those surfaces.
   - [x] Existing view shows today's monitored minutes/percentage, seven-day bars,
     no-history guidance, excluded-time explanation, and labelled legacy estimates.
     Time-based accounting and legacy distinctions have regression coverage (T06).
-  - [x] Replace seven-day bars with a centred 12-week monitored-time heatmap;
+  - [x] Replace seven-day bars with a monitored-time heatmap;
     selectable cells and accessible names give full dates and values. Add a
     weekly timed good/drifting/adjust mix. No-data and zero-in-range days differ;
-    dashed cells mark old sample-based estimates, excluded from timed weekly mix.
+    old sample-based estimates are identified in day details and excluded from timed weekly mix.
     Heatmap color represents monitored time rather than a health judgement.
   - [x] Correct Today's summary when the latest observation is from an older day;
-    give the selected date its own line, keep empty cells uncolored, show ~ on
-    older estimates, and navigate the calendar with arrow keys and one Tab stop.
+    give the selected date its own line and navigate the calendar with arrow
+    keys and one Tab stop. Empty/older days now use neutral grey cells.
   - [ ] Native layout, keyboard/screen-reader, light/dark contrast, and mixed
     history acceptance remain. Focused Progress and Settings modules pass separately
     (25 and 26 checks); their combined invocation reports 51 passes but exits 1
@@ -380,8 +408,8 @@ implementation or acceptance work, not a request to rebuild those surfaces.
   - Current design uses native Windows title bars with consistent dark active and
     inactive colors and the real shrimp app icon. Earlier custom header strips
     were removed. Other platforms retain native decorations.
-  - Main/Settings/calibration/About/welcome/editor share styling; Settings is
-    modeless and positioned relative to Main. About reuses its window. Keyboard
+  - Main/Settings/calibration/About/welcome/editor share styling; Settings now
+    lives within Main. About reuses its window. Keyboard
     focus remains visible without persistent mouse-focus borders on utility icons.
   - Remaining acceptance: native focus/title-bar transitions, placement, drag/resize/
     Snap, keyboard walkthrough, macOS. [Latest header design](audits/header-review-2026-10-17/README.md).
@@ -399,12 +427,172 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     meter score. Keep the meter responsive, but require several seconds of
     sustained poor posture before the mascot fades in; let it fade away on
     recovery. Brief score fluctuations should not make it pop in and out.
+  - Refine the local timing: tolerate brief dips below bad during the entrance
+    hold, and require sustained good posture before the shrimp fades away.
+    Missing tracking still hides it immediately. Check rapid bad/good changes.
+  - Make the shrimp visibly respond at the configured Bad threshold, with
+    editable entrance and recovery holds in Appearance (including zero delay).
+    Keep these separate from the posture-alert grace period.
   - Keep immediate suppression for pause, away, camera loss, calibration, and
     breaks. The existing 45-second alert grace period remains independent.
-  - [ ] Add a shared timing regression covering sustained posture, recovery,
-    interrupted tracking, and Reduce motion.
+  - [x] Add shared timing regressions for the Bad threshold, editable entrance
+    and recovery holds, brief fluctuations, interrupted tracking, and zero delay;
+    Reduce motion has a focused option check.
   - [ ] Verify the packaged Windows app with a live camera.
   - Mac handoff: M01 below. Add the implementation commit to M01 when U12 lands.
+
+- [ ] **U13 — Expand the Dashboard activity calendar.**
+  - Show roughly six months with empty days visible, let the grid use the card
+    width without horizontal page scrolling, and keep date selection accessible.
+  - Add concise tracked-day, monitored-time, and in-range summaries using timed
+    history only for durations/percentages; identify older estimates accurately.
+  - Make day cells fixed squares. Show up to 26 weeks without stretching them on
+    wide windows, and reduce the visible week count on narrow windows. Keep
+    summary labels honest about the period currently shown.
+  - [x] Local layout checks cover 620 px and 1200 px windows, square cells,
+    no horizontal page scroll, and selection retained on resize.
+  - Increase the graph and value emphasis and shorten explanatory copy without
+    changing what the statistics mean. U15 gives progress the final placement.
+  - [x] Local layout and regression checks pass for the progress layout,
+    larger weekly bar, labelled mix, and concise calendar details.
+  - [x] Refine the activity card's vertical spacing and month/day grid gaps. Show
+    neutral grey for days without timed history, with no visible ~ marker or
+    explanatory legend; keep older estimates identified in selected-day and
+    accessible details. Focused tests (61) and full suite (474) pass. Offscreen
+    Light/Dark layout renders and the 620 px no-scroll test pass.
+  - [ ] Verify native light/dark, small-window and keyboard layouts on Windows.
+  - Mac handoff: M02 below. Add the implementation commit to M02 when U13 lands.
+
+- [ ] **U14 — Choose the floating shrimp entrance.**
+  - Keep the sustained-posture trigger from U12. Choose fade and rise (current
+    behavior), fade only, or instant appearance; keep gentle bobbing independent.
+    Reduce motion suppresses rise and bob without changing the saved choices.
+  - [x] Windows automated checks cover the three entrances, saved preference,
+    Reduce motion, and appearance defaults (full suite: 472 passed locally).
+  - [ ] Verify every mode and bobbing combination in the packaged Windows app.
+  - Mac handoff: M03 below. Add the implementation commit when U14 lands.
+
+- [ ] **U15 — Focus the single Dashboard on progress.**
+  - [x] Remove the permanent Tracking/Break and Now cards. Tray and posture
+    meter handle live controls; Settings provides camera recovery and preview;
+    break prompt handles due-break actions.
+  - [x] Show the larger daily quote, Today's result, weekly mix, and the
+    fixed-square activity calendar. Keep existing history meanings and accessibility.
+  - [x] Show a small contextual card only for missing calibration or camera
+    failure. The camera error takes priority if both need attention; hide the
+    card when recovered or during calibration/sleep.
+  - [x] Normal, setup, and camera-error layouts have no horizontal scroll at
+    620 px in offscreen Light/Dark renders. Focused Dashboard tests (29) and the
+    full local suite (471) pass, with one existing deprecation warning.
+  - [x] Remove the persistent tray/close instruction from the Dashboard footer.
+  - [x] Let the Dashboard heading scroll with the page, add room between the
+    heading, quote, and progress cards, and loosen padding within those cards.
+    Align the activity calendar Refresh action to the right. Native Windows
+    layout and scrolling checks pass; packaged verification remains open.
+  - [x] Put the selected day's monitored-time/in-range detail on the same row
+    as Refresh, below its date, with less vertical space after the calendar.
+    Native 620 px layout and full local suite (477 tests) pass.
+  - [ ] Verify the packaged Windows app, including narrow-window layout and
+    camera failure recovery, keyboard access, and Light/Dark themes. See
+    [the layout plan](plans/dashboard-layout.md).
+  - Mac handoff: M04 below. Add the implementation commit when U15 lands.
+
+- [ ] **U16 — Open Settings in the main app window.**
+  - [x] Replace the separate, position-managed Settings window with an embedded
+    page. Dashboard cog and tray Settings open that page; Done returns to the
+    Dashboard. Retain the existing Settings categories and autosave behavior.
+  - [x] Closing the main window while Settings is open saves pending edits or
+    shows the existing save failure, then leaves tracking in the tray. Preserve
+    calibration, camera preview/retry, theme changes, keyboard access, and
+    Settings-page routing.
+  - [x] Focused Main/Settings/controller tests (147) and full suite (472) pass.
+    The page stays inside a 620 px Main window with no horizontal tab-page
+    scroll in Light/Dark offscreen renders; minimized Main restores from tray.
+  - [ ] Check packaged Windows sizing, focus, title bar, and Settings actions.
+  - Mac handoff: M05 below. Add the implementation commit when U16 lands.
+
+- [ ] **U17 — Refine Settings navigation and previews.**
+  - [x] Keep Tracking, Alerts and breaks, Appearance, and General as the four
+    horizontal categories; align each page's cards with the Settings heading and
+    Done row, and clarify the selected tab without adding visual clutter.
+    Focused Settings tests (30) and the full local suite (473) pass.
+  - [x] Left-align the shrimp, posture meter, and reminder previews. Match the
+    reminder sample's width and button layout to the live break popup, including
+    the active-break state, all three meter sizes, and the hidden-meter fallback.
+    The sample uses the shared popup widget without Settings' compact-button rule;
+    the full local suite passes 474 tests.
+  - [x] Align the Settings page scrollbar with the Dashboard scrollbar while
+    preserving the card and footer right inset at narrow and regular widths.
+    Remove the old standalone dialog minimum width so embedded content fits.
+    Native checks cover all four tabs at 620 and 960 px; the full suite passes
+    477 tests. Packaged Windows and Mac checks remain open.
+  - [x] End the divider under the Settings tabs at the cards' right edge,
+    without moving the Dashboard-aligned scrollbar. Native renders at 620 and
+    960 px and the full local suite (477 tests) pass.
+  - [ ] Check the packaged Windows app at narrow and wide sizes, Light/Dark,
+    keyboard navigation, and high DPI. Mac handoff: M06 below; implementation
+    commit pending.
+
+- [ ] **U18 — Add a collapsible main sidebar.**
+  - [x] Put Dashboard at the top and Settings at the bottom of a subtly distinct
+    navigation surface. Add a manual expand/collapse control; keep icons named,
+    keyboard accessible, and clearly selected in both modes.
+  - [x] Use a prominent page heading within the content area, preserve the daily
+    quote and existing Settings categories, and keep Settings navigation in the
+    same window. Preserve autosave and prevent leaving Settings on save failure.
+  - [x] Remove the orange selection strip. Make the selected and hover states
+    clear in both sidebar modes and themes; enlarge and align both labels and
+    icons, while keeping keyboard focus distinct. Keep collapse state when the
+    main window is hidden and shown within the same session. Offscreen Light/Dark
+    expanded-sidebar renders and the 620 px navigation check pass.
+  - [x] Use a softer dark grey for the native Windows title bar in active and
+    inactive states. Light mode is unchanged; Mac keeps native title bars.
+    A DWM attribute regression covers show and deactivation.
+  - [x] Give the expanded navigation labels more room after their icons. Remove
+    the extra Unshrimp wordmark beside the toggle.
+  - [x] Use the same plain rectangular pane icon in both sidebar states;
+    retain Expand/Collapse names and tooltips for accessibility. Main window
+    tests pass (32).
+  - [x] Anchor the toggle to the same left padding in expanded and collapsed
+    states. The 620 px Main window test confirms both positions; Mac task M07
+    records the packaged-app check.
+  - [x] Let the Dashboard heading scroll with its page. Add breathing room
+    around the quote and progress cards, within those cards, and align the
+    activity calendar Refresh action to the right.
+  - [ ] Check 620 px and default/wide layouts, Light/Dark, tray routes, closing
+    while editing, focus, and no horizontal page scroll. The local 620 px
+    Dashboard check and Main/Settings route tests pass; the full suite passes
+    477 tests, including native Windows sizing/navigation checks. Packaged Windows check pending; Mac handoff M07 below;
+    implementation commit pending.
+
+- [ ] **U19 — Offer a vertical posture meter.**
+  - [x] Add Horizontal/Vertical in Appearance. Keep horizontal as the default;
+    save and live-apply the choice, including restore defaults.
+  - [x] Render the same ten shrimp in a vertical scale, with Pause and More
+    stacked individually below the scale. Give the Settings preview room and
+    keep the break reminder readable beside a narrow vertical meter.
+  - [x] Check small/medium/large layout, Light/Dark meter contrast, the scrollable
+    Appearance preview, screen-edge feedback positioning, and drag input in both
+    orientations. Full local suite: 484 passed (one existing Qt deprecation warning).
+  - [x] Place vertical feedback in a separate, click-through pill centered below
+    the meter (above it near the screen bottom). Keep the meter's width and
+    position steady while text appears, fades, or a break reminder replaces it.
+    Local HUD/Settings tests and the full suite pass (495 tests); packaged-app
+    placement remains to be checked.
+  - [x] Make the detached caption follow the saved meter opacity in Vertical;
+    local orientation and opacity regressions pass.
+  - [ ] Check the packaged Windows app. Mac handoff: M08; implementation commit pending.
+
+- [ ] **U20 — Offer a discreet text posture cue.**
+  - [x] Add a Shrimp/Text choice in Appearance. Text shows “Unshrimp yourself”
+    in a compact floating cue with the same sustained posture trigger, placement,
+    size, opacity, and motion controls; default remains Shrimp. Match the preview.
+  - [x] Run overlay and Settings regressions (full local suite: 488 passed).
+  - [x] Widen Small/Medium/Large text cue sizes to 154/220/440 px at normal
+    display size, without changing shrimp sizes. Fit the live cue to the selected
+    screen and scale the preview down without clipping or collapsing size order.
+  - [ ] Check Light/Dark contrast and placement in the packaged Windows app.
+    Mac handoff: M09; implementation commit pending.
 
 ## Break reminders
 
@@ -413,8 +601,8 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     presence only, no bridging gaps over 2.5 seconds. Manual pause, calibration,
     idle camera stop, suspend, and camera errors break continuity.
   - Compact modeless prompt beside the HUD, clamped to the available screen;
-    fallback positioning when the HUD is hidden. Main window also provides
-    Take a break and Later actions. Snooze counts five more observed minutes.
+    fallback positioning when the HUD is hidden. Snooze counts five more
+    observed minutes.
   - Take a break starts a two-minute countdown, suppressing posture alerts and
     the shrimp while freezing the sitting timer. End break finishes early;
     completion starts a fresh sitting interval. Camera tracking continues.
@@ -431,16 +619,57 @@ implementation or acceptance work, not a request to rebuild those surfaces.
 
 ## Windows distribution
 
+- [ ] **P03 — Disclose MediaPipe SDK metrics accurately.**
+  - The bundled MediaPipe 1.1.0 privacy notice says Tasks API performance and
+    utilization metrics are sent to Google; the maintainer confirms prebuilt SDK
+    telemetry has no official opt-out. Camera input stays on-device. Remove
+    absolute no-telemetry claims from the app, README, and landing page, and
+    disclose SDK metrics before first calibration. The local Windows ZIP
+    includes the MediaPipe notice; its welcome screen still needs a visible
+    first-run check. Mac handoff M11 remains open.
+
+- [ ] **P02 — Remove release-blocking startup and persistence failures.**
+  - [x] Reject malformed saved baseline fields and non-UTF-8 config without
+    crashing startup; keep the user's file for recovery.
+  - [x] Keep pause and Quit usable when SQLite or settings writes fail, retaining
+    unsaved history where possible; reset calibration only after a successful save.
+  - [x] Validate startup-critical settings loaded from JSON; invalid types or
+    ranges fall back to defaults without replacing the user's file.
+  - [x] Save a calibration candidate before activating it; a failed write keeps
+    the previous baseline and completes calibration with clear failure feedback.
+  - [x] Keep retrying tray availability after a background launch, and flush
+    pending observed history when tracking stops.
+  - [ ] Check build dependencies and version against the release tag before
+    packaging; build and smoke-test the intended committed source. The local
+    dependency/version guards and GUI-process smoke wait are in place; an
+    isolated working-tree build and its extracted ZIP (from a path containing
+    spaces) pass the packaged icon/model/native-inference smoke test. Installed
+    dependencies pass `uv pip check`. Commit/tag verification remains.
+  - [ ] Record packaged Windows results. Shared Mac follow-up: M10; commit pending.
+    Full local suite: 504 passed (one existing Qt deprecation warning).
+
 - [ ] **P01 — Validate the release delivery on a clean Windows machine.**
   - [x] Portable executable/ZIP builds, embedded icon/models, synthetic native
     inference smoke, and a draft-release CI workflow exist. Latest local build
-    matches the checked HUD source; no release was published in this audit.
-  - [ ] Choose portable ZIP versus installer for the first release; decide signing
-    and update expectations. Test the downloaded artifact without a development
-    environment, camera permissions, startup, data preservation on upgrade, and
-    clean removal. Confirm bundled notices/model licensing before distribution.
-  - This is a newly explicit release gap, not a claim that an installer is required.
+    matches the checked HUD source; the v1.3.0 candidate ZIP also passes
+    extracted-path smoke (including bundled notice files). No release was
+    published in this audit.
+  - [x] Use the existing portable ZIP delivery for this Windows release.
+  - [ ] Run the current packaged ZIP from an isolated fresh `%APPDATA%` folder;
+    record first-run UI/process behavior separately from the synthetic smoke test.
+    The v1.3.0 candidate opened from the extracted ZIP with an isolated profile;
+    the user confirmed the window appears. The first calibration was cancelled
+    and no baseline was saved. A completed calibration remains unverified.
+  - [ ] Decide signing and update expectations. Test the downloaded artifact
+    without a development environment, camera permissions, startup, data
+    preservation on upgrade, and clean removal. Confirm bundled notices/model
+    licensing before distribution. MediaPipe/OpenCV notices are now included in
+    the local build; Qt/PySide6 LGPL redistribution obligations (license copy,
+    source availability, and replacement of shared libraries) still need a
+    distribution review.
     macOS CI packaging remains deliberately paused pending its own human verification.
+  - [ ] Keep v1.3.0 unpublished until the Mac artifact is attached, both
+    packaged apps are checked, and the remaining distribution review is done.
 
 ## New features to check on Mac
 
@@ -449,19 +678,206 @@ lands, pull its referenced commit on the Mac. Shared Python code
 should normally work on both systems; change platform-specific code only if the
 Mac check reveals a difference. Keep the Windows and Mac results separate.
 
+**Mac pickup order for this batch (M01–M11):** The Windows implementation is
+currently in local working-tree/staged changes, not in a commit that the Mac can
+pull. Before switching devices, commit and push those changes without creating a
+release, then replace each **pending** implementation-commit placeholder below
+with the relevant commit hash. On Mac, pull that commit, run the shared suite
+with `python -m pytest -q`, then work through
+the packaged-app checks below. The latest Windows local suite passed 504 tests; this
+does not verify either packaged app. Record any Mac-only fix and its commit under
+the matching M task rather than duplicating shared Python behavior.
+
 - [ ] **M01 — Sustained large-shrimp appearance (from U12).**
   - Windows reference: U12 above; implementation commit **pending**. The behavior
-    has been proposed but has not yet been changed or verified on Windows.
+    is implemented locally but has not been checked in the packaged Windows app.
+  - Windows code to inspect: `config.py` (bad/recovery hold defaults),
+    `unshrimp/ui/app.py` (saved options, posture events, interruption handling),
+    `unshrimp/ui/mascot.py` (`MascotWindow`/`MascotGroup` hold timing), and
+    `unshrimp/ui/settings.py` (Appearance controls and defaults). Regressions:
+    `tests/test_mascot.py`, `tests/test_settings.py`, `tests/test_app.py`.
   - [ ] Pull the U12 implementation commit and run its timing test on Mac.
   - [ ] In the packaged Mac app, check delayed appearance during sustained poor
-    posture, smooth recovery, brief score fluctuations, Reduce motion, and
+    posture, smooth recovery after sustained good, brief score fluctuations,
+    editable entrance/recovery holds, threshold visibility, Reduce motion, and
     immediate hiding on pause, away, camera loss, calibration, and breaks.
   - [ ] Record any Mac-only overlay or permission issue here, along with the fix
     commit and a final live-camera result. Check M01 only after that result passes.
 
+- [ ] **M02 — Expanded activity calendar (from U13).**
+  - Windows reference: U13 above; implementation commit **pending**.
+  - Windows code to inspect: `unshrimp/ui/stats.py` (`StatsTab`, `_MixBar`,
+    `_build_calendar`, `refresh`) and `unshrimp/ui/main_window.py` (Dashboard
+    placement). Regressions: `tests/test_main_window.py` calendar/resize cases
+    and `tests/test_settings.py` older-history distinction.
+  - [ ] Pull the U13 implementation commit and run the Dashboard tests on Mac.
+  - [ ] Check the six-month grid, empty days, summary values, date navigation,
+    fixed-square cells at narrow/wide widths, neutral empty-day cells, uncluttered
+    spacing, light/dark contrast, and the
+    narrow-window layout in the packaged Mac app. Check the final progress-first
+    Dashboard ordering under M04 after U15 lands.
+  - [ ] Record any Mac-only layout or accessibility fix and the final result here.
+
+- [ ] **M03 — Floating shrimp entrance choices (from U14).**
+  - Windows reference: U14 above; implementation commit **pending**.
+  - Windows code to inspect: `config.py` (`mascot_entrance` default),
+    `unshrimp/ui/mascot.py` (`MascotWindow` entrance and bobbing),
+    `unshrimp/ui/app.py` (`apply_mascot_settings`), and
+    `unshrimp/ui/settings.py` (Appearance selector, Reduce motion, defaults).
+    Regressions: `tests/test_mascot.py`, `tests/test_settings.py`.
+  - [ ] Pull the U14 implementation commit and run mascot and Settings tests on Mac.
+  - [ ] In the packaged Mac app, try all three entrances with bobbing on/off;
+    confirm Reduce motion suppresses movement without changing saved choices.
+  - [ ] Record any Mac-only overlay or animation issue and the final result here.
+
+- [ ] **M04 — Focused Dashboard layout (from U15).**
+  - Windows reference: U15 above; implementation commit **pending**.
+  - Windows code to inspect: `unshrimp/ui/main_window.py` (Dashboard cards,
+    contextual setup/recovery state, heading and quote), `unshrimp/ui/stats.py`
+    (weekly mix, activity calendar, Refresh), and `unshrimp/ui/app.py` (state and
+    Settings routes). Regression: `tests/test_main_window.py`.
+  - [ ] Pull the U15 implementation commit and run the Dashboard tests on Mac.
+  - [ ] In the packaged Mac app, check the stats-only normal view, contextual
+    calibration/camera recovery card, tray and Settings action routes, the large
+    bold daily shrimp quote with quotation marks above the stats, scrolling
+    heading, card spacing, selected-day detail beside
+    Refresh below its date,
+    narrow/wide layout, Light/Dark contrast, keyboard navigation, and screen
+    reader labels.
+  - [ ] Record any Mac-only layout or accessibility fix and the final result here.
+
+- [ ] **M05 — Embedded Settings page (from U16).**
+  - Windows reference: U16 above; implementation commit **pending**.
+  - Windows code to inspect: `unshrimp/ui/main_window.py` (`show_settings`,
+    Dashboard return/close handling), `unshrimp/ui/settings.py`
+    (`SettingsDialog`, autosave), and `unshrimp/ui/app.py` (Settings routing and
+    quit handling). Regressions: `tests/test_main_window.py`,
+    `tests/test_settings.py`, `tests/test_app.py`.
+  - [ ] Pull the U16 implementation commit and run Main/Settings tests on Mac.
+  - [ ] In the packaged Mac app, open Settings from Dashboard and status menu,
+    navigate categories, return with Done, close while editing, and test camera
+    preview/retry, calibration, theme switching, focus, and narrow sizing.
+  - [ ] Record any Mac-only window or focus issue and the final result here.
+
+- [ ] **M06 — Settings navigation and previews (from U17).**
+  - Windows reference: U17 above; implementation commit **pending**.
+  - Windows code to inspect: `unshrimp/ui/settings.py` (`_SettingsTabs`, page
+    scroll areas, `_preview_area`, `_refresh_samples`),
+    `unshrimp/ui/break_prompt.py` (shared live/example popup), and
+    `unshrimp/ui/hud.py` (sample meter). Regressions: `tests/test_settings.py`.
+  - [ ] Pull the U17 implementation commit and run Settings layout tests on Mac.
+  - [ ] In the packaged Mac app, check the four horizontal categories, selected
+    tab, aligned card/footer/preview edges, realistic break popup buttons and
+    width at each meter size and with the meter hidden, narrow/wide sizing,
+    Light/Dark contrast, keyboard
+    focus, Dashboard-aligned scrollbar, shortened tab divider, and long
+    translated labels if applicable.
+  - [ ] Record any Mac-only layout or accessibility fix and the final result here.
+
+- [ ] **M07 — Collapsible main sidebar (from U18).**
+  - Windows reference: U18 above; implementation commit **pending**.
+  - Windows code to inspect: `unshrimp/ui/main_window.py` (rail, page routing,
+    selection, collapsed state), `unshrimp/ui/icons.py` (`sidebar_icon`, home
+    and settings icons), and `unshrimp/ui/theme.py` (shared colors/focus plus
+    Windows-only title-bar integration). Regressions: `tests/test_main_window.py`
+    and `tests/test_window_header.py`; the latter checks Windows DWM behavior
+    and should not be copied into the Mac UI.
+  - [ ] Pull the U18 implementation commit and run Main/Settings tests on Mac.
+  - [ ] In the packaged Mac app, check sidebar expansion/collapse, Dashboard and
+    Settings routes from the app and status menu, selected state, icon labels,
+    larger icon/text alignment and spacing, hover and keyboard focus, theme
+    contrast, narrow-window layout, the toggle at the same left padding in
+    both sidebar widths,
+    the same plain rectangular pane icon in both states (with distinct
+    Expand/Collapse names and tooltips),
+    scrolling Dashboard heading, progress
+    card spacing, right-aligned Refresh action, and autosave errors. Check
+    that native Mac window chrome remains
+    consistent; the dark-grey DWM title-bar change is Windows-only.
+  - [ ] Record any Mac-only sizing, window, or accessibility fix and the final result.
+
+- [ ] **M08 — Vertical posture meter (from U19).**
+  - Windows reference: U19 above; implementation commit **pending**.
+  - Windows code to inspect: `config.py` (`hud.orientation` defaults to
+    `horizontal`), `unshrimp/ui/hud.py` (`ShrimpMeter` and `Hud.set_orientation`;
+    vertical shrimp run bottom-to-top with Pause and More stacked),
+    `unshrimp/ui/settings.py` (Appearance selector, immediate save, both live
+    previews and restore defaults), and `unshrimp/ui/app.py` (startup/live
+    preference application and minimum break-prompt width). Regressions:
+    `tests/test_hud.py`, `tests/test_settings.py`, `tests/test_app.py`.
+  - [ ] Pull the U19 implementation commit and run shared HUD, Settings, and
+    reminder-layout tests on Mac.
+  - [ ] In the packaged Mac app, change Appearance → Posture meter → Orientation
+    between Horizontal and Vertical at Small, Medium, and Large. Confirm the
+    live meter and Appearance preview update immediately, the choice survives a
+    restart, and Restore appearance defaults returns to Horizontal.
+  - [ ] In Vertical, confirm ten shrimp fill bottom-to-top, Pause sits above
+    More (each on its own row), both buttons work with mouse and keyboard, and
+    temporary feedback appears centered below the meter, flips above near the
+    screen bottom, and never shifts the meter. Confirm the pill is click-through,
+    fades, and hides while a break reminder is visible without clipping at edges.
+    Check that caption and meter share the chosen opacity, plus dragging and
+    Light/Dark contrast in both orientations.
+  - [ ] Trigger a break reminder with Vertical selected. Compare the Alerts and
+    breaks preview with the real popup: it must stay readable beside the narrow
+    meter, and Take a break/Later must remain usable. Repeat with the meter hidden.
+  - [ ] Record any Mac-only overlay, sizing, or accessibility fix and its commit.
+    Record a separate packaged Mac result; do not infer it from Windows tests.
+
+- [ ] **M09 — Discreet text posture cue (from U20).**
+  - Windows reference: U20 above; implementation commit **pending**. Windows
+    source and tests are complete locally; the packaged Windows check is open.
+  - Reuse the shared implementation: `config.py` defaults `mascot_style` to
+    `shrimp`; `unshrimp/ui/mascot.py` keeps the existing sustained-Bad/recovery
+    timing and click-through overlay for both styles and paints the compact
+    “Unshrimp yourself” text cue; `unshrimp/ui/appearance.py` uses that same
+    text painter in the preview; `unshrimp/ui/settings.py` saves the Shrimp/Text
+    choice immediately and restores Shrimp; `unshrimp/ui/app.py` applies it live.
+    Relevant tests: `tests/test_mascot.py`, `tests/test_settings.py`,
+    `tests/test_app.py`.
+  - [ ] Pull the U20 implementation commit and run those tests and the shared
+    suite on Mac. Fix only Mac-specific overlay differences rather than creating
+    a separate posture trigger or separate text artwork.
+  - [ ] In the packaged Mac app, open Appearance → Floating cue. Switch between
+    Shrimp and Text while tracking; confirm the live cue and camera-free preview
+    both change, and the saved choice survives quitting and reopening. Restore
+    appearance defaults and confirm Shrimp returns.
+  - [ ] With Text selected, hold poor posture past the configured “Appear after
+    bad” delay, briefly correct posture, then stay Good past “Fade after good”.
+    Confirm the text appears and fades without rapid flicker; pause tracking,
+    start calibration, and lose camera tracking to confirm immediate suppression.
+  - [ ] Check the wider Small/Medium/Large text size range, especially Large,
+    fits without clipping while shrimp sizing remains unchanged; transparency,
+    entrance, bobbing, and Reduce motion follow their saved controls. Check
+    placement at screen edges and on all displays, click-through behavior,
+    Light/Dark contrast, and the text cue's readability over light and dark apps.
+  - [ ] Record the packaged Mac result, any Mac-only fix and its commit, and the
+    separate packaged Windows result under U20. Automated tests alone do not
+    complete either platform check.
+
+- [ ] **M10 — Shared release-hardening fixes (from P02).**
+  - Windows reference: P02 above; implementation commit **pending**.
+  - [ ] Pull the P02 commit and run config, calibration, history, tray, and full
+    regressions on Mac. Inspect `config.py`, `unshrimp/ui/app.py`,
+    `unshrimp/core/history.py`, and `unshrimp/ui/tray.py`; reuse shared fixes.
+  - [ ] In the packaged Mac app, try invalid saved startup settings, a simulated
+    failed calibration save, pause/resume history persistence, and a launch while
+    the status area is temporarily unavailable. Confirm accessible controls.
+  - [ ] Record packaged Mac results separately from Windows and any Mac-only fix.
+
+- [ ] **M11 — MediaPipe metrics disclosure (from P03).**
+  - Windows reference: P03 above; implementation commit **pending**.
+  - [ ] Check that the packaged Mac welcome/About, README, and site accurately
+    disclose the MediaPipe SDK metrics and that camera frames stay local.
+  - [ ] Record packaged Mac results separately from Windows and any Mac-only fix.
+
 ## Landing page
 
 - [ ] **W01 — Finish landing-page interaction and device verification.**
+  - [x] Replace outdated Dashboard/Settings/progress screenshots in the README
+    and landing page with current Windows widgets and clearly label example data.
+    `tools/capture_readme.py` recreates the captures without opening a camera or
+    reading the user's settings/history. All README/site image paths resolve.
   - Desktop/mobile layout, copy, contrast, and motion were refined using
     apple-design and emil-design-eng. See the [change notes and captures](audits/landing-2026-10-16/CHANGES.md).
   - Passed: 320/390/768/1440 px overflow checks, images, internal anchors,

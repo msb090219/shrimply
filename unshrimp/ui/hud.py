@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QPoint, QSize, Qt, Signal, QRectF, QTimer, QPropertyAnimation
 from PySide6.QtGui import QColor, QFontMetrics, QPainter, QPen, QPixmap, QIcon, QPolygon
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QFrame, QGraphicsOpacityEffect
+from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QFrame, QGraphicsOpacityEffect
 
 from . import theme
 from .tray import shrimp_icon
@@ -21,6 +21,9 @@ class ShrimpMeter(QWidget):
         self.setFixedSize(160, 28)
         self.setAttribute(Qt.WA_TransparentForMouseEvents)
         self.lit_count = 0
+        self.orientation = "horizontal"
+        self.cell = 16
+        self.cross_size = 28
         self._art = {}
         self.setAccessibleName("Posture deviation meter")
 
@@ -32,7 +35,16 @@ class ShrimpMeter(QWidget):
         self.update()
 
     def set_size(self, cell, height):
-        self.setFixedSize(cell * len(self.COLORS), height)
+        self.cell, self.cross_size = cell, height
+        if self.orientation == "vertical":
+            self.setFixedSize(height, cell * len(self.COLORS))
+        else:
+            self.setFixedSize(cell * len(self.COLORS), height)
+        self.update()
+
+    def set_orientation(self, orientation):
+        self.orientation = orientation if orientation == "vertical" else "horizontal"
+        self.set_size(self.cell, self.cross_size)
         self.update()
 
     def paintEvent(self, event):
@@ -45,8 +57,13 @@ class ShrimpMeter(QWidget):
                 self._art[color] = shrimp_icon(color).pixmap(64, 64)
             art = self._art[color]
             painter.setOpacity(1. if selected else .45)
-            cell = self.width() / len(self.COLORS)
-            painter.drawPixmap(QRectF(index * cell, (self.height() - cell) / 2, cell - 1, cell), art, QRectF(art.rect()))
+            if self.orientation == "vertical":
+                cell = self.height() / len(self.COLORS)
+                target = QRectF((self.width() - cell) / 2, self.height() - (index + 1) * cell, cell, cell - 1)
+            else:
+                cell = self.width() / len(self.COLORS)
+                target = QRectF(index * cell, (self.height() - cell) / 2, cell - 1, cell)
+            painter.drawPixmap(target, art, QRectF(art.rect()))
 
 
 class FeedbackLabel(QLabel):
@@ -89,23 +106,24 @@ class Hud(QWidget):
         self._caption_active = False
         self._caption_text = ""
         self.size_key = "m"
+        self.orientation = "horizontal"
         self._height = theme.HUD_HEIGHT
         self.setStyleSheet(f"""
             QToolButton {{ border: 1px solid transparent; border-radius: 4px; padding: 0; }}
             QToolButton:hover {{ background: palette(midlight); }}
             QToolButton[keyboardFocus="true"] {{ border-color: {theme.SHRIMP}; }}
         """)
-        root = QVBoxLayout(self)
+        root = QBoxLayout(QBoxLayout.TopToBottom, self)
         root.setContentsMargins(0, 0, 0, 3)
         root.setSpacing(4)
         self.bar = QWidget()
         self.bar.setFixedHeight(self._height)
         root.addWidget(self.bar)
-        layout = QHBoxLayout(self.bar)
+        layout = QBoxLayout(QBoxLayout.LeftToRight, self.bar)
         layout.setContentsMargins(12, 6, 12, 6)
         layout.setSpacing(6)
         self.shrimp = ShrimpMeter()
-        layout.addWidget(self.shrimp)
+        layout.addWidget(self.shrimp, 0, Qt.AlignCenter)
         layout.addSpacing(6)
         self.label = FeedbackLabel()
         self.label.setAttribute(Qt.WA_TransparentForMouseEvents)
@@ -120,16 +138,21 @@ class Hud(QWidget):
         self._caption_fade.setDuration(250)
         self._caption_fade.finished.connect(self._finish_caption)
         root.addWidget(self.label, 0, Qt.AlignHCenter)
-        divider = QFrame()
-        divider.setFixedSize(1, 18)
-        divider.setStyleSheet("background: palette(mid);")
-        layout.addWidget(divider)
+        controls = QWidget()
+        controls_layout = QBoxLayout(QBoxLayout.LeftToRight, controls)
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setSpacing(6)
+        self.divider = QFrame()
+        self.divider.setFixedSize(1, 18)
+        self.divider.setStyleSheet("background: palette(mid);")
+        controls_layout.addWidget(self.divider)
         self.pause_button = self._button("Pause tracking", "pause")
         self.pause_button.clicked.connect(self.pause_requested.emit)
         self.menu_button = self._button("More controls", "menu")
         self.menu_button.clicked.connect(self._show_menu)
         for button in (self.pause_button, self.menu_button):
-            layout.addWidget(button)
+            controls_layout.addWidget(button)
+        layout.addWidget(controls, 0, Qt.AlignCenter)
         self.setFixedWidth(layout.sizeHint().width())
         self._refresh()
 
@@ -249,39 +272,84 @@ class Hud(QWidget):
         self.shrimp.set_size(cell, control)
         self.bar.setFixedHeight(height)
         self.label.setStyleSheet(f"font-size: {font}px; color: palette(text); background: transparent;")
-        self.bar.layout().setContentsMargins(margin, (height - control) // 2,
-                                            margin, (height - control) // 2)
-        self.bar.layout().itemAt(1).changeSize(margin - 6, 0)
+        if self.orientation == "vertical":
+            self.bar.layout().setContentsMargins(8, 8, 8, 8)
+            self.bar.layout().itemAt(1).changeSize(0, 8)
+        else:
+            self.bar.layout().setContentsMargins(margin, (height - control) // 2,
+                                                margin, (height - control) // 2)
+            self.bar.layout().itemAt(1).changeSize(margin - 6, 0)
         for button in (self.pause_button, self.menu_button):
             button.setFixedSize(control, control)
             button.setIconSize(QSize(22, 22) if self.size_key == "l" else QSize(18, 18))
         self._refresh()
+
+    def set_orientation(self, orientation):
+        orientation = "vertical" if orientation == "vertical" else "horizontal"
+        if orientation == "vertical" and self.isWindow() and not self.label.isWindow():
+            self.layout().removeWidget(self.label)
+            self.label.setParent(self, Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint |
+                                 Qt.WindowTransparentForInput)
+            self.label.setAttribute(Qt.WA_TranslucentBackground)
+            self.label.setAttribute(Qt.WA_ShowWithoutActivating)
+            self.label.setWindowOpacity(self.windowOpacity())
+        elif orientation == "horizontal" and self.label.isWindow():
+            self.label.hide()
+            self.label.setParent(self, Qt.Widget)
+            self.layout().addWidget(self.label, 0, Qt.AlignHCenter)
+        self.orientation = orientation
+        self.shrimp.set_orientation(orientation)
+        self.bar.layout().itemAt(2).widget().layout().setDirection(
+            QBoxLayout.TopToBottom if orientation == "vertical" else QBoxLayout.LeftToRight)
+        self.bar.layout().setDirection(QBoxLayout.TopToBottom if orientation == "vertical" else QBoxLayout.LeftToRight)
+        self.layout().setDirection(QBoxLayout.LeftToRight if orientation == "vertical" and not self.label.isWindow()
+                                   else QBoxLayout.TopToBottom)
+        if not self.label.isWindow():
+            self.layout().setAlignment(self.label, Qt.AlignVCenter if orientation == "vertical" else Qt.AlignHCenter)
+        self.divider.setVisible(orientation == "horizontal")
+        self.set_size(self.size_key)
+
+    def setWindowOpacity(self, opacity):
+        super().setWindowOpacity(opacity)
+        if self.label.isWindow():
+            self.label.setWindowOpacity(opacity)
 
     def _refresh(self):
         label_text = (self._caption_text if self.mode == "live" and self._caption_active else
                       "Calibrating" if self.mode == "calibrating" else self.text)
         self.label.ensurePolished()
         metrics = QFontMetrics(self.label.font())
+        self.bar.layout().itemAt(2).widget().layout().invalidate()
+        self.bar.layout().itemAt(2).widget().updateGeometry()
         self.bar.layout().invalidate()
-        width = self.bar.layout().sizeHint().width()
-        self.bar.setFixedWidth(width)
-        self.label.setFixedSize(width - 8, metrics.height() + 10)
+        hint = self.bar.layout().sizeHint()
+        width = hint.width()
+        bar_height = hint.height() if self.orientation == "vertical" else self._height
+        self.bar.setFixedSize(width, bar_height)
+        self.label.setFixedSize(160 if self.orientation == "vertical" else width - 8, metrics.height() + 10)
         self.label.setText(label_text if metrics.horizontalAdvance(label_text) <= self.label.width() - 24 else
                            metrics.elidedText(label_text, Qt.ElideRight, self.label.width() - 24))
         needs_explanation = (self.mode in ("cam_error", "uncalibrated", "calibrating",
                                                 "paused", "preview", "idle")
                              or (self.mode == "live" and self.level is None))
-        self.label.setVisible(not self._break_prompt_visible and
-                              (needs_explanation or (self._caption_active and not self.compact)))
-        self.layout().setContentsMargins(0, 0, 0, 0 if self.label.isHidden() else 3)
+        caption_visible = (not self._break_prompt_visible and
+                           (needs_explanation or (self._caption_active and not self.compact)))
+        self.label.setVisible(caption_visible and (self.isVisible() or not self.label.isWindow()))
+        floating_caption = self.orientation == "vertical" and self.label.isWindow()
+        self.layout().setContentsMargins(0, 0, 0, 3 if caption_visible and not floating_caption else 0)
         self.layout().invalidate()
-        self.setFixedSize(width, self._height if self.label.isHidden() else
-                          self._height + 4 + self.label.height() + 3)
+        if self.orientation == "vertical":
+            self.setFixedSize(width if floating_caption or not caption_visible else width + 4 + self.label.width(),
+                              bar_height)
+        else:
+            self.setFixedSize(width, bar_height if not caption_visible else
+                              bar_height + 4 + self.label.height() + 3)
         screen = self.screen()
         if screen is not None and self.isWindow():
             area = screen.availableGeometry()
             self.move(max(area.left(), min(self.x(), area.right() - self.width() + 1)),
                       max(area.top(), min(self.y(), area.bottom() - self.height() + 1)))
+        self._position_caption()
         self.setToolTip(self.text)
         self.setAccessibleDescription(self.text)
         self.shrimp.set_reading(self.level if self.mode == "live" else None)
@@ -304,7 +372,30 @@ class Hud(QWidget):
         self.shrimp.update()
 
     def moveEvent(self, event):
+        self._position_caption()
         self.moved.emit()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.label.isWindow():
+            self._refresh()
+
+    def hideEvent(self, event):
+        if self.label.isWindow():
+            self.label.hide()
+        super().hideEvent(event)
+
+    def _position_caption(self):
+        if not self.label.isWindow() or self.label.isHidden():
+            return
+        area = self.screen().availableGeometry()
+        bar = self.bar.mapToGlobal(QPoint())
+        x = bar.x() + (self.bar.width() - self.label.width()) // 2
+        y = bar.y() + self.bar.height() + 4
+        if y + self.label.height() > area.bottom() + 1:
+            y = bar.y() - self.label.height() - 4
+        self.label.move(max(area.left(), min(x, area.right() - self.label.width() + 1)),
+                        max(area.top(), y))
 
     def resizeEvent(self, event):
         self.moved.emit()
@@ -334,4 +425,4 @@ class Hud(QWidget):
         background = QColor(self.palette().window().color())
         background.setAlpha(255)
         painter.setBrush(background)
-        painter.drawRoundedRect(QRectF(1, 1, self.width() - 2, self._height - 2), theme.R_HUD, theme.R_HUD)
+        painter.drawRoundedRect(QRectF(1, 1, self.bar.width() - 2, self.bar.height() - 2), theme.R_HUD, theme.R_HUD)

@@ -33,6 +33,29 @@ def test_visibility_sync_does_not_emit_user_changes(tray):
     hud.assert_called_once_with(True)
 
 
+def test_unavailable_tray_keeps_retrying_and_signals_fallback(tray, monkeypatch):
+    from unshrimp.ui import tray as tray_module
+
+    available = iter((False, False, True))
+    monkeypatch.setattr(tray_module.QSystemTrayIcon, "isSystemTrayAvailable",
+                        staticmethod(lambda: next(available)))
+    scheduled = []
+    monkeypatch.setattr(tray_module.QTimer, "singleShot",
+                        staticmethod(lambda delay, callback: scheduled.append((delay, callback))))
+    tray.icon.show = Mock()
+    fallback = Mock()
+    tray.unavailable.connect(fallback)
+
+    tray.show_when_ready()
+    assert len(scheduled) == 1
+    scheduled.pop()[1]()
+    fallback.assert_called_once()
+    assert len(scheduled) == 1
+    scheduled.pop()[1]()
+    tray.icon.show.assert_called_once()
+    assert scheduled == []
+
+
 def test_calibration_override_is_in_menu_and_primary_controls_route(tray):
     assert tray.cont_action in tray.menu.actions()
     assert not tray.cont_action.isVisible()

@@ -5,7 +5,7 @@ import sys
 import copy
 
 import cv2
-from PySide6.QtCore import Qt, Signal, QSignalBlocker, QTimer, QEvent, QUrl
+from PySide6.QtCore import Qt, QPoint, Signal, QSignalBlocker, QTimer, QEvent, QUrl
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -36,7 +36,7 @@ from .appearance import ShrimpPreview
 from .hud import Hud
 from .tray import shrimp_icon
 from .icons import refresh_icon
-from PySide6.QtGui import QGuiApplication, QDesktopServices
+from PySide6.QtGui import QGuiApplication, QDesktopServices, QPainter
 
 
 def available_cameras(max_index: int = 4, skip: int | None = None) -> list[int]:
@@ -52,6 +52,21 @@ def available_cameras(max_index: int = 4, skip: int | None = None) -> list[int]:
             out.append(i)
         cap.release()
     return out or [0]
+
+
+class _SettingsTabs(QTabWidget):
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        scroll = self.currentWidget()
+        if scroll is None:
+            return
+        card = scroll.widget().layout().itemAt(0).widget()
+        left = card.mapTo(self, QPoint(0, 0)).x()
+        right = card.mapTo(self, QPoint(card.width(), 0)).x()
+        painter = QPainter(self)
+        painter.setPen(self.palette().mid().color())
+        y = self.tabBar().geometry().bottom()
+        painter.drawLine(left, y, right, y)
 
 
 class SettingsDialog(QDialog):
@@ -76,7 +91,6 @@ class SettingsDialog(QDialog):
         self._retry_timer.setSingleShot(True)
         self._retry_timer.timeout.connect(self._finish_retry_feedback)
         self.setWindowTitle("Settings")
-        self.setMinimumSize(620, 500)
         self.resize(760, 640)
         theme.apply_desktop_theme(self)
         tabs = self.tabs = self._general_tab()
@@ -90,9 +104,10 @@ class SettingsDialog(QDialog):
         note.setAccessibleName("Save status")
         btns.addWidget(note, 1)
         btns.addWidget(done)
+        btns.setContentsMargins(0, 0, 16, 0)
 
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(16, 0, 16, 16)
+        lay.setContentsMargins(16, 0, 0, 16)
         lay.setSpacing(12)
         lay.addWidget(tabs)
         lay.addLayout(btns)
@@ -108,7 +123,8 @@ class SettingsDialog(QDialog):
         self._update_dependencies()
         for button in self.findChildren(QPushButton):
             button.setAutoDefault(False)
-            button.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
+            if button not in (self.reminder_sample.take_button, self.reminder_sample.later_button):
+                button.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
         for control in self.findChildren(QSpinBox):
             control.setFixedWidth(112)
             control.setKeyboardTracking(False)
@@ -121,12 +137,16 @@ class SettingsDialog(QDialog):
     # ------------------------------------------------------------------
     def _general_tab(self) -> QWidget:
         c = self.cfg
-        tabs = QTabWidget()
+        tabs = _SettingsTabs()
+        tabs.setObjectName("settingsTabs")
+        tabs.tabBar().setObjectName("settingsTabBar")
+        tabs.tabBar().setExpanding(True)
+        tabs.currentChanged.connect(tabs.update)
         columns = {}
         for name in ("Tracking", "Alerts and breaks", "Appearance", "General"):
             inner = QWidget()
             layout = QVBoxLayout(inner)
-            layout.setContentsMargins(16, 16, 16, 16)
+            layout.setContentsMargins(0, 16, 16, 16)
             layout.setSpacing(16)
             columns[name] = layout
             scroll = QScrollArea()
@@ -153,12 +173,20 @@ class SettingsDialog(QDialog):
         col.addWidget(card)
 
         # --- Mascot -----------------------------------------------------
-        card, form = section("Floating shrimp", theme.app_icon())
+        card, form = section("Floating cue", theme.app_icon())
         self.shrimp_preview = ShrimpPreview()
-        self.mascot_on = QCheckBox("Show the floating shrimp when I slouch")
+        self.mascot_on = QCheckBox("Show a floating cue when I slouch")
         self.mascot_on.setChecked(bool(c.get("mascot_enabled", True)))
         self.mascot_on.toggled.connect(self._mascot_changed)
         form.addRow(self.mascot_on)
+
+        self.mascot_style = QComboBox()
+        self.mascot_style.addItem("Shrimp", "shrimp")
+        self.mascot_style.addItem("Text · Unshrimp yourself", "text")
+        self.mascot_style.setMaximumWidth(220)
+        self.mascot_style.setCurrentIndex(max(0, self.mascot_style.findData(c.get("mascot_style", "shrimp"))))
+        self.mascot_style.currentIndexChanged.connect(self._mascot_changed)
+        form.addRow("Style", self.mascot_style)
 
         self.mascot_size = QComboBox()
         for label, key in (("Small", "s"), ("Medium", "m"), ("Large", "l")):
@@ -171,7 +199,7 @@ class SettingsDialog(QDialog):
         form.addRow("Size", self.mascot_size)
 
         self.mascot_op = QSlider(Qt.Horizontal)
-        self.mascot_op.setAccessibleName("Floating shrimp transparency")
+        self.mascot_op.setAccessibleName("Floating cue transparency")
         self.mascot_op.setRange(0, 70)
         self.mascot_op.setMaximumWidth(220)
         self.mascot_op.setValue(round((1 - float(c.get("mascot_opacity", 0.87))) * 100))
@@ -207,6 +235,29 @@ class SettingsDialog(QDialog):
         self.mascot_screen.setCurrentIndex(self.mascot_screen.findData(saved_screen))
         self.mascot_screen.currentIndexChanged.connect(self._mascot_changed)
         form.addRow("Display", self.mascot_screen)
+        self.mascot_entrance = QComboBox()
+        for label, key in (("Fade and rise", "rise"), ("Fade only", "fade"),
+                           ("Appear instantly", "instant")):
+            self.mascot_entrance.addItem(label, key)
+        self.mascot_entrance.setMaximumWidth(220)
+        entrance = self.mascot_entrance.findData(c.get("mascot_entrance", "rise"))
+        self.mascot_entrance.setCurrentIndex(max(0, entrance))
+        self.mascot_entrance.currentIndexChanged.connect(self._mascot_changed)
+        form.addRow("Entrance", self.mascot_entrance)
+        self.mascot_bad_hold = QSpinBox()
+        self.mascot_bad_hold.setRange(0, 15)
+        self.mascot_bad_hold.setSuffix(" s")
+        self.mascot_bad_hold.setValue(int(c.get("mascot_bad_hold_s", 2)))
+        self.mascot_bad_hold.setToolTip("How long posture must stay Bad before the floating cue appears. 0 means immediately.")
+        self.mascot_bad_hold.valueChanged.connect(self._mascot_changed)
+        form.addRow("Appear after bad", self.mascot_bad_hold)
+        self.mascot_recovery_hold = QSpinBox()
+        self.mascot_recovery_hold.setRange(0, 15)
+        self.mascot_recovery_hold.setSuffix(" s")
+        self.mascot_recovery_hold.setValue(int(c.get("mascot_recovery_hold_s", 3)))
+        self.mascot_recovery_hold.setToolTip("How long posture must stay Good before the floating cue fades. 0 means immediately.")
+        self.mascot_recovery_hold.valueChanged.connect(self._mascot_changed)
+        form.addRow("Fade after good", self.mascot_recovery_hold)
         self.mascot_bob = QCheckBox("Gentle bobbing")
         self.mascot_bob.setChecked(bool(c.get("mascot_bob", True)))
         self.mascot_bob.toggled.connect(self._mascot_changed)
@@ -215,10 +266,10 @@ class SettingsDialog(QDialog):
         self.reduce_motion.setChecked(bool(c.get("reduce_motion", False)))
         self.reduce_motion.toggled.connect(self._motion_changed)
         form.addRow(self.reduce_motion)
-        motion_note = QLabel("Also reduces calibration animation.")
+        motion_note = QLabel("Removes cue movement and reduces calibration animation. Your entrance and bobbing choices stay saved.")
         motion_note.setWordWrap(True)
         form.addRow(motion_note)
-        form.addRow(self._preview_area(self.shrimp_preview, "Preview · no camera needed"))
+        form.addRow(self._preview_area(self.shrimp_preview, "Preview · after entrance · no camera needed"))
         col.addWidget(card)
 
         card, form = section("Posture meter", shrimp_icon(theme.GOOD))
@@ -235,6 +286,13 @@ class SettingsDialog(QDialog):
         self.hud_visible.setChecked(c["hud"].get("visible", True))
         self.hud_visible.toggled.connect(self._hud_changed)
         form.addRow(self.hud_visible)
+        self.hud_orientation = QComboBox()
+        self.hud_orientation.setFixedWidth(144)
+        self.hud_orientation.addItem("Horizontal", "horizontal")
+        self.hud_orientation.addItem("Vertical", "vertical")
+        self.hud_orientation.setCurrentIndex(max(0, self.hud_orientation.findData(c["hud"].get("orientation", "horizontal"))))
+        self.hud_orientation.currentIndexChanged.connect(self._hud_changed)
+        form.addRow("Orientation", self.hud_orientation)
         self.hud_size = QComboBox()
         self.hud_size.setFixedWidth(112)
         for label, key in (("Small", "s"), ("Medium", "m"), ("Large", "l")):
@@ -389,13 +447,17 @@ class SettingsDialog(QDialog):
         self.reminder_meter_preview = Hud()
         self.reminder_meter_preview.setWindowFlags(Qt.Widget)
         self.reminder_meter_preview.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.reminder_meter_preview.set_orientation(c["hud"].get("orientation", "horizontal"))
         self.reminder_meter_preview.set_size(c["hud"].get("size", "m"))
         self.reminder_meter_preview.set_live(.5, "")
         self.reminder_meter_preview.set_break_prompt_visible(True)
         preview_layout.addWidget(self.reminder_meter_preview, 0, Qt.AlignLeft)
         self.reminder_sample = BreakPrompt(example=True, break_minutes=c["reminder_break_min"])
         self.reminder_sample.setWindowFlags(Qt.Widget)
-        self.reminder_sample.setFixedWidth(self.reminder_meter_preview.bar.width())
+        self.reminder_sample.setFixedWidth(
+            (max(340, self.reminder_meter_preview.bar.width())
+             if c["hud"].get("orientation") == "vertical" else self.reminder_meter_preview.bar.width())
+            if c["hud"].get("visible", True) else 340)
         preview_layout.addWidget(self.reminder_sample, 0, Qt.AlignLeft)
         self.preview_status = QLabel()
         self.preview_status.setWordWrap(True)
@@ -525,7 +587,7 @@ class SettingsDialog(QDialog):
         label.setStyleSheet(f"color: {theme.TEXT_MUTED};")
         self._theme_muted_labels.append(label)
         layout.addWidget(label)
-        layout.addWidget(sample, 0, Qt.AlignCenter)
+        layout.addWidget(sample, 0, Qt.AlignLeft)
         return area
 
     # ------------------------------------------------------------------
@@ -667,7 +729,7 @@ class SettingsDialog(QDialog):
     # live-apply handlers
     def _motion_changed(self, enabled):
         self.cfg["reduce_motion"] = enabled
-        self.mascot_bob.setEnabled(not enabled)
+        self._update_dependencies()
         self._refresh_samples()
         self._commit()
 
@@ -677,9 +739,13 @@ class SettingsDialog(QDialog):
 
     def _mascot_changed(self, *_):
         self.cfg["mascot_enabled"] = self.mascot_on.isChecked()
+        self.cfg["mascot_style"] = self.mascot_style.currentData()
         self.cfg["mascot_size"] = self.mascot_size.currentData()
         self.cfg["mascot_opacity"] = 1 - self.mascot_op.value() / 100
         self.cfg["mascot_bob"] = self.mascot_bob.isChecked()
+        self.cfg["mascot_entrance"] = self.mascot_entrance.currentData()
+        self.cfg["mascot_bad_hold_s"] = self.mascot_bad_hold.value()
+        self.cfg["mascot_recovery_hold_s"] = self.mascot_recovery_hold.value()
         self.cfg["mascot_position"] = self.mascot_position.currentData()
         self.cfg["mascot_screen"] = self.mascot_screen.currentData()
         self.opacity_label.setText(f"{self.mascot_op.value()}%")
@@ -690,6 +756,7 @@ class SettingsDialog(QDialog):
     def _hud_changed(self, *_):
         self.cfg["hud"].update(visible=self.hud_visible.isChecked(),
                                compact=self.hud_compact.isChecked(), size=self.hud_size.currentData(),
+                               orientation=self.hud_orientation.currentData(),
                                opacity=1 - self.hud_op.value() / 100)
         self.hud_op_label.setText(f"{self.hud_op.value()}%")
         self._refresh_samples()
@@ -698,12 +765,18 @@ class SettingsDialog(QDialog):
 
     def _refresh_samples(self):
         self.shrimp_preview.configure(self.cfg)
+        self.hud_preview.set_orientation(self.cfg["hud"].get("orientation", "horizontal"))
         self.hud_preview.set_size(self.cfg["hud"].get("size", "m"))
         self.hud_preview.set_compact(self.cfg["hud"].get("compact", False))
         self.hud_preview.setVisible(self.cfg["hud"].get("visible", True))
         self.hud_preview_opacity.setOpacity(self.cfg["hud"].get("opacity", 1.0))
+        self.reminder_meter_preview.set_orientation(self.cfg["hud"].get("orientation", "horizontal"))
         self.reminder_meter_preview.set_size(self.cfg["hud"].get("size", "m"))
-        self.reminder_sample.setFixedWidth(self.reminder_meter_preview.bar.width())
+        self.reminder_meter_preview.setVisible(self.cfg["hud"].get("visible", True))
+        self.reminder_sample.setFixedWidth(
+            (max(340, self.reminder_meter_preview.bar.width())
+             if self.cfg["hud"].get("orientation") == "vertical" else self.reminder_meter_preview.bar.width())
+            if self.cfg["hud"].get("visible", True) else 340)
         self._refresh_reminder_preview()
 
     def _reset_meter_position(self):
@@ -716,13 +789,18 @@ class SettingsDialog(QDialog):
         self._ready = False
         self.theme_mode.setCurrentIndex(self.theme_mode.findData("dark"))
         self.mascot_on.setChecked(True)
+        self.mascot_style.setCurrentIndex(self.mascot_style.findData("shrimp"))
         self.mascot_size.setCurrentIndex(1)
         self.mascot_op.setValue(13)
         self.mascot_position.setCurrentIndex(self.mascot_position.findData("center"))
         self.mascot_screen.setCurrentIndex(0)
         self.mascot_bob.setChecked(True)
+        self.mascot_entrance.setCurrentIndex(self.mascot_entrance.findData("rise"))
+        self.mascot_bad_hold.setValue(2)
+        self.mascot_recovery_hold.setValue(3)
         self.reduce_motion.setChecked(False)
         self.hud_visible.setChecked(True)
+        self.hud_orientation.setCurrentIndex(self.hud_orientation.findData("horizontal"))
         self.hud_size.setCurrentIndex(1)
         self.hud_op.setValue(0)
         self.hud_compact.setChecked(False)
@@ -815,9 +893,12 @@ class SettingsDialog(QDialog):
             with QSignalBlocker(control):
                 control.setChecked(value)
         for control, value in ((self.mascot_size, c["mascot_size"]),
+                               (self.mascot_style, c.get("mascot_style", "shrimp")),
                                (self.hud_size, c["hud"]["size"]),
+                               (self.hud_orientation, c["hud"].get("orientation", "horizontal")),
                                (self.mascot_position, c["mascot_position"]),
                                (self.mascot_screen, c["mascot_screen"]),
+                               (self.mascot_entrance, c.get("mascot_entrance", "rise")),
                                (self.theme_mode, c.get("theme_mode", "dark"))):
             with QSignalBlocker(control):
                 control.setCurrentIndex(control.findData(value))
@@ -826,7 +907,9 @@ class SettingsDialog(QDialog):
                                (self.sens, round(c["sensitivity"]*10)),
                                (self.grace, c["grace_s"]), (self.renag, c["renag_s"]),
                                (self.away, c["away_s"]), (self.reminder_min, c["reminder_interval_min"]),
-                               (self.break_min, c["reminder_break_min"])):
+                               (self.break_min, c["reminder_break_min"]),
+                               (self.mascot_bad_hold, c.get("mascot_bad_hold_s", 2)),
+                               (self.mascot_recovery_hold, c.get("mascot_recovery_hold_s", 3))):
             with QSignalBlocker(control):
                 control.setValue(int(value))
         with QSignalBlocker(self.cam):
@@ -843,11 +926,16 @@ class SettingsDialog(QDialog):
 
     def _update_dependencies(self):
         shrimp_on = self.mascot_on.isChecked()
-        for control in (self.mascot_size, self.mascot_op, self.mascot_position, self.mascot_screen):
+        for control in (self.mascot_style, self.mascot_size, self.mascot_op,
+                        self.mascot_position, self.mascot_screen):
             control.setEnabled(shrimp_on)
+        self.mascot_entrance.setEnabled(shrimp_on and not self.reduce_motion.isChecked())
+        self.mascot_bad_hold.setEnabled(shrimp_on)
+        self.mascot_recovery_hold.setEnabled(shrimp_on)
         self.mascot_bob.setEnabled(shrimp_on and not self.reduce_motion.isChecked())
-        self.mascot_bob.setToolTip("Enable the floating shrimp and turn off Reduce motion to animate it.")
+        self.mascot_bob.setToolTip("Enable the floating cue and turn off Reduce motion to animate it.")
         self.hud_size.setEnabled(self.hud_visible.isChecked())
+        self.hud_orientation.setEnabled(self.hud_visible.isChecked())
         self.hud_op.setEnabled(self.hud_visible.isChecked())
         self.hud_compact.setEnabled(self.hud_visible.isChecked())
         self.reminder_min.setEnabled(self.reminder.isChecked())

@@ -1,22 +1,20 @@
 """The ordinary desktop home for Unshrimp; closing it leaves tracking in the tray."""
 from __future__ import annotations
 
-import math
-import time
 from datetime import date
 
 from PySide6.QtCore import QTimer, Qt, QSize, QEvent
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QFrame, QMenu,
+    QScrollArea, QFrame, QStackedWidget, QSizePolicy,
 )
 
 from . import theme
 from .stats import StatsTab
 from .sections import section
-from .icons import settings_icon, tracking_icon, IconButton
-from .status import camera_status, calibration_status
+from .icons import settings_icon, home_icon, sidebar_icon, IconButton
+from .status import camera_status
 
 
 DAILY_LINES = (
@@ -57,122 +55,116 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.controller = controller
         self.setWindowTitle("Unshrimp")
-        self.resize(760, 620)
+        self.resize(960, 680)
         self.setMinimumSize(620, 480)
         theme.apply_desktop_theme(self)
 
         root = QWidget()
         root.setAttribute(Qt.WA_ContentsMarginsRespectsSafeArea, False)
         self.setCentralWidget(root)
-        layout = QVBoxLayout(root)
-        layout.setContentsMargins(16, 0, 16, 16)
-        layout.setSpacing(12)
+        shell = QHBoxLayout(root)
+        shell.setContentsMargins(0, 0, 0, 0)
+        shell.setSpacing(0)
+        self.sidebar = QFrame()
+        self.sidebar.setObjectName("navigationRail")
+        nav = QVBoxLayout(self.sidebar)
+        nav.setContentsMargins(8, 12, 8, 12)
+        nav.setSpacing(8)
+        self.sidebar_toggle = IconButton()
+        self.sidebar_toggle.setObjectName("sidebarToggle")
+        self.sidebar_toggle.setFixedSize(40, 40)
+        self.sidebar_toggle.setIconSize(QSize(20, 20))
+        self.sidebar_toggle.setAccessibleName("Collapse menu")
+        self.sidebar_toggle.setToolTip("Collapse menu")
+        self.sidebar_toggle.clicked.connect(self.toggle_sidebar)
+        nav.addWidget(self.sidebar_toggle, 0, Qt.AlignLeft)
+        self.dashboard_button = IconButton()
+        self.dashboard_button.setObjectName("navButton")
+        self.dashboard_button.setText("\u2002Dashboard")
+        self.dashboard_button.setAccessibleName("Dashboard")
+        self.dashboard_button.setToolTip("Dashboard")
+        self.dashboard_button.setShortcut("Alt+D")
+        self.dashboard_button.clicked.connect(self._navigate_dashboard)
+        nav.addWidget(self.dashboard_button)
+        nav.addStretch()
         settings = self.settings_button = IconButton()
-        settings.setObjectName("settingsButton")
-        settings.setFixedSize(32, 32)
-        settings.setIconSize(QSize(18, 18))
-        settings.setIcon(settings_icon(self.palette().text().color()))
+        settings.setObjectName("navButton")
+        settings.setText("\u2002Settings")
         settings.setToolTip("Settings")
         settings.setAccessibleName("Settings")
         settings.setShortcut("Alt+S")
         settings.setFocusPolicy(Qt.StrongFocus)
         settings.clicked.connect(controller._open_settings)
-        header = QHBoxLayout()
-        header.setContentsMargins(16, 4, 16, 0)
+        nav.addWidget(settings)
+        nav_font = QFont(self.font())
+        nav_font.setPointSize(11)
+        nav_font.setWeight(QFont.DemiBold)
+        for button in (self.dashboard_button, settings):
+            button.setCheckable(True)
+            button.setFixedHeight(44)
+            button.setIconSize(QSize(20, 20))
+            button.setFont(nav_font)
+            button.setFocusPolicy(Qt.StrongFocus)
+            button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        shell.addWidget(self.sidebar)
+        body = QWidget()
+        shell.addWidget(body, 1)
+        layout = QVBoxLayout(body)
+        layout.setContentsMargins(16, 0, 16, 16)
+        layout.setSpacing(12)
+        self.settings_heading = QLabel("Settings")
         heading = self.dashboard_heading = QLabel("Dashboard")
         heading_font = QFont(heading.font())
-        heading_font.setPointSize(13)
+        heading_font.setPointSize(20)
         heading_font.setBold(True)
         heading.setFont(heading_font)
-        header.addWidget(heading, 1)
-        header.addWidget(settings)
-        layout.addLayout(header)
+        self.settings_heading.setFont(heading_font)
+        self.settings_heading.setContentsMargins(16, 16, 16, 0)
+        layout.addWidget(self.settings_heading)
+        self.settings_heading.hide()
         today = QWidget()
         content = QVBoxLayout(today)
         content.setContentsMargins(16, 16, 16, 16)
-        content.setSpacing(16)
-        self.daily_line = QLabel()
-        quote_font = QFont(self.daily_line.font())
-        quote_font.setItalic(True)
-        self.daily_line.setFont(quote_font)
-        self.daily_line.setWordWrap(True)
-        content.addWidget(self.daily_line)
-        tracking, form = section("Tracking")
-        self.status = QLabel()
-        font = QFont(self.status.font())
-        font.setPointSize(13)
-        font.setBold(True)
-        self.status.setFont(font)
-        self.status.setWordWrap(True)
-        self.description = QLabel()
-        self.description.setWordWrap(True)
-        form.addRow(self.status)
-        form.addRow(self.description)
+        content.setSpacing(20)
+        content.addWidget(heading)
+        content.addSpacing(4)
+        notice, form = section("Set up posture tracking")
+        self.notice_card = notice
+        self.notice_heading = notice.findChild(QLabel, "sectionTitle")
+        self.notice_detail = QLabel()
+        self.notice_detail.setWordWrap(True)
+        form.addRow(self.notice_detail)
         actions = QHBoxLayout()
-        self.pause = QPushButton()
-        self.pause.setIconSize(QSize(18, 18))
-        self.pause.clicked.connect(self._toggle_pause)
         self.calibrate = QPushButton("Calibrate…")
         self.calibrate.clicked.connect(controller.start_calibration)
-        actions.addWidget(self.pause)
         actions.addWidget(self.calibrate)
+        self.camera_retry = QPushButton("Retry camera")
+        self.camera_retry.clicked.connect(controller.restart_camera)
+        actions.addWidget(self.camera_retry)
         self.tracking_settings = QPushButton("Camera settings…")
         self.tracking_settings.clicked.connect(lambda: controller._open_settings_page("Tracking"))
         actions.addWidget(self.tracking_settings)
         actions.addStretch()
         form.addRow(actions)
-        self.camera = QLabel()
-        self.camera.setWordWrap(True)
-        self.baseline = QLabel()
-        self.baseline.setWordWrap(True)
-        camera_actions = QHBoxLayout()
-        camera_actions.addWidget(self.camera, 1)
-        self.camera_preview = QPushButton("Camera preview…")
-        self.camera_preview.clicked.connect(controller.open_camera_preview)
-        camera_actions.addWidget(self.camera_preview)
-        self.camera_retry = QPushButton("Retry camera")
-        self.camera_retry.clicked.connect(controller.restart_camera)
-        camera_actions.addWidget(self.camera_retry)
-        form.addRow("Camera", camera_actions)
-        self.camera_detail = QLabel()
-        self.camera_detail.setWordWrap(True)
-        form.addRow(self.camera_detail)
-        form.addRow("Calibration", self.baseline)
-        content.addWidget(tracking)
-        breaks, breaks_form = section("Break reminders")
-        self.reminders = QLabel()
-        self.reminders.setWordWrap(True)
-        breaks_form.addRow(self.reminders)
-        self.break_actions = QWidget()
-        break_actions = QHBoxLayout(self.break_actions)
-        break_actions.setContentsMargins(0, 0, 0, 0)
-        self.take_break = QPushButton()
-        self.take_break.clicked.connect(self._break_action)
-        self.later_break = QPushButton("Later")
-        later_menu = QMenu(self.later_break)
-        later_menu.addAction("In 5 min", lambda: controller._snooze_break(5))
-        later_menu.addAction("In 10 min", lambda: controller._snooze_break(10))
-        later_menu.addAction("Skip this reminder", controller._skip_break)
-        self.later_break.setMenu(later_menu)
-        break_actions.addWidget(self.take_break)
-        break_actions.addWidget(self.later_break)
-        reminder_actions = QHBoxLayout()
-        reminder_actions.addWidget(self.break_actions)
-        reminder_actions.addStretch()
-        self.reminder_settings = QPushButton("Break settings…")
-        self.reminder_settings.clicked.connect(lambda: controller._open_settings_page("Alerts and breaks"))
-        reminder_actions.addWidget(self.reminder_settings)
-        breaks_form.addRow(reminder_actions)
-        content.addWidget(breaks)
+        content.addWidget(notice)
+        self.daily_line = QLabel()
+        quote_font = QFont(self.daily_line.font())
+        quote_font.setPointSize(15)
+        quote_font.setBold(True)
+        self.daily_line.setFont(quote_font)
+        self.daily_line.setWordWrap(True)
+        content.addWidget(self.daily_line)
         self.progress = StatsTab(controller.log)
         self.progress.layout().setContentsMargins(0, 0, 0, 0)
         content.addWidget(self.progress)
         content.addStretch()
         self.dashboard_page = _scroll_page(today)
-        layout.addWidget(self.dashboard_page)
-        footer = QLabel("Close this window to keep tracking in the system tray. Use tray → Quit to exit.")
-        footer.setWordWrap(True)
-        layout.addWidget(footer)
+        self.pages = QStackedWidget()
+        self.pages.addWidget(self.dashboard_page)
+        layout.addWidget(self.pages)
+        self._sidebar_expanded = False
+        self.toggle_sidebar()
+        self._set_active_page("Dashboard")
         self.timer = QTimer(self)
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.refresh)
@@ -180,93 +172,100 @@ class MainWindow(QMainWindow):
         screen = self.screen()
         if screen is not None:
             area = screen.availableGeometry()
-            self.resize(min(760, max(620, area.width() - 48)),
-                        min(620, max(480, area.height() - 64)))
+            self.resize(min(960, max(620, area.width() - 48)),
+                        min(680, max(480, area.height() - 64)))
 
-    def _toggle_pause(self):
-        self.controller._on_pause_toggled(self.controller.machine.state.value != "paused")
+    def toggle_sidebar(self):
+        self._sidebar_expanded = not self._sidebar_expanded
+        self.sidebar.setFixedWidth(168 if self._sidebar_expanded else 56)
+        style = Qt.ToolButtonTextBesideIcon if self._sidebar_expanded else Qt.ToolButtonIconOnly
+        for button in (self.dashboard_button, self.settings_button):
+            button.setToolButtonStyle(style)
+        label = "Collapse menu" if self._sidebar_expanded else "Expand menu"
+        self.sidebar_toggle.setAccessibleName(label)
+        self.sidebar_toggle.setToolTip(label)
+        self._refresh_nav_icons()
+
+    def _set_active_page(self, name):
+        self.dashboard_button.setChecked(name == "Dashboard")
+        self.settings_button.setChecked(name == "Settings")
+
+    def _navigate_dashboard(self):
+        settings = getattr(self.controller, "_settings_dlg", None)
+        if settings is not None:
+            settings.accept()
+            if self.pages.currentWidget() is settings:
+                self._set_active_page("Settings")
+        else:
+            self._set_active_page("Dashboard")
+
+    def _refresh_nav_icons(self):
+        color = self.palette().text().color()
+        self.sidebar_toggle.setIcon(sidebar_icon(color))
+        self.dashboard_button.setIcon(home_icon(color))
+        self.settings_button.setIcon(settings_icon(color))
+
+    def show_settings(self, settings):
+        if self.pages.indexOf(settings) < 0:
+            self.pages.addWidget(settings)
+        self.pages.setCurrentWidget(settings)
+        self.settings_heading.show()
+        self._set_active_page("Settings")
+        if self.isMinimized():
+            self.showNormal()
+        else:
+            self.show()
+        self.raise_()
+        self.activateWindow()
+        settings.tabs.setFocus(Qt.OtherFocusReason)
+
+    def show_dashboard(self, settings):
+        self.pages.setCurrentWidget(self.dashboard_page)
+        self.pages.removeWidget(settings)
+        self.settings_heading.hide()
+        self._set_active_page("Dashboard")
+        self.dashboard_button.setFocus(Qt.OtherFocusReason)
         self.refresh()
+        self.progress.refresh()
+
+    def apply_theme(self):
+        settings = getattr(self.controller, "_settings_dlg", None)
+        if settings is not None:
+            settings.apply_theme()
 
     def changeEvent(self, event):
         super().changeEvent(event)
         if event.type() in (QEvent.PaletteChange, QEvent.ApplicationPaletteChange) and hasattr(self, "settings_button"):
-            self.settings_button.setIcon(settings_icon(self.palette().text().color()))
-            if hasattr(self, "pause"):
-                self.pause.setIcon(tracking_icon(self.palette().text().color(),
-                                                 self.controller.machine.state.value == "paused"))
-
-    def _break_action(self):
-        if self.controller.breaks.in_break:
-            self.controller._end_break()
-        else:
-            self.controller._take_break()
-        self.refresh()
+            self._refresh_nav_icons()
 
     def refresh(self):
         today = date.today()
         if getattr(self, "_daily_line_date", None) != today:
             self._daily_line_date = today
-            self.daily_line.setText(DAILY_LINES[today.toordinal() % len(DAILY_LINES)])
+            self.daily_line.setText(f"“{DAILY_LINES[today.toordinal() % len(DAILY_LINES)]}”")
         app = self.controller
         state = app.machine.state.value
-        paused = state == "paused"
-        states = {
-            "good": ("Sitting comfortably", "Your posture is within your calibrated range."),
-            "drifting": ("Posture drifting", "Check your position and settle into your usual posture."),
-            "bad": ("Time to adjust", "Your posture has moved outside your calibrated range."),
-            "away": ("Away from the desk", "Tracking will pick up when you return."),
-            "paused": ("Tracking paused", "Posture scoring is paused. Camera preview can run separately for framing."),
-            "camera_error": ("Camera unavailable", "Check the camera connection and permissions. Unshrimp will retry."),
-            "uncalibrated": ("Set up your posture baseline", "Calibrate in your usual working position to start tracking."),
-        }
-        title, description = states.get(state, ("Getting ready", "Waiting for a usable camera reading."))
-        if app._suspended:
-            title, description = "Sleeping", "Capture is stopped while the system is suspended."
-        elif app._idle_stopped and not paused:
-            title, description = "Tracking stopped while idle", "Tracking resumes when computer activity returns."
-        elif app._cal is not None:
-            title, description = "Calibration in progress", "Normal posture tracking is suspended. Follow the pose instructions."
-        elif not paused and state in ("good", "drifting", "bad") and app._display_deviation is None:
-            title, description = "Finding your posture", "Waiting for enough usable camera readings to score posture."
-        self.status.setText(title)
-        self.description.setText(description)
-        self.pause.setText("Resume tracking" if paused else "Pause tracking")
-        if self.pause.property("pausedIcon") != paused:
-            self.pause.setIcon(tracking_icon(self.palette().text().color(), paused))
-            self.pause.setProperty("pausedIcon", paused)
-        self.calibrate.setEnabled(app._cal is None and not app._suspended)
-        self.pause.setEnabled(app._cal is None and not app._suspended)
-        camera_state, detail = camera_status(app)
-        self.camera.setText(f"Camera {app.cfg['camera_index']} · {camera_state.capitalize()}")
-        self.camera_detail.setText(detail)
-        self.camera_detail.setVisible(camera_state != "running")
-        self.camera_retry.setVisible(camera_state in ("reconnecting", "off")
-                                     and not app._suspended and not app._idle_stopped)
-        self.baseline.setText(calibration_status(app))
-        reminder = app.breaks
-        if not reminder.enabled:
-            reminder_text = "Break reminders are off. Enable them in Settings → Alerts and breaks."
-        elif reminder.in_break:
-            seconds = math.ceil(reminder.break_remaining(time.monotonic()))
-            reminder_text = f"Break in progress · {seconds // 60}:{seconds % 60:02d} remaining. Your sitting timer is paused."
-        elif reminder.pending:
-            reminder_text = "A break is due. Take a short walk or a comfortable stretch."
-        else:
-            minutes = math.ceil(reminder.remaining / 60)
-            reminder_text = (f"Snoozed · {minutes} min of sitting remaining." if reminder.snoozed
-                             else f"Next reminder in {minutes} min of detected sitting.")
-        self.reminders.setText(reminder_text + (
-            "\nTime away, pauses and calibration do not count."
-            if reminder.enabled else ""))
-        self.break_actions.setVisible(reminder.enabled and (reminder.pending or reminder.in_break))
-        self.take_break.setText("End break" if reminder.in_break else
-                                f"Start break · {app.cfg['reminder_break_min']} min")
-        self.later_break.setVisible(not reminder.in_break)
+        camera_issue = state == "camera_error" and not (app._suspended or app._idle_stopped or app._cal)
+        needs_setup = (app.baseline is None or state == "uncalibrated") and not (app._suspended or app._cal)
+        self.notice_card.setVisible(camera_issue or needs_setup)
+        self.calibrate.setVisible(needs_setup and not camera_issue)
+        self.camera_retry.setVisible(camera_issue)
+        self.tracking_settings.setVisible(camera_issue)
+        if camera_issue:
+            _, detail = camera_status(app)
+            self.notice_heading.setText("Camera unavailable")
+            self.notice_card.setAccessibleName("Camera unavailable")
+            self.notice_detail.setText(detail)
+        elif needs_setup:
+            self.notice_heading.setText("Set up posture tracking")
+            self.notice_card.setAccessibleName("Set up posture tracking")
+            self.notice_detail.setText("Calibrate in your usual working position to start tracking.")
 
     def showEvent(self, event):
         super().showEvent(event)
         self.refresh()
-        self.progress.refresh()
+        if self.pages.currentWidget() is self.dashboard_page:
+            self.progress.refresh()
         self.timer.start()
 
     def hideEvent(self, event):
@@ -274,6 +273,11 @@ class MainWindow(QMainWindow):
         super().hideEvent(event)
 
     def closeEvent(self, event):
+        settings = getattr(self.controller, "_settings_dlg", None)
+        if self.pages.currentWidget() is not self.dashboard_page and settings is not None:
+            if not settings._finish_pending():
+                event.ignore()
+                return
         # Closing the home window must not quit the tray app or stop capture.
         self.hide()
         event.ignore()

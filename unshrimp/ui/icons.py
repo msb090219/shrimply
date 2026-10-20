@@ -63,6 +63,27 @@ def settings_icon(color):
     return _render_icon(color, draw)
 
 
+def home_icon(color):
+    def draw(painter):
+        roof = QPainterPath()
+        roof.moveTo(3, 11)
+        roof.lineTo(12, 4)
+        roof.lineTo(21, 11)
+        painter.drawPath(roof)
+        painter.drawLine(6, 10, 6, 20)
+        painter.drawLine(18, 10, 18, 20)
+        painter.drawLine(6, 20, 18, 20)
+        painter.drawRect(QRectF(10, 14, 4, 6))
+    return _render_icon(color, draw)
+
+
+def sidebar_icon(color):
+    def draw(painter):
+        painter.drawRoundedRect(QRectF(3, 4, 18, 16), 2, 2)
+        painter.drawLine(9, 4, 9, 20)
+    return _render_icon(color, draw)
+
+
 def tracking_icon(color, paused):
     def draw(painter):
         if paused:

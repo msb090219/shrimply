@@ -51,13 +51,18 @@ class WelcomeDialog(QDialog):
         privacy, form = section("Camera and privacy")
         text = (
             "Camera frames are processed on this device and are not saved. "
-            "Your settings and posture history are stored locally. No account is needed."
+            "Your settings and posture history are stored locally. No account is needed. "
+            "The MediaPipe SDK sends performance and usage metrics to Google, "
+            "but not camera frames."
         )
         if not about_mode:
             text += " You can pause tracking at any time. Choosing Later leaves the camera off."
         body = QLabel(text)
         body.setWordWrap(True)
         form.addRow(body)
+        notice = QLabel('<a href="https://github.com/google-ai-edge/mediapipe#privacy-notice">MediaPipe privacy notice</a>')
+        notice.setOpenExternalLinks(True)
+        form.addRow(notice)
         content.addWidget(privacy)
         content.addStretch()
         buttons = QHBoxLayout()

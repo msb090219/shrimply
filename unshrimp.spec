@@ -2,12 +2,23 @@
 # PyInstaller spec for Unshrimp; Windows is the supported release target.
 # One-dir layout (fast startup; onefile would unpack ~150 MB per launch).
 import sys
+from importlib.metadata import distribution
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_dynamic_libs, collect_submodules
 
 ROOT = Path(SPECPATH)
 NAME = "Unshrimp" if sys.platform == "darwin" else "unshrimp"
+
+
+def wheel_file(package, suffix):
+    wheel = distribution(package)
+    for file in wheel.files or ():
+        if str(file).replace("\\", "/").endswith(suffix):
+            path = wheel.locate_file(file)
+            if path.is_file():
+                return str(path)
+    raise FileNotFoundError(f"{package} wheel is missing {suffix}")
 
 # MediaPipe loads its C bindings dynamically at runtime, invisible to
 # static analysis — collect the whole package's submodules and native libs.
@@ -21,6 +32,11 @@ a = Analysis(
     datas=[
         (str(ROOT / "models"), "models"),  # bundle the MediaPipe models
         (str(ROOT / "assets"), "assets"),  # brand art (user-replaceable)
+        (str(ROOT / "LICENSE"), "licenses"),
+        (wheel_file("mediapipe", "dist-info/licenses/LICENSE"), "licenses/mediapipe"),
+        (wheel_file("mediapipe", "dist-info/licenses/NOTICE"), "licenses/mediapipe"),
+        (wheel_file("opencv-python", "cv2/LICENSE.txt"), "licenses/opencv"),
+        (wheel_file("opencv-python", "cv2/LICENSE-3RD-PARTY.txt"), "licenses/opencv"),
     ],
     hiddenimports=mp_hidden,
     hookspath=[],

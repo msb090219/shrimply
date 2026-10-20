@@ -5,11 +5,15 @@ from datetime import date, timedelta
 
 from PySide6.QtCore import QEvent, QRectF, QTimer, Qt
 from PySide6.QtGui import QColor, QPainter, QPainterPath
-from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QPushButton, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QToolButton, QVBoxLayout, QWidget
 
 from . import theme
 from .icons import refresh_icon
 from .sections import section
+
+_WEEKS = 26
+_CELL = 20
+_GAP = 4
 
 
 def _duration(seconds: float) -> str:
@@ -25,8 +29,7 @@ def _duration(seconds: float) -> str:
 class _MixBar(QWidget):
     def __init__(self):
         super().__init__()
-        self.setFixedHeight(14)
-        self.setMaximumWidth(520)
+        self.setFixedHeight(22)
         self.values = (0., 0., 0.)
 
     def set_values(self, values):
@@ -58,58 +61,81 @@ class StatsTab(QWidget):
         self.log = log
         self._selected = date.today()
         self._calendar_today = None
+        self._weeks_shown = 0
         self._cells = {}
         self._cell_days = {}
         self._days = {}
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(16, 16, 16, 16)
-        lay.setSpacing(16)
+        lay.setSpacing(20)
 
         today, today_form = section("Today")
         self.today_lbl = QLabel()
-        self.today_lbl.setStyleSheet("font-size: 15px; font-weight: 600;")
+        self.today_lbl.setStyleSheet("font-size: 18px; font-weight: 600;")
         self.today_lbl.setWordWrap(True)
         today_form.addRow(self.today_lbl)
         lay.addWidget(today)
 
         week, week_form = section("This week")
         self.week_lbl = QLabel()
+        self.week_lbl.setStyleSheet("font-size: 18px; font-weight: 600;")
         self.week_lbl.setWordWrap(True)
         week_form.addRow(self.week_lbl)
         self.mix = _MixBar()
+        self.mix.setAccessibleName("Weekly posture mix")
         week_form.addRow(self.mix)
+        legend = QHBoxLayout()
+        legend.setSpacing(12)
+        self.mix_values = []
+        for caption in ("Comfortable", "Drifting", "Adjust"):
+            label = QLabel()
+            label.setWordWrap(True)
+            self.mix_values.append(label)
+            legend.addWidget(label, 1)
+        week_form.addRow(legend)
         self.mix_detail = QLabel()
         self.mix_detail.setWordWrap(True)
         week_form.addRow(self.mix_detail)
         lay.addWidget(week)
 
-        calendar, calendar_form = section("Last 12 weeks")
+        calendar, calendar_form = section("Last 26 weeks")
+        self.calendar_card = calendar
+        self.calendar_heading = calendar.findChild(QLabel, "sectionTitle")
+        calendar_form.setVerticalSpacing(18)
+        summary = QHBoxLayout()
+        summary.setSpacing(16)
+        for caption, name in (("Tracked days", "tracked_days"),
+                              ("Monitored time", "monitored_time"),
+                              ("Time in range", "in_range")):
+            column = QVBoxLayout()
+            column.setSpacing(4)
+            value = QLabel()
+            value.setStyleSheet("font-size: 20px; font-weight: 600;")
+            setattr(self, name, value)
+            column.addWidget(value)
+            column.addWidget(QLabel(caption))
+            summary.addLayout(column, 1)
+        calendar_form.addRow(summary)
         self.calendar_grid = QGridLayout()
         self.calendar_grid.setContentsMargins(0, 0, 0, 0)
-        self.calendar_grid.setHorizontalSpacing(5)
-        self.calendar_grid.setVerticalSpacing(5)
+        self.calendar_grid.setHorizontalSpacing(_GAP)
+        self.calendar_grid.setVerticalSpacing(_GAP)
+        self.calendar_grid.setColumnMinimumWidth(0, 24)
+        self.calendar_grid.setRowMinimumHeight(0, 26)
+        self.calendar_grid.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         chart = QWidget()
-        chart.setFixedWidth(13 * 26 + 12 * 5)
+        chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         chart_layout = QVBoxLayout(chart)
         chart_layout.setContentsMargins(0, 0, 0, 0)
-        chart_layout.setSpacing(8)
+        chart_layout.setSpacing(5)
         chart_layout.addLayout(self.calendar_grid)
+        chart_layout.addSpacing(8)
         self.selected_date = QLabel()
         self.selected_date.setStyleSheet("font-weight: 600;")
         chart_layout.addWidget(self.selected_date)
         self.day_detail = QLabel()
         self.day_detail.setWordWrap(True)
-        chart_layout.addWidget(self.day_detail)
-        chart_row = QHBoxLayout()
-        chart_row.addStretch()
-        chart_row.addWidget(chart)
-        chart_row.addStretch()
-        calendar_form.addRow(chart_row)
-        note = QLabel("Coral shows monitored time (up to 2 h/day). ~ marks an older estimate. Paused, away and unreadable time is excluded.")
-        note.setWordWrap(True)
-        calendar_form.addRow(note)
-
         refresh = self.refresh_button = QPushButton("Refresh")
         refresh.setIcon(refresh_icon(self.palette().text().color()))
         refresh.setToolTip("Refresh progress (Alt+R)")
@@ -118,13 +144,20 @@ class StatsTab(QWidget):
         refresh.setFocusPolicy(Qt.StrongFocus)
         refresh.clicked.connect(self._manual_refresh)
         actions = QHBoxLayout()
+        actions.setSpacing(12)
+        actions.addWidget(self.day_detail, 1)
         actions.addWidget(refresh)
-        actions.addStretch()
-        calendar_form.addRow(actions)
+        chart_layout.addLayout(actions)
+        calendar_form.addRow(chart)
+        calendar.setToolTip("Paused, away and unreadable time is excluded. Older sample-based estimates do not count toward timed totals.")
         self._refresh_timer = QTimer(self)
         self._refresh_timer.setSingleShot(True)
         self._refresh_timer.timeout.connect(self._finish_manual_refresh)
         lay.addWidget(calendar)
+        for card, form in ((today, today_form), (week, week_form), (calendar, calendar_form)):
+            card.layout().setContentsMargins(18, 16, 18, 18)
+            card.layout().setSpacing(16)
+            form.setVerticalSpacing(14 if card is not calendar else 18)
         lay.addStretch(1)
 
     def changeEvent(self, event):
@@ -137,12 +170,26 @@ class StatsTab(QWidget):
             if hasattr(self, "mix"):
                 self.mix.update()
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self._calendar_today is not None and self._week_count() != self._weeks_shown:
+            QTimer.singleShot(0, self.refresh)
+
+    def _week_count(self):
+        return max(1, min(_WEEKS, (self.width() - 122) // (_CELL + _GAP)))
+
     def _build_calendar(self):
         today = date.today()
-        if self._calendar_today == today:
+        weeks = self._week_count()
+        if self._calendar_today == today and self._weeks_shown == weeks:
             return
         self._calendar_today = today
-        self._selected = today
+        self._weeks_shown = weeks
+        title = f"Last {weeks} weeks"
+        self.calendar_heading.setText(title)
+        self.calendar_card.setAccessibleName(title)
+        selected_button = self._cells.get(self._selected)
+        had_focus = selected_button is not None and selected_button.hasFocus()
         self._cells.clear()
         self._cell_days.clear()
         while self.calendar_grid.count():
@@ -153,21 +200,29 @@ class StatsTab(QWidget):
             label = QLabel(day_name)
             label.setAlignment(Qt.AlignCenter)
             self.calendar_grid.addWidget(label, row, 0)
-        start = today - timedelta(days=today.weekday() + 11 * 7)
-        for week in range(12):
+        start = today - timedelta(days=today.weekday() + (weeks - 1) * 7)
+        if self._selected < start:
+            self._selected = today
+        for week in range(weeks):
             monday = start + timedelta(weeks=week)
-            if week == 0 or monday.month != (monday - timedelta(weeks=1)).month:
-                self.calendar_grid.addWidget(QLabel(monday.strftime("%b")), 0, week + 1)
+            month_start = next((monday + timedelta(days=offset) for offset in range(7)
+                                if (monday + timedelta(days=offset)).day == 1), None)
+            if week == 0 or month_start is not None:
+                label = month_start or monday
+                self.calendar_grid.addWidget(QLabel(label.strftime("%b")), 0, week + 1,
+                                             1, min(2, weeks - week))
             for weekday in range(7):
                 day = monday + timedelta(days=weekday)
                 button = QToolButton()
-                button.setFixedSize(26, 26)
+                button.setFixedSize(_CELL, _CELL)
                 button.setEnabled(day <= today)
                 button.installEventFilter(self)
                 button.clicked.connect(lambda _, selected=day: self._select_day(selected))
                 self.calendar_grid.addWidget(button, weekday + 1, week + 1)
                 self._cells[day] = button
                 self._cell_days[button] = day
+        if had_focus and self._selected in self._cells:
+            self._cells[self._selected].setFocus()
 
     def eventFilter(self, watched, event):
         if watched in self._cell_days and event.type() == QEvent.KeyPress:
@@ -192,13 +247,12 @@ class StatsTab(QWidget):
                 color = QColor.fromRgbF(*(base.getRgbF()[i] * (1 - strength) +
                                          accent.getRgbF()[i] * strength for i in range(3)))
             else:
-                color = self.palette().midlight().color() if legacy else self.palette().base().color()
-            border = ("2px solid palette(text)" if day == self._selected else
-                      "1px dashed palette(mid)" if legacy else "1px solid palette(mid)")
+                color = self.palette().mid().color() if legacy else self.palette().midlight().color()
+            border = "2px solid palette(text)" if day == self._selected else "1px solid palette(mid)"
             button.setFocusPolicy(Qt.StrongFocus if day == self._selected else Qt.ClickFocus)
             button.setStyleSheet(f"QToolButton {{ background: {color.name()}; border: {border}; border-radius: 4px; padding: 0; }}"
                                  "QToolButton:hover, QToolButton:focus { border-color: palette(text); }")
-            button.setText("~" if legacy else "")
+            button.setText("")
             detail = self._day_text(day, summary)
             description = f"{day:%A, %d %B %Y}: {detail}"
             button.setToolTip(description)
@@ -209,7 +263,7 @@ class StatsTab(QWidget):
             return "No observations"
         pct = summary["pct_good"]
         if summary["measurement"] == "legacy_samples":
-            return f"~{pct:.0f}% in calibrated range (older sample-based estimate)"
+            return f"{pct:.0f}% in calibrated range (older sample-based estimate)"
         seconds = summary.get("seconds", summary.get("minutes", 0) * 60)
         return f"{_duration(seconds)} monitored · {pct:.0f}% in calibrated range"
 
@@ -234,12 +288,21 @@ class StatsTab(QWidget):
             self.refresh_button.setText("Refresh")
 
     def refresh(self) -> None:
-        days = self.log.day_summaries(84)
-        self._days = {date.fromtimestamp(day["ts"]): day for day in days if "ts" in day}
         self._build_calendar()
+        days = [day for day in self.log.day_summaries(_WEEKS * 7)
+                if "ts" in day and date.fromtimestamp(day["ts"]) in self._cells]
+        self._days = {date.fromtimestamp(day["ts"]): day for day in days}
         self._refresh_cells()
         self.selected_date.setText(self._selected.strftime("%A, %d %B %Y"))
         self.day_detail.setText(self._day_text(self._selected, self._days.get(self._selected)))
+
+        tracked = sum(day.get("pct_good") is not None for day in days)
+        timed = [day for day in days if day.get("measurement") == "time"]
+        total_s = sum(day.get("seconds", 0.) for day in timed)
+        good_s = sum(day.get("good_s", 0.) for day in timed)
+        self.tracked_days.setText(str(tracked))
+        self.monitored_time.setText(_duration(total_s))
+        self.in_range.setText(f"{good_s / total_s:.0%}" if total_s else "—")
 
         today = self._days.get(date.today())
         if today and today.get("pct_good") is not None:
@@ -249,7 +312,7 @@ class StatsTab(QWidget):
                 seconds = today.get("seconds", today.get("minutes", 0) * 60)
                 self.today_lbl.setText(f"{_duration(seconds)} monitored · {today['pct_good']:.0f}% in calibrated range")
         else:
-            self.today_lbl.setText("No observations in the last 12 weeks. Start tracking to build your progress." if not any(
+            self.today_lbl.setText(f"No observations in the last {self._weeks_shown} weeks. Start tracking to build your progress." if not any(
                 day.get("pct_good") is not None for day in days) else "No monitored time today.")
 
         monday = date.today() - timedelta(days=date.today().weekday())
@@ -259,12 +322,18 @@ class StatsTab(QWidget):
         bad = sum(day.get("bad_s", 0.) for day in week)
         total = good + drifting + bad
         self.mix.set_values((good, drifting, bad))
+        self.mix.setAccessibleDescription(
+            f"Comfortable {_duration(good)}, drifting {_duration(drifting)}, adjust {_duration(bad)}")
+        for label, caption, seconds in zip(self.mix_values,
+                                           ("Comfortable", "Drifting", "Adjust"),
+                                           (good, drifting, bad)):
+            label.setText(f"{caption}\n{_duration(seconds)}")
+            label.setVisible(bool(total))
         if total:
-            self.week_lbl.setText(f"{_duration(total)} monitored this week")
-            details = f"Comfortable {_duration(good)} · Drifting {_duration(drifting)} · Adjust {_duration(bad)}"
-            if any(day.get("measurement") == "legacy_samples" for day in week):
-                details += "\nOlder sample-based estimates are excluded."
-            self.mix_detail.setText(details)
+            self.week_lbl.setText(f"{_duration(total)} monitored")
+            self.mix_detail.setText("Older estimates excluded." if any(
+                day.get("measurement") == "legacy_samples" for day in week) else "")
         else:
-            self.week_lbl.setText("No timed observations this week yet.")
-            self.mix_detail.setText("Start tracking to see how your monitored time is split.")
+            self.week_lbl.setText("No monitored time yet")
+            self.mix_detail.setText("Track posture to see this week's mix.")
+        self.mix_detail.setVisible(bool(self.mix_detail.text()))

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import time
 import math
+import sqlite3
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QPoint, QTimer
+from PySide6.QtCore import QObject, Qt, QTimer
 
 import config as config_mod
 from unshrimp.core.baseline import Baseline
@@ -98,6 +99,7 @@ class UnshrimpApp(QObject):
 
         self.hud = Hud()
         hud_cfg = self.cfg["hud"]
+        self.hud.set_orientation(hud_cfg.get("orientation", "horizontal"))
         self.hud.set_size(hud_cfg.get("size", "m"))
         self.hud.set_compact(hud_cfg.get("compact", False))
         self.hud.setWindowOpacity(hud_cfg.get("opacity", 1.0))
@@ -107,6 +109,7 @@ class UnshrimpApp(QObject):
         self.hud.setVisible(hud_cfg.get("visible", True))
 
         self.tray = Tray()
+        self.tray.unavailable.connect(self._ensure_controls_visible)
         self.tray.calibrate_requested.connect(self.start_calibration)
         self.tray.pause_toggled.connect(self._on_pause_toggled)
         self.tray.hud_toggled.connect(self._on_hud_toggled)
@@ -166,6 +169,7 @@ class UnshrimpApp(QObject):
         self.log = PostureLog(config_mod.APP_DIR / "log.db")
         self.session_id = self.log.start_session()
         self.history = HistoryAccumulator()
+        self._history_save_failed = False
         self.breaks = BreakReminder(bool(self.cfg["reminder_enabled"]),
                                     self.cfg["reminder_interval_min"] * 60,
                                     self.cfg["reminder_break_min"] * 60)
@@ -241,6 +245,10 @@ class UnshrimpApp(QObject):
         if (not background or needs_setup) and self._cal is None:
             self._open_main_window()
 
+    def _ensure_controls_visible(self) -> None:
+        if not self._quitting and not self.hud.isVisible() and not self.main_window.isVisible():
+            self._open_main_window()
+
     def _open_main_window(self) -> None:
         if self.main_window.isMinimized():
             self.main_window.showNormal()
@@ -310,6 +318,7 @@ class UnshrimpApp(QObject):
             self.apply_mascot_settings(save=False)
         if "hud" in changes:
             hud = candidate["hud"]
+            self.hud.set_orientation(hud.get("orientation", "horizontal"))
             self.hud.set_size(hud.get("size", "m"))
             self.hud.set_compact(hud.get("compact", False))
             self.hud.setWindowOpacity(hud.get("opacity", 1.0))
@@ -353,9 +362,14 @@ class UnshrimpApp(QObject):
         self.mascot.reduce_motion = reduced
         self.mascot.position = self.cfg.get("mascot_position", "center")
         self.mascot.screen_name = self.cfg.get("mascot_screen", "")
+        self.mascot.bad_hold_s = max(0, min(15, float(self.cfg.get("mascot_bad_hold_s", 2))))
+        self.mascot.recovery_hold_s = max(0, min(15, float(self.cfg.get("mascot_recovery_hold_s", 3))))
         self.mascot.set_options(float(self.cfg.get("mascot_opacity", .87)),
                                 str(self.cfg.get("mascot_size", "m")),
-                                bool(self.cfg.get("mascot_bob", True)) and not reduced)
+                                bool(self.cfg.get("mascot_bob", True)) and not reduced,
+                                str(self.cfg.get("mascot_entrance", "rise")),
+                                float(self.cfg.get("bad", 1.5)),
+                                str(self.cfg.get("mascot_style", "shrimp")))
 
     def set_mascot_enabled(self, on: bool) -> None:
         self.cfg["mascot_enabled"] = on
@@ -383,15 +397,27 @@ class UnshrimpApp(QObject):
         self.worker.stop()
         if self.worker.isRunning():
             return False
-        self._flush_bucket()
-        self.log.end_session(self.session_id)
+        self._try_flush_bucket()
+        try:
+            self.log.end_session(self.session_id)
+        except (OSError, sqlite3.Error) as exc:
+            from unshrimp import diag
+            diag.log(f"history: could not close session: {exc}")
         self.cfg["hud"]["x"], self.cfg["hud"]["y"] = (
             self.hud.pos().x(),
             self.hud.pos().y(),
         )
         self.cfg["hud"]["visible"] = self.hud.isVisible()
-        config_mod.save(self.cfg)
-        self.log.close()
+        try:
+            config_mod.save(self.cfg)
+        except OSError as exc:
+            from unshrimp import diag
+            diag.log(f"app: could not save final window state: {exc}")
+        try:
+            self.log.close()
+        except sqlite3.Error as exc:
+            from unshrimp import diag
+            diag.log(f"history: could not close database: {exc}")
         self.hud.hide()
         self._shutdown_done = True
         return True
@@ -432,7 +458,7 @@ class UnshrimpApp(QObject):
             return
         if self._camera_preview is not None:
             self._camera_preview.close()
-        self.history.reset()
+        self._end_history_segment()
         self.breaks.pause()
         self.break_prompt.hide()
         self._cal_was_paused = self.machine.state is State.PAUSED
@@ -488,7 +514,7 @@ class UnshrimpApp(QObject):
         self.preview_win.stop_preview()
         self.preview_win.hide()
         self.tray.show_continue(False)
-        self.history.reset()
+        self._end_history_segment()
         self.breaks.pause()
         self.break_prompt.hide()
         self.smoother.reset()
@@ -555,7 +581,10 @@ class UnshrimpApp(QObject):
             elif ev.startswith("failed:"):
                 self._toast("Calibration failed", res.hint or ev)
             elif ev == "calibrated" and res.baseline is not None:
-                self._accept_baseline(res.baseline)
+                if not self._accept_baseline(res.baseline):
+                    res.phase = "failed"
+                    res.hint = "Calibration was not saved. Check that your settings folder is writable and try again."
+                    self._toast("Calibration was not saved", res.hint)
 
         if res.phase in ("done", "failed"):
             self._cal = None
@@ -585,11 +614,16 @@ class UnshrimpApp(QObject):
             self._on_pause_toggled(False)
         self._open_main_window()
 
-    def _accept_baseline(self, built: Baseline) -> None:
+    def _accept_baseline(self, built: Baseline) -> bool:
+        candidate = dict(self.cfg, baseline=built.to_dict(), tracking_paused=True)
+        try:
+            config_mod.save(candidate)
+        except OSError as exc:
+            from unshrimp import diag
+            diag.log(f"cal: could not save baseline: {exc}")
+            return False
+        self.cfg.update(baseline=candidate["baseline"], tracking_paused=True)
         self.baseline = built
-        self.cfg["baseline"] = built.to_dict()
-        self.cfg["tracking_paused"] = True
-        config_mod.save(self.cfg)
         self.machine.mark_calibrated()
         self.smoother.reset()
         self._good_streak = 0
@@ -599,6 +633,7 @@ class UnshrimpApp(QObject):
             notes += " · setup checks were skipped"
         self._toast("Calibration saved", f"Choose Start tracking when you're ready{notes}.")
         self.hud.set_live(0.0, "good")
+        return True
 
     # ------------------------------------------------------------------
     def _on_frame(self, sig) -> None:
@@ -665,7 +700,7 @@ class UnshrimpApp(QObject):
                 idle, self._cal is not None, self.machine.state is State.PAUSED
             ):
                 self._idle_stopped = True
-                self.history.reset()
+                self._end_history_segment()
                 self.breaks.pause()
                 self.break_prompt.hide()
                 diag.log(f"idle: {idle:.0f}s without input — camera off")
@@ -683,7 +718,7 @@ class UnshrimpApp(QObject):
         if self.breaks.in_break:
             self.mascot.force_hide()
         elif self.cfg.get("mascot_enabled", True):
-            self.mascot.set_level(dev if scorable else None)
+            self.mascot.set_level(dev if scorable else None, bad=state is State.BAD)
         elif self.mascot.isVisible():
             self.mascot.force_hide()
 
@@ -700,7 +735,22 @@ class UnshrimpApp(QObject):
         wall = time.time()
         self.history.push(state.value if dev is not None else None, time.monotonic(), wall)
         if self.history.minutes and min(self.history.minutes) < int(wall // 60) * 60:
+            self._try_flush_bucket()
+
+    def _end_history_segment(self) -> None:
+        self.history.reset()
+        self._try_flush_bucket()
+
+    def _try_flush_bucket(self) -> None:
+        try:
             self._flush_bucket()
+        except (OSError, sqlite3.Error) as exc:
+            from unshrimp import diag
+            if not self._history_save_failed:
+                diag.log(f"history: could not save pending time: {exc}")
+            self._history_save_failed = True
+        else:
+            self._history_save_failed = False
 
     def _flush_bucket(self) -> None:
         for minute, bucket in list(self.history.minutes.items()):
@@ -772,7 +822,8 @@ class UnshrimpApp(QObject):
             return
         bounds = screen.availableGeometry()
         prompt = self.break_prompt
-        width = self.hud.bar.width() if self.hud.isVisible() else 340
+        width = (max(340, self.hud.bar.width()) if self.hud.orientation == "vertical"
+                 else self.hud.bar.width()) if self.hud.isVisible() else 340
         if prompt.width() != width:
             prompt.setFixedWidth(width)
             prompt.adjustSize()
@@ -859,7 +910,7 @@ class UnshrimpApp(QObject):
             diag.log(f"pause: could not save preference: {exc}")
         self.tray.set_paused_ui(paused)
         if paused:
-            self.history.reset()
+            self._end_history_segment()
             self.breaks.pause()
             self.break_prompt.hide()
             self._restart_pending = False
@@ -915,7 +966,7 @@ class UnshrimpApp(QObject):
         if self._camera_preview is not None:
             self._camera_preview.refresh()
         if camera_mode(self) == "tracking" and not self._restart_pending:
-            self.history.reset()
+            self._end_history_segment()
             self.breaks.pause()
             self.break_prompt.hide()
             self.smoother.reset()
@@ -949,9 +1000,13 @@ class UnshrimpApp(QObject):
     def _open_settings(self) -> None:
         from .settings import SettingsDialog
 
+        main = self.main_window
         dlg = self._settings_dlg
         if dlg is None:
-            dlg = SettingsDialog(self.cfg, self, parent=self.hud)
+            dlg = SettingsDialog(self.cfg, self, parent=main.pages)
+            dlg.setWindowFlags(Qt.Widget)
+            dlg.setMinimumSize(0, 0)
+            dlg.done_button.hide()
             self._settings_dlg = dlg
             dlg.calibrate_requested.connect(
                 self.start_calibration
@@ -960,30 +1015,11 @@ class UnshrimpApp(QObject):
             dlg.select_page(getattr(self, "_settings_page", "Tracking"))
             def settings_finished(_):
                 self._settings_page = dlg.tabs.tabText(dlg.tabs.currentIndex())
+                main.show_dashboard(dlg)
                 self._settings_dlg = None
             dlg.finished.connect(settings_finished)
             dlg.finished.connect(dlg.deleteLater)
-        # Settings must not disable the HUD, even if Windows hides the dialog.
-        main = self.main_window
-        dlg.show()
-        screen = main.screen()
-        if screen is not None:
-            area = screen.availableGeometry()
-            frame = main.frameGeometry()
-            gap = 12
-            width, height = dlg.frameGeometry().width(), dlg.frameGeometry().height()
-            right = frame.right() + gap + 1
-            left = frame.left() - gap - width
-            if right + width <= area.right() + 1:
-                x = right
-            elif left >= area.left():
-                x = left
-            else:
-                x = max(area.left(), min(frame.left(), area.right() - width + 1))
-            y = max(area.top(), min(frame.top(), area.bottom() - height + 1))
-            dlg.windowHandle().setFramePosition(QPoint(x, y))
-        dlg.raise_()
-        dlg.activateWindow()
+        main.show_settings(dlg)
 
     def restart_camera(self) -> None:
         """Public hook for Settings' camera picker."""
@@ -994,12 +1030,19 @@ class UnshrimpApp(QObject):
         self._settings_dlg.select_page(name)
 
     def _reset_baseline(self) -> None:
+        candidate = dict(self.cfg, baseline=None)
+        try:
+            config_mod.save(candidate)
+        except OSError as exc:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(self.main_window, "Calibration was not reset",
+                                f"Your previous calibration is still active.\n\n{exc}")
+            return
         was_paused = self.machine.state is State.PAUSED
-        self.history.reset()
+        self._end_history_segment()
         self.breaks.pause()
         self.break_prompt.hide()
         self.cfg["baseline"] = None
-        config_mod.save(self.cfg)
         self.baseline = None
         self.machine = PostureStateMachine(self.machine.thr)  # back to UNCALIBRATED
         if was_paused:
@@ -1013,7 +1056,7 @@ class UnshrimpApp(QObject):
         self._display_deviation = None
         if self._cal is not None:
             self.preview_win.camera_unavailable("Reconnecting to the selected camera.")
-        self.history.reset()
+        self._end_history_segment()
         self.breaks.pause()
         self.break_prompt.hide()
         self._restart_pending = False
@@ -1049,7 +1092,7 @@ class UnshrimpApp(QObject):
         diag.log("power: suspend — stopping camera")
         self._suspended = True
         self._restart_pending = False
-        self.history.reset()
+        self._end_history_segment()
         self.breaks.pause()
         self.break_prompt.hide()
         self.smoother.reset()

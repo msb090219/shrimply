@@ -32,6 +32,7 @@ BAD = "#ef4444"
 INFO = "#3b82f6"
 MUTED = "#6b7280"
 SHRIMP = "#ec8f6b"  # cooked-shrimp salmon, from the app's founding reference
+DARK_TITLEBAR = 0x242424
 
 SEGMENT_OFF = QColor(255, 255, 255, 36)
 
@@ -152,14 +153,23 @@ QGroupBox#sectionCard {
     margin-top: 0; padding: 0; font-weight: normal;
 }
 QTabWidget::pane { border: 0; border-top: 1px solid palette(mid); padding: 0; }
+QTabWidget#settingsTabs::pane { border: 0; }
 QTabBar::tab { padding: 8px 14px; background: palette(window); color: palette(text); }
 QTabBar::tab:hover { color: palette(text); }
 QTabBar::tab:selected { background: palette(base); }
+QTabBar#settingsTabBar::tab { background: transparent; padding: 9px 12px; }
+QTabBar#settingsTabBar::tab:selected { background: transparent; font-weight: 600; }
 QPushButton:hover { background: palette(midlight); }
 QPushButton:pressed { background: palette(dark); }
 QCheckBox:hover::indicator { border-color: palette(highlight); }
 QToolButton#settingsButton, QToolButton#refreshButton { border: 1px solid transparent; border-radius: 4px; padding: 0; }
 QToolButton#settingsButton:hover, QToolButton#refreshButton:hover { background: palette(midlight); }
+QFrame#navigationRail { background: palette(alternate-base); border-right: 1px solid palette(mid); }
+QToolButton#navButton, QToolButton#sidebarToggle {
+    background: transparent; color: palette(text); border: 1px solid transparent;
+    border-radius: 6px; padding: 4px 8px; text-align: left;
+}
+QToolButton#navButton:hover, QToolButton#sidebarToggle:hover { background: palette(button); }
 """
 _CHECK_ICON = (Path(__file__).resolve().parents[2] / "assets/icons/check.svg").as_posix().replace('"', '\\"')
 DESKTOP_QSS += f"""
@@ -173,6 +183,9 @@ QCheckBox::indicator:checked {{ background: {SHRIMP}; border-color: {SHRIMP}; im
 QCheckBox::indicator:disabled {{ background: palette(mid); border-color: palette(mid); }}
 QCheckBox:focus {{ outline: 1px dotted {SHRIMP}; }}
 QToolButton#settingsButton[keyboardFocus="true"], QToolButton#refreshButton[keyboardFocus="true"] {{ border-color: {SHRIMP}; }}
+QToolButton#navButton:checked {{ background: palette(midlight); }}
+QToolButton#navButton:checked:hover {{ background: palette(mid); }}
+QToolButton#navButton[keyboardFocus="true"], QToolButton#sidebarToggle[keyboardFocus="true"] {{ border-color: {SHRIMP}; }}
 QTabBar::tab {{ border-bottom: 2px solid transparent; }}
 QTabBar::tab:selected {{ border-bottom-color: {SHRIMP}; }}
 QSlider::groove:horizontal {{ height: 4px; background: palette(mid); border-radius: 2px; }}
@@ -222,7 +235,7 @@ class _WindowsTitlebarTheme(QObject):
                 and event.type() in (QEvent.Show, QEvent.WindowActivate, QEvent.WindowDeactivate)):
             try:
                 hwnd = ctypes.c_void_p(int(obj.winId()))
-                color = ctypes.c_uint(0xF4F2EF if _MODE == "light" else 0)
+                color = ctypes.c_uint(0xF4F2EF if _MODE == "light" else DARK_TITLEBAR)
                 text = ctypes.c_uint(0x252525 if _MODE == "light" else 0xFFFFFF)
                 dwm = ctypes.windll.dwmapi
                 # Windows 11 supports explicit caption colors; older versions retain their defaults.
@@ -248,7 +261,7 @@ def apply_titlebar_theme(widget) -> None:
     if sys.platform == "win32" and widget.isVisible() and not widget.windowFlags() & Qt.FramelessWindowHint:
         try:
             hwnd = ctypes.c_void_p(int(widget.winId()))
-            caption = ctypes.c_uint(0xF4F2EF if _MODE == "light" else 0)
+            caption = ctypes.c_uint(0xF4F2EF if _MODE == "light" else DARK_TITLEBAR)
             text = ctypes.c_uint(0x252525 if _MODE == "light" else 0xFFFFFF)
             dwm = ctypes.windll.dwmapi
             for attribute, value in ((35, caption), (36, text)):

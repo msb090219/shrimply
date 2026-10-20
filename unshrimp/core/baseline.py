@@ -11,6 +11,7 @@ is the worst signal. 1.0 = at tolerance edge, 1.5 = "bad" by default.
 from __future__ import annotations
 
 import time
+import math
 from dataclasses import dataclass, field
 
 from ..vision.metrics import FrameSignals
@@ -82,15 +83,31 @@ class Baseline:
 
     @classmethod
     def from_dict(cls, d: dict) -> "Baseline":
+        if not isinstance(d, dict):
+            raise ValueError("Invalid saved baseline")
         if d.get("version") != BASELINE_VERSION:
             raise ValueError(
                 f"baseline from an older OSA (v{d.get('version')}) — recalibrate"
             )
-        return cls(
-            signals={k: SignalCal(**v) for k, v in d["signals"].items()},
-            created_at=d.get("created_at", 0.0),
-            report=d.get("report"),
-        )
+        saved = d.get("signals")
+        if not isinstance(saved, dict) or not saved or any(k not in SIGNALS for k in saved):
+            raise ValueError("Invalid saved baseline signals")
+        try:
+            signals = {k: SignalCal(**v) for k, v in saved.items()}
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Invalid saved baseline signals") from exc
+        for cal in signals.values():
+            if (type(cal.bad_dir) is not int or cal.bad_dir not in (-1, 0, 1)
+                    or any(type(value) not in (int, float) or not math.isfinite(value)
+                           for value in (cal.value, cal.tol)) or cal.tol <= 0):
+                raise ValueError("Invalid saved baseline signal values")
+        if not any(cal.bad_dir for cal in signals.values()):
+            raise ValueError("Saved baseline has no scorable signals")
+        created_at, report = d.get("created_at", 0.0), d.get("report")
+        if (type(created_at) not in (int, float) or not math.isfinite(created_at)
+                or created_at < 0 or report is not None and not isinstance(report, dict)):
+            raise ValueError("Invalid saved baseline metadata")
+        return cls(signals=signals, created_at=created_at, report=report)
 
 
 def fresh_timestamp() -> float:
