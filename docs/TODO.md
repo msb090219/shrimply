@@ -439,7 +439,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     and recovery holds, brief fluctuations, interrupted tracking, and zero delay;
     Reduce motion has a focused option check.
   - [ ] Verify the packaged Windows app with a live camera.
-  - Mac handoff: M01 below. Add the implementation commit to M01 when U12 lands.
+  - Mac handoff: M01 below; implementation commit `2b22b16`.
 
 - [ ] **U13 — Expand the Dashboard activity calendar.**
   - Show roughly six months with empty days visible, let the grid use the card
@@ -461,7 +461,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     accessible details. Focused tests (61) and full suite (474) pass. Offscreen
     Light/Dark layout renders and the 620 px no-scroll test pass.
   - [ ] Verify native light/dark, small-window and keyboard layouts on Windows.
-  - Mac handoff: M02 below. Add the implementation commit to M02 when U13 lands.
+  - Mac handoff: M02 below; implementation commit `2b22b16`.
 
 - [ ] **U14 — Choose the floating shrimp entrance.**
   - Keep the sustained-posture trigger from U12. Choose fade and rise (current
@@ -470,7 +470,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
   - [x] Windows automated checks cover the three entrances, saved preference,
     Reduce motion, and appearance defaults (full suite: 472 passed locally).
   - [ ] Verify every mode and bobbing combination in the packaged Windows app.
-  - Mac handoff: M03 below. Add the implementation commit when U14 lands.
+  - Mac handoff: M03 below; implementation commit `2b22b16`.
 
 - [ ] **U15 — Focus the single Dashboard on progress.**
   - [x] Remove the permanent Tracking/Break and Now cards. Tray and posture
@@ -495,7 +495,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
   - [ ] Verify the packaged Windows app, including narrow-window layout and
     camera failure recovery, keyboard access, and Light/Dark themes. See
     [the layout plan](plans/dashboard-layout.md).
-  - Mac handoff: M04 below. Add the implementation commit when U15 lands.
+  - Mac handoff: M04 below; implementation commit `2b22b16`.
 
 - [ ] **U16 — Open Settings in the main app window.**
   - [x] Replace the separate, position-managed Settings window with an embedded
@@ -509,7 +509,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     The page stays inside a 620 px Main window with no horizontal tab-page
     scroll in Light/Dark offscreen renders; minimized Main restores from tray.
   - [ ] Check packaged Windows sizing, focus, title bar, and Settings actions.
-  - Mac handoff: M05 below. Add the implementation commit when U16 lands.
+  - Mac handoff: M05 below; implementation commit `2b22b16`.
 
 - [ ] **U17 — Refine Settings navigation and previews.**
   - [x] Keep Tracking, Alerts and breaks, Appearance, and General as the four
@@ -531,7 +531,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     960 px and the full local suite (477 tests) pass.
   - [ ] Check the packaged Windows app at narrow and wide sizes, Light/Dark,
     keyboard navigation, and high DPI. Mac handoff: M06 below; implementation
-    commit pending.
+    commit `2b22b16`.
 
 - [ ] **U18 — Add a collapsible main sidebar.**
   - [x] Put Dashboard at the top and Settings at the bottom of a subtly distinct
@@ -563,7 +563,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     while editing, focus, and no horizontal page scroll. The local 620 px
     Dashboard check and Main/Settings route tests pass; the full suite passes
     477 tests, including native Windows sizing/navigation checks. Packaged Windows check pending; Mac handoff M07 below;
-    implementation commit pending.
+    implementation commit `2b22b16`.
 
 - [ ] **U19 — Offer a vertical posture meter.**
   - [x] Add Horizontal/Vertical in Appearance. Keep horizontal as the default;
@@ -581,7 +581,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     placement remains to be checked.
   - [x] Make the detached caption follow the saved meter opacity in Vertical;
     local orientation and opacity regressions pass.
-  - [ ] Check the packaged Windows app. Mac handoff: M08; implementation commit pending.
+  - [ ] Check the packaged Windows app. Mac handoff: M08; implementation commit `2b22b16`.
 
 - [ ] **U20 — Offer a discreet text posture cue.**
   - [x] Add a Shrimp/Text choice in Appearance. Text shows “Unshrimp yourself”
@@ -592,7 +592,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     display size, without changing shrimp sizes. Fit the live cue to the selected
     screen and scale the preview down without clipping or collapsing size order.
   - [ ] Check Light/Dark contrast and placement in the packaged Windows app.
-    Mac handoff: M09; implementation commit pending.
+    Mac handoff: M09; implementation commit `2b22b16`.
 
 ## Break reminders
 
@@ -639,21 +639,21 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     the previous baseline and completes calibration with clear failure feedback.
   - [x] Keep retrying tray availability after a background launch, and flush
     pending observed history when tracking stops.
-  - [ ] Check build dependencies and version against the release tag before
-    packaging; build and smoke-test the intended committed source. The local
-    dependency/version guards and GUI-process smoke wait are in place; an
-    isolated working-tree build and its extracted ZIP (from a path containing
-    spaces) pass the packaged icon/model/native-inference smoke test. Installed
-    dependencies pass `uv pip check`. Commit/tag verification remains.
-  - [ ] Record packaged Windows results. Shared Mac follow-up: M10; commit pending.
+  - [x] Check build dependencies and version against `v1.3.0` before local
+    packaging. The release script built the committed app source and passed
+    its frozen icon/model/native-inference smoke test; the separately extracted
+    candidate also passed from a path containing spaces. `uv pip check` passed.
+  - [ ] Check the eventual tagged GitHub build and downloaded ZIP.
+  - [ ] Record packaged Windows results. Shared Mac follow-up: M10; commit `2b22b16`.
     Full local suite: 504 passed (one existing Qt deprecation warning).
 
 - [ ] **P01 — Validate the release delivery on a clean Windows machine.**
   - [x] Portable executable/ZIP builds, embedded icon/models, synthetic native
     inference smoke, and a draft-release CI workflow exist. Latest local build
     matches the checked HUD source; the v1.3.0 candidate ZIP also passes
-    extracted-path smoke (including bundled notice files). No release was
-    published in this audit.
+    extracted-path smoke (including bundled notice files). The release script
+    produced `dist/unshrimp-win64.zip` with a matching version guard and smoke
+    result. No release was published in this audit.
   - [x] Use the existing portable ZIP delivery for this Windows release.
   - [ ] Run the current packaged ZIP from an isolated fresh `%APPDATA%` folder;
     record first-run UI/process behavior separately from the synthetic smoke test.
@@ -670,6 +670,10 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     macOS CI packaging remains deliberately paused pending its own human verification.
   - [ ] Keep v1.3.0 unpublished until the Mac artifact is attached, both
     packaged apps are checked, and the remaining distribution review is done.
+    Tonight's sequence: pull the Windows source commit on Mac, finish its
+    packaged check, then create the `v1.3.0` tag. The tag workflow creates a
+    draft with the Windows ZIP; attach the Mac ZIP, test both downloaded assets,
+    review notes and licensing, and publish only then.
 
 ## New features to check on Mac
 
@@ -678,18 +682,15 @@ lands, pull its referenced commit on the Mac. Shared Python code
 should normally work on both systems; change platform-specific code only if the
 Mac check reveals a difference. Keep the Windows and Mac results separate.
 
-**Mac pickup order for this batch (M01–M11):** The Windows implementation is
-currently in local working-tree/staged changes, not in a commit that the Mac can
-pull. Before switching devices, commit and push those changes without creating a
-release, then replace each **pending** implementation-commit placeholder below
-with the relevant commit hash. On Mac, pull that commit, run the shared suite
+**Mac pickup order for this batch (M01–M11):** The Windows v1.3.0 implementation
+is in commit `2b22b16`. On Mac, pull that commit, run the shared suite
 with `python -m pytest -q`, then work through
 the packaged-app checks below. The latest Windows local suite passed 504 tests; this
 does not verify either packaged app. Record any Mac-only fix and its commit under
 the matching M task rather than duplicating shared Python behavior.
 
 - [ ] **M01 — Sustained large-shrimp appearance (from U12).**
-  - Windows reference: U12 above; implementation commit **pending**. The behavior
+  - Windows reference: U12 above; implementation commit `2b22b16`. The behavior
     is implemented locally but has not been checked in the packaged Windows app.
   - Windows code to inspect: `config.py` (bad/recovery hold defaults),
     `unshrimp/ui/app.py` (saved options, posture events, interruption handling),
@@ -705,7 +706,7 @@ the matching M task rather than duplicating shared Python behavior.
     commit and a final live-camera result. Check M01 only after that result passes.
 
 - [ ] **M02 — Expanded activity calendar (from U13).**
-  - Windows reference: U13 above; implementation commit **pending**.
+  - Windows reference: U13 above; implementation commit `2b22b16`.
   - Windows code to inspect: `unshrimp/ui/stats.py` (`StatsTab`, `_MixBar`,
     `_build_calendar`, `refresh`) and `unshrimp/ui/main_window.py` (Dashboard
     placement). Regressions: `tests/test_main_window.py` calendar/resize cases
@@ -719,7 +720,7 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record any Mac-only layout or accessibility fix and the final result here.
 
 - [ ] **M03 — Floating shrimp entrance choices (from U14).**
-  - Windows reference: U14 above; implementation commit **pending**.
+  - Windows reference: U14 above; implementation commit `2b22b16`.
   - Windows code to inspect: `config.py` (`mascot_entrance` default),
     `unshrimp/ui/mascot.py` (`MascotWindow` entrance and bobbing),
     `unshrimp/ui/app.py` (`apply_mascot_settings`), and
@@ -731,7 +732,7 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record any Mac-only overlay or animation issue and the final result here.
 
 - [ ] **M04 — Focused Dashboard layout (from U15).**
-  - Windows reference: U15 above; implementation commit **pending**.
+  - Windows reference: U15 above; implementation commit `2b22b16`.
   - Windows code to inspect: `unshrimp/ui/main_window.py` (Dashboard cards,
     contextual setup/recovery state, heading and quote), `unshrimp/ui/stats.py`
     (weekly mix, activity calendar, Refresh), and `unshrimp/ui/app.py` (state and
@@ -747,7 +748,7 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record any Mac-only layout or accessibility fix and the final result here.
 
 - [ ] **M05 — Embedded Settings page (from U16).**
-  - Windows reference: U16 above; implementation commit **pending**.
+  - Windows reference: U16 above; implementation commit `2b22b16`.
   - Windows code to inspect: `unshrimp/ui/main_window.py` (`show_settings`,
     Dashboard return/close handling), `unshrimp/ui/settings.py`
     (`SettingsDialog`, autosave), and `unshrimp/ui/app.py` (Settings routing and
@@ -760,7 +761,7 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record any Mac-only window or focus issue and the final result here.
 
 - [ ] **M06 — Settings navigation and previews (from U17).**
-  - Windows reference: U17 above; implementation commit **pending**.
+  - Windows reference: U17 above; implementation commit `2b22b16`.
   - Windows code to inspect: `unshrimp/ui/settings.py` (`_SettingsTabs`, page
     scroll areas, `_preview_area`, `_refresh_samples`),
     `unshrimp/ui/break_prompt.py` (shared live/example popup), and
@@ -775,7 +776,7 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record any Mac-only layout or accessibility fix and the final result here.
 
 - [ ] **M07 — Collapsible main sidebar (from U18).**
-  - Windows reference: U18 above; implementation commit **pending**.
+  - Windows reference: U18 above; implementation commit `2b22b16`.
   - Windows code to inspect: `unshrimp/ui/main_window.py` (rail, page routing,
     selection, collapsed state), `unshrimp/ui/icons.py` (`sidebar_icon`, home
     and settings icons), and `unshrimp/ui/theme.py` (shared colors/focus plus
@@ -797,7 +798,7 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record any Mac-only sizing, window, or accessibility fix and the final result.
 
 - [ ] **M08 — Vertical posture meter (from U19).**
-  - Windows reference: U19 above; implementation commit **pending**.
+  - Windows reference: U19 above; implementation commit `2b22b16`.
   - Windows code to inspect: `config.py` (`hud.orientation` defaults to
     `horizontal`), `unshrimp/ui/hud.py` (`ShrimpMeter` and `Hud.set_orientation`;
     vertical shrimp run bottom-to-top with Pause and More stacked),
@@ -825,8 +826,8 @@ the matching M task rather than duplicating shared Python behavior.
     Record a separate packaged Mac result; do not infer it from Windows tests.
 
 - [ ] **M09 — Discreet text posture cue (from U20).**
-  - Windows reference: U20 above; implementation commit **pending**. Windows
-    source and tests are complete locally; the packaged Windows check is open.
+  - Windows reference: U20 above; implementation commit `2b22b16`. Windows
+    source and tests are committed; the packaged Windows check is open.
   - Reuse the shared implementation: `config.py` defaults `mascot_style` to
     `shrimp`; `unshrimp/ui/mascot.py` keeps the existing sustained-Bad/recovery
     timing and click-through overlay for both styles and paints the compact
@@ -856,7 +857,7 @@ the matching M task rather than duplicating shared Python behavior.
     complete either platform check.
 
 - [ ] **M10 — Shared release-hardening fixes (from P02).**
-  - Windows reference: P02 above; implementation commit **pending**.
+  - Windows reference: P02 above; implementation commit `2b22b16`.
   - [ ] Pull the P02 commit and run config, calibration, history, tray, and full
     regressions on Mac. Inspect `config.py`, `unshrimp/ui/app.py`,
     `unshrimp/core/history.py`, and `unshrimp/ui/tray.py`; reuse shared fixes.
@@ -866,7 +867,7 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record packaged Mac results separately from Windows and any Mac-only fix.
 
 - [ ] **M11 — MediaPipe metrics disclosure (from P03).**
-  - Windows reference: P03 above; implementation commit **pending**.
+  - Windows reference: P03 above; implementation commit `2b22b16`.
   - [ ] Check that the packaged Mac welcome/About, README, and site accurately
     disclose the MediaPipe SDK metrics and that camera frames stay local.
   - [ ] Record packaged Mac results separately from Windows and any Mac-only fix.
