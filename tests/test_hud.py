@@ -195,7 +195,10 @@ def test_adjustment_caption_fades_and_recovery_clears_it(hud):
     assert not hud.label.isHidden()
     hud._caption_timer.stop()
     hud._fade_caption()
-    QTest.qWait(300)
+    for _ in range(20):
+        if hud.label.isHidden():
+            break
+        QTest.qWait(50)
     assert hud.label.isHidden()
     hud.show_feedback("Adjust posture")
     hud.set_live(.4, "")

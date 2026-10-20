@@ -529,6 +529,10 @@ implementation or acceptance work, not a request to rebuild those surfaces.
   - [x] End the divider under the Settings tabs at the cards' right edge,
     without moving the Dashboard-aligned scrollbar. Native renders at 620 and
     960 px and the full local suite (477 tests) pass.
+  - [x] Keep the Break suggestions editor within the narrow Settings viewport
+    on Mac, where native button widths made the cards overflow. Its buttons
+    now use two compact rows; focused Windows regressions pass. Check the
+    packaged layouts on both platforms.
   - [ ] Check the packaged Windows app at narrow and wide sizes, Light/Dark,
     keyboard navigation, and high DPI. Mac handoff: M06 below; implementation
     commit `2b22b16`.

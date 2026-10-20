@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -649,16 +650,16 @@ class SettingsDialog(QDialog):
         how_label.setBuddy(self.ex_how)
         edit.addWidget(how_label)
         edit.addWidget(self.ex_how, 1)
-        btns = QHBoxLayout()
+        btns = QGridLayout()
         add = QPushButton("Add")
         upd = self.ex_update = QPushButton("Update")
         rem = self.ex_remove = QPushButton("Remove")
         add.clicked.connect(self._exercise_add)
         upd.clicked.connect(self._exercise_update)
         rem.clicked.connect(self._exercise_remove)
-        btns.addWidget(add)
-        btns.addWidget(upd)
-        btns.addWidget(rem)
+        btns.addWidget(add, 0, 0)
+        btns.addWidget(upd, 0, 1)
+        btns.addWidget(rem, 1, 1, Qt.AlignRight)
         edit.addLayout(btns)
 
         lay.addWidget(self.ex_list, 1)
