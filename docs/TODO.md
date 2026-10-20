@@ -533,6 +533,8 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     on Mac, where native button widths made the cards overflow. Its buttons
     now use two compact rows; focused Windows regressions pass. Check the
     packaged layouts on both platforms.
+  - [x] Check page-edge alignment without relying on a visible scrollbar;
+    macOS can hide an unused native scrollbar. Mac CI layout regression pending.
   - [ ] Check the packaged Windows app at narrow and wide sizes, Light/Dark,
     keyboard navigation, and high DPI. Mac handoff: M06 below; implementation
     commit `2b22b16`.
@@ -767,7 +769,8 @@ the matching M task rather than duplicating shared Python behavior.
 
 - [ ] **M06 — Settings navigation and previews (from U17).**
   - Windows reference: U17 above; implementation commit `2b22b16`, with the
-    narrow Break suggestions editor fix in `7cc276b`.
+    narrow Break suggestions editor fix in `7cc276b`. The cross-platform
+    page-edge test update is pending its commit.
   - Windows code to inspect: `unshrimp/ui/settings.py` (`_SettingsTabs`, page
     scroll areas, `_preview_area`, `_refresh_samples`),
     `unshrimp/ui/break_prompt.py` (shared live/example popup), and

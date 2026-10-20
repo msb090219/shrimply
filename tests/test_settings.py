@@ -266,7 +266,8 @@ def test_embedded_settings_reuses_main_window_without_probing_cameras(qt_app, mo
             parent.resize(width, 600)
             parent.pages.setCurrentWidget(parent.dashboard_page)
             qt_app.processEvents()
-            dashboard_x = parent.dashboard_page.verticalScrollBar().mapTo(parent.pages, QPoint(0, 0)).x()
+            dashboard_x = parent.dashboard_page.mapTo(
+                parent.pages, QPoint(parent.dashboard_page.width(), 0)).x()
             parent.pages.setCurrentWidget(dialog)
             qt_app.processEvents()
             assert dialog.width() <= parent.pages.width()
@@ -274,7 +275,7 @@ def test_embedded_settings_reuses_main_window_without_probing_cameras(qt_app, mo
                 tabs.setCurrentIndex(index)
                 qt_app.processEvents()
                 scroll = tabs.widget(index)
-                settings_x = scroll.verticalScrollBar().mapTo(parent.pages, QPoint(0, 0)).x()
+                settings_x = scroll.mapTo(parent.pages, QPoint(scroll.width(), 0)).x()
                 assert abs(settings_x - dashboard_x) <= 2
                 card = scroll.widget().layout().itemAt(0).widget()
                 assert card.mapTo(scroll.viewport(), QPoint(card.width(), 0)).x() <= scroll.viewport().width()
