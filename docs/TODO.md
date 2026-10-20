@@ -687,7 +687,8 @@ should normally work on both systems; change platform-specific code only if the
 Mac check reveals a difference. Keep the Windows and Mac results separate.
 
 **Mac pickup order for this batch (M01–M11):** The Windows v1.3.0 implementation
-is in commit `2b22b16`. On Mac, pull that commit, run the shared suite
+is in commit `2b22b16`; pull through the narrow-Settings fix `7cc276b`.
+On Mac, run the shared suite
 with `python -m pytest -q`, then work through
 the packaged-app checks below. The latest Windows local suite passed 504 tests; this
 does not verify either packaged app. Record any Mac-only fix and its commit under
@@ -765,7 +766,8 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record any Mac-only window or focus issue and the final result here.
 
 - [ ] **M06 — Settings navigation and previews (from U17).**
-  - Windows reference: U17 above; implementation commit `2b22b16`.
+  - Windows reference: U17 above; implementation commit `2b22b16`, with the
+    narrow Break suggestions editor fix in `7cc276b`.
   - Windows code to inspect: `unshrimp/ui/settings.py` (`_SettingsTabs`, page
     scroll areas, `_preview_area`, `_refresh_samples`),
     `unshrimp/ui/break_prompt.py` (shared live/example popup), and
