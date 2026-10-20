@@ -676,14 +676,22 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     Full local suite: 504 passed (one existing Qt deprecation warning).
 
 - [ ] **P01 — Validate the release delivery on a clean Windows machine.**
+  - [x] Prepare [v1.3.0 release notes](releases/v1.3.0.md) for the joint launch.
+    Add verified Mac notes and its artifact before publishing. Source may be
+    pushed; do not create a tag or GitHub release until the user requests it.
   - [x] Portable executable/ZIP builds, embedded icon/models, synthetic native
     inference smoke, and a draft-release CI workflow exist. Latest local build
     matches the v1.3.0 app source; the v1.3.0 candidate ZIP also passes
     extracted-path smoke (including bundled notice files). The release script
-    produced `dist/unshrimp-win64.zip` with a matching version guard and smoke
-    result. SHA256: `56083d2c01b5cbc927987fd0c08959bc64eaa75a70349113eb885dd90a72316a`.
+    produced the renamed `dist/shrimply-win64.zip` with a matching version guard
+    and smoke result. SHA256:
+    `0061c6df3e30b44249e85f6b6a350c8414b7e15fe0cbf4d56bbfe4a595589169`.
     This local ZIP is a staging artifact, not the future tag-built download.
     No release was published in this audit.
+    The renamed Shrimply ZIP was separately extracted and its frozen executable
+    passed icon, both-model loading and native-inference checks; checksum and
+    bundled app/MediaPipe/OpenCV notice directories were verified. No camera
+    was opened and no normal user profile was changed by this check.
   - [x] Use the existing portable ZIP delivery for this Windows release.
   - [ ] Run the current packaged ZIP from an isolated fresh `%APPDATA%` folder;
     record first-run UI/process behavior separately from the synthetic smoke test.
@@ -712,11 +720,12 @@ lands, pull its referenced commit on the Mac. Shared Python code
 should normally work on both systems; change platform-specific code only if the
 Mac check reveals a difference. Keep the Windows and Mac results separate.
 
-**Mac pickup order for this batch (M01–M11):** The Windows v1.3.0 implementation
-is in commit `2b22b16`; pull through the narrow-Settings fix `7cc276b`.
+**Mac pickup order for this batch (M01–M12):** The Windows v1.3.0 implementation
+is in commit `2b22b16`; pull through the Shrimply rename `e16ef8a` and follow M12
+for the new package paths and upgrade behavior.
 On Mac, run the shared suite
 with `python -m pytest -q`, then work through
-the packaged-app checks below. The latest Windows local suite passed 504 tests; this
+the packaged-app checks below. The latest Windows local suite passed 507 tests; this
 does not verify either packaged app. Record any Mac-only fix and its commit under
 the matching M task rather than duplicating shared Python behavior.
 
