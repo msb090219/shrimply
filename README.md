@@ -8,6 +8,7 @@
 
 Previously called Unshrimp. Existing settings, calibration and history carry
 forward automatically; quit the old app before opening Shrimply for the first time.
+Older published releases still use the `unshrimp-win64.zip` and `unshrimp.exe` names.
 
 **Windows:** Download `shrimply-win64.zip` from the [latest release](https://github.com/msb090219/shrimply/releases), extract it, and run `shrimply.exe`. The app and posture models are included; Python is not needed. Windows may show a SmartScreen warning because the app is unsigned. Allow camera access when prompted.
 

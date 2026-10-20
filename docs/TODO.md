@@ -608,9 +608,18 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     Python package, spec and icon filenames are now `shrimply`; release output
     is `shrimply-win64.zip` containing `shrimply/shrimply.exe`. Shared migration
     and startup regressions pass; full Windows suite: 507 tests.
-  - [ ] Rename the GitHub repository and local checkout folder to `shrimply`.
-  - [ ] Run Windows tests and a packaged smoke check, then check a real upgrade
-    from Unshrimp and a fresh Shrimply profile separately. Mac handoff: M12.
+  - [x] Rename the GitHub repository to `msb090219/shrimply` and update origin.
+  - [ ] Rename the local checkout folder to `shrimply`.
+    Windows refused the move because another process holds the checkout open.
+    After closing tools using it, run from its parent directory:
+    `Rename-Item -LiteralPath 'C:\Min-seo\Coding\VibeCoding\unshrimp' -NewName 'shrimply'`.
+    Reinstall the editable package with `uv pip install --python
+    .venv\Scripts\python.exe -e .` from the new folder.
+  - [x] Run Windows tests (507 passed) and the packaged icon/model/inference
+    smoke check. Local staging ZIP: `dist/shrimply-win64.zip`; SHA256:
+    `0061c6df3e30b44249e85f6b6a350c8414b7e15fe0cbf4d56bbfe4a595589169`.
+  - [ ] Check a real packaged upgrade from Unshrimp and a fresh Shrimply profile
+    separately. Mac handoff: M12. No release/tag was created for this rename.
 
 ## Break reminders
 
@@ -897,7 +906,11 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Record packaged Mac results separately from Windows and any Mac-only fix.
 
 - [ ] **M12 — Shrimply rename (from U21).**
-  - Windows reference: U21 above; implementation commit `pending`.
+  - Windows reference: U21 above; implementation commit `e16ef8a`.
+    Windows and Mac CI pass; packaged-app verification remains separate.
+    On the Mac checkout, run `git remote set-url origin
+    https://github.com/msb090219/shrimply.git` before pulling; rename the local
+    checkout folder after closing tools that use it.
   - Shared Windows code: `config.py` copies missing config/history from
     Unshrimp, then OSA; `main.py` holds the old instance lock during the new
     session; `shrimply/autostart.py` replaces the old Windows login entry.
