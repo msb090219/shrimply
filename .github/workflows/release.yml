@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            asset: unshrimp-win64.zip
+            asset: shrimply-win64.zip
           # Attach the separately verified Mac package to the draft before publishing.
     runs-on: ${{ matrix.os }}
     steps:
@@ -31,19 +31,19 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           python -m pip check
-          python -c 'import importlib.metadata as m, os; tag = os.environ["RELEASE_TAG"]; version = "v" + m.version("unshrimp"); assert tag == version, f"Tag {tag} does not match {version}"'
+          python -c 'import importlib.metadata as m, os; tag = os.environ["RELEASE_TAG"]; version = "v" + m.version("shrimply"); assert tag == version, f"Tag {tag} does not match {version}"'
       - run: python -m pytest -q
 
       - name: build with PyInstaller
-        run: python -m PyInstaller unshrimp.spec --noconfirm --clean
+        run: python -m PyInstaller shrimply.spec --noconfirm --clean
 
       - name: smoke test Windows executable
         if: runner.os == 'Windows'
         timeout-minutes: 2
         shell: pwsh
         run: |
-          $reportPath = Join-Path $env:RUNNER_TEMP 'unshrimp-smoke.json'
-          $exePath = Join-Path $PWD 'dist/unshrimp/unshrimp.exe'
+          $reportPath = Join-Path $env:RUNNER_TEMP 'shrimply-smoke.json'
+          $exePath = Join-Path $PWD 'dist/shrimply/shrimply.exe'
           $process = Start-Process -FilePath $exePath -ArgumentList @('--smoke-test', "`"$reportPath`"") -Wait -PassThru -WindowStyle Hidden
           if ($process.ExitCode -ne 0) { throw "Executable smoke test failed: $($process.ExitCode)" }
           $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
@@ -53,11 +53,11 @@ jobs:
       - name: package (windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path dist/unshrimp -DestinationPath dist/${{ matrix.asset }}
+        run: Compress-Archive -Path dist/shrimply -DestinationPath dist/${{ matrix.asset }}
 
       - name: package (macos)
         if: runner.os == 'macOS'
-        run: cd dist && zip -qry ${{ matrix.asset }} Unshrimp.app
+        run: cd dist && zip -qry ${{ matrix.asset }} Shrimply.app
 
       - name: attach to draft release
         shell: bash  # backslash continuations + `|| true` are bash syntax

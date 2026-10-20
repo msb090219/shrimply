@@ -1,11 +1,11 @@
 """Config persistence — one small JSON file, in the platform's proper place.
 
-Windows: %APPDATA%\\Unshrimp · macOS: ~/Library/Application Support/Unshrimp ·
-elsewhere: ~/.config/Unshrimp. Posture baselines and settings live here,
+Windows: %APPDATA%\\Shrimply · macOS: ~/Library/Application Support/Shrimply ·
+elsewhere: ~/.config/Shrimply. Posture baselines and settings live here,
 outside the repo, and never leave the machine.
 
-Unshrimp was previously called OSA — data migrates automatically from the
-old folder on first run (the old folder is left untouched).
+Shrimply carries settings and history forward from Unshrimp (and older OSA)
+without removing the old folders.
 """
 from __future__ import annotations
 
@@ -17,8 +17,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-APP_NAME = "Unshrimp"
-_LEGACY_NAME = "OSA"
+APP_NAME = "Shrimply"
 
 
 def _data_dir(app_name: str) -> Path:
@@ -30,23 +29,25 @@ def _data_dir(app_name: str) -> Path:
 
 
 APP_DIR = _data_dir(APP_NAME)
+LEGACY_APP_DIR = _data_dir("Unshrimp")
 CONFIG_PATH = APP_DIR / "config.json"
 
 
 def migrate_legacy() -> None:
-    """One-time: copy config + history from the OSA folder, if this is the
-    first Unshrimp run and the old data exists."""
-    legacy = _data_dir(_LEGACY_NAME)
-    if not legacy.is_dir() or CONFIG_PATH.exists():
-        return
-    APP_DIR.mkdir(parents=True, exist_ok=True)
+    """Copy missing settings/history from the newest previous app folder."""
     for name in ("config.json", "log.db"):
-        src = legacy / name
-        if src.is_file():
-            try:
-                shutil.copy2(src, APP_DIR / name)
-            except OSError:
-                pass
+        dst = APP_DIR / name
+        if dst.exists():
+            continue
+        for legacy in (LEGACY_APP_DIR, _data_dir("OSA")):
+            src = legacy / name
+            if src.is_file():
+                try:
+                    APP_DIR.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dst)
+                except OSError:
+                    pass
+                break
 
 DEFAULTS: dict = {
     "camera_index": 0,

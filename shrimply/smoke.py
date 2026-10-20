@@ -9,15 +9,15 @@ from pathlib import Path
 import numpy as np
 from PySide6.QtGui import QImage
 
-from unshrimp import __version__
-from unshrimp.vision.landmarks import Landmarkers
+from shrimply import __version__
+from shrimply.vision.landmarks import Landmarkers
 
 
 def run(root: Path, report_path: Path) -> int:
     result = {"version": __version__, "frozen": bool(getattr(sys, "frozen", False)),
               "ok": False, "checks": []}
     try:
-        image = QImage(str(root / "assets" / "unshrimp.ico"))
+        image = QImage(str(root / "assets" / "shrimply.ico"))
         if image.isNull():
             raise RuntimeError("Bundled application icon could not be decoded")
         result["checks"].append("qt_image_plugins_and_icon")

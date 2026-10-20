@@ -8,14 +8,14 @@ from PySide6.QtCore import QRect, QObject, Signal
 import pytest
 
 import config
-import unshrimp.ui.app as app_module
-from unshrimp.core.baseline import Baseline, SignalCal
-from unshrimp.core.breaks import BreakReminder
-from unshrimp.core.calibration import CalibrationSession, StepResult
-from unshrimp.core.smoother import Smoother
-from unshrimp.core.history import HistoryAccumulator
-from unshrimp.core.states import PostureStateMachine, State
-from unshrimp.vision.metrics import FrameSignals
+import shrimply.ui.app as app_module
+from shrimply.core.baseline import Baseline, SignalCal
+from shrimply.core.breaks import BreakReminder
+from shrimply.core.calibration import CalibrationSession, StepResult
+from shrimply.core.smoother import Smoother
+from shrimply.core.history import HistoryAccumulator
+from shrimply.core.states import PostureStateMachine, State
+from shrimply.vision.metrics import FrameSignals
 
 
 @pytest.fixture
@@ -51,9 +51,9 @@ def controller(monkeypatch):
                  "_on_system_suspend", "_on_system_resume", "_idle_check", "_open_settings", "_cancel_calibration",
                  "_reminder_fire", "_take_break", "_end_break", "_snooze_break", "_skip_break", "apply_breaks",
                  "_start_after_calibration", "_open_main_window", "_preview_changed"):
-        setattr(app, name, MethodType(getattr(app_module.UnshrimpApp, name), app))
-    app._end_history_segment = MethodType(app_module.UnshrimpApp._end_history_segment, app)
-    app._try_flush_bucket = MethodType(app_module.UnshrimpApp._try_flush_bucket, app)
+        setattr(app, name, MethodType(getattr(app_module.ShrimplyApp, name), app))
+    app._end_history_segment = MethodType(app_module.ShrimplyApp._end_history_segment, app)
+    app._try_flush_bucket = MethodType(app_module.ShrimplyApp._try_flush_bucket, app)
     monkeypatch.setattr(config, "save", Mock())
     return app
 
@@ -64,7 +64,7 @@ def good_frame():
 
 
 def test_compact_indicator_choice_is_applied_synced_and_saved(controller):
-    app_module.UnshrimpApp._on_compact_toggled(controller, True)
+    app_module.ShrimplyApp._on_compact_toggled(controller, True)
     controller.hud.set_compact.assert_called_once_with(True)
     controller.tray.sync_compact_action.assert_called_once_with(True)
     assert controller.cfg["hud"]["compact"] is True
@@ -73,12 +73,12 @@ def test_compact_indicator_choice_is_applied_synced_and_saved(controller):
 
 def test_mascot_response_controls_reach_live_overlay(controller):
     controller.cfg.update(mascot_bad_hold_s=0, mascot_recovery_hold_s=8, bad=1.8)
-    app_module.UnshrimpApp.apply_motion_settings(controller)
+    app_module.ShrimplyApp.apply_motion_settings(controller)
     assert controller.mascot.bad_hold_s == 0
     assert controller.mascot.recovery_hold_s == 8
     assert controller.mascot.set_options.call_args.args[-2:] == (1.8, "shrimp")
     controller.cfg["mascot_style"] = "text"
-    app_module.UnshrimpApp.apply_motion_settings(controller)
+    app_module.ShrimplyApp.apply_motion_settings(controller)
     assert controller.mascot.set_options.call_args.args[-1] == "text"
 
 
@@ -88,7 +88,7 @@ def test_preference_patch_preserves_newer_baseline_pause_and_hud_position(contro
     controller.cfg["hud"]["x"] = 400
     controller.apply_thresholds = Mock()
     controller.apply_mascot_settings = Mock()
-    app_module.UnshrimpApp.apply_preferences(controller, {"hud": {"size": "l"}, "grace_s": 60})
+    app_module.ShrimplyApp.apply_preferences(controller, {"hud": {"size": "l"}, "grace_s": 60})
     saved = config.save.call_args.args[0]
     assert saved["baseline"] == {"new": "baseline"}
     assert saved["tracking_paused"] is True
@@ -100,14 +100,14 @@ def test_preference_patch_preserves_newer_baseline_pause_and_hud_position(contro
 
 
 def test_failed_preference_write_does_not_mutate_runtime_and_rolls_back_login(controller, monkeypatch):
-    import unshrimp.autostart as autostart
+    import shrimply.autostart as autostart
     monkeypatch.setattr(autostart, "is_enabled", lambda: False)
     login = Mock()
     monkeypatch.setattr(autostart, "set_enabled", login)
     before = copy.deepcopy(controller.cfg)
     config.save.side_effect = OSError("Disk full")
     with pytest.raises(OSError, match="Disk full"):
-        app_module.UnshrimpApp.apply_preferences(controller, {"camera_index": 2}, startup=True)
+        app_module.ShrimplyApp.apply_preferences(controller, {"camera_index": 2}, startup=True)
     assert controller.cfg == before
     assert login.call_args_list == [call(True), call(False)]
     controller.worker.start.assert_not_called()
@@ -117,7 +117,7 @@ def test_quit_cancelled_by_unsaved_settings_keeps_worker_running(controller):
     controller._settings_dlg = Mock()
     controller._settings_dlg._finish_pending.return_value = False
     controller.shutdown = Mock(return_value=True)
-    app_module.UnshrimpApp._on_quit(controller)
+    app_module.ShrimplyApp._on_quit(controller)
     controller.shutdown.assert_not_called()
     assert not controller._quitting
 
@@ -134,7 +134,7 @@ def test_saved_hud_position_keeps_wider_row_controls_inside_screen(controller, m
     controller.hud.frameGeometry.return_value = frame
     controller.hud.width.return_value = 479
     controller.hud.height.return_value = 40
-    app_module.UnshrimpApp._rescue_offscreen_hud(controller)
+    app_module.ShrimplyApp._rescue_offscreen_hud(controller)
     controller.hud.move.assert_called_once_with(*expected)
 
 
@@ -149,7 +149,7 @@ def test_startup_visibility_and_saved_pause(controller, monkeypatch, background,
     controller.cfg["tracking_paused"] = paused
     if setup:
         controller.baseline = None
-    app_module.UnshrimpApp.start(controller, background=background)
+    app_module.ShrimplyApp.start(controller, background=background)
     assert controller._show_welcome.call_count == int(setup)
     assert controller._open_main_window.call_count == int(not background or setup)
     assert controller.worker.start.call_count == int(not paused)
@@ -162,12 +162,12 @@ def test_missing_tray_with_hidden_meter_opens_controls(controller):
     controller._open_main_window = Mock()
     controller.hud.isVisible.return_value = False
     controller.main_window.isVisible.return_value = False
-    app_module.UnshrimpApp._ensure_controls_visible(controller)
+    app_module.ShrimplyApp._ensure_controls_visible(controller)
     controller._open_main_window.assert_called_once()
 
     controller._open_main_window.reset_mock()
     controller.main_window.isVisible.return_value = True
-    app_module.UnshrimpApp._ensure_controls_visible(controller)
+    app_module.ShrimplyApp._ensure_controls_visible(controller)
     controller._open_main_window.assert_not_called()
 
 
@@ -182,7 +182,7 @@ def test_manual_pause_preference_is_saved(controller, paused):
 def test_reopen_restores_minimized_main_window(controller):
     controller.main_window = Mock()
     controller.main_window.isMinimized.return_value = True
-    app_module.UnshrimpApp._open_main_window(controller)
+    app_module.ShrimplyApp._open_main_window(controller)
     controller.main_window.showNormal.assert_called_once()
     controller.main_window.raise_.assert_called_once()
     controller.main_window.activateWindow.assert_called_once()
@@ -194,7 +194,7 @@ def test_background_launch_does_not_repeat_dismissed_welcome(controller, monkeyp
     controller.cfg["welcome_seen"] = True
     controller._show_welcome = Mock()
     controller._open_main_window = Mock()
-    app_module.UnshrimpApp.start(controller, background=True)
+    app_module.ShrimplyApp.start(controller, background=True)
     controller._show_welcome.assert_not_called()
     controller._open_main_window.assert_not_called()
 
@@ -223,14 +223,14 @@ def test_tray_snapshot_reflects_tracking_availability(controller, mode, expected
         controller.machine.camera_failed()
     elif mode == "break":
         controller.breaks.take_break(0.)
-    app_module.UnshrimpApp._refresh_tray(controller)
+    app_module.ShrimplyApp._refresh_tray(controller)
     controller.tray.set_state.assert_called_once_with(expected, "")
 
 
 def test_tray_break_summary_distinguishes_sitting_time_and_countdown(controller, monkeypatch):
     monkeypatch.setattr(app_module.time, "monotonic", lambda: 30.)
     controller._display_deviation = .2
-    refresh = lambda: app_module.UnshrimpApp._refresh_tray(controller)
+    refresh = lambda: app_module.ShrimplyApp._refresh_tray(controller)
     refresh()
     controller.tray.set_break_text.assert_called_with("Next break · 40 min of sitting")
     controller.breaks.snooze()
@@ -311,7 +311,7 @@ def test_break_actions_and_disable_apply_without_changing_camera_state(controlle
 
 def test_break_length_preference_changes_next_countdown(controller, monkeypatch):
     monkeypatch.setattr(app_module.time, "monotonic", lambda: 0.)
-    app_module.UnshrimpApp.apply_preferences(controller, {"reminder_break_min": 5})
+    app_module.ShrimplyApp.apply_preferences(controller, {"reminder_break_min": 5})
     assert controller.breaks.break_s == 300
     controller.break_prompt.set_break_minutes.assert_called_with(5)
     controller._take_break()
@@ -334,10 +334,10 @@ def test_active_break_is_visible_while_away_and_expires_without_frames(controlle
 
 
 def test_break_suppresses_posture_alerts_and_mascot(controller):
-    from unshrimp.core.states import EVENT_ALERT, EVENT_RENAG, EVENT_RECOVERED
+    from shrimply.core.states import EVENT_ALERT, EVENT_RENAG, EVENT_RECOVERED
     controller.breaks.take_break(0.)
     for event in (EVENT_ALERT, EVENT_RENAG, EVENT_RECOVERED):
-        app_module.UnshrimpApp._handle_event(controller, event)
+        app_module.ShrimplyApp._handle_event(controller, event)
     controller._toast.assert_not_called()
     controller.hud.show_feedback.assert_not_called()
     controller._adapt(State.BAD, 2.)
@@ -346,10 +346,10 @@ def test_break_suppresses_posture_alerts_and_mascot(controller):
 
 
 def test_sustained_posture_alert_shows_brief_meter_cue(controller):
-    from unshrimp.core.states import EVENT_ALERT, EVENT_RENAG
-    app_module.UnshrimpApp._handle_event(controller, EVENT_ALERT)
+    from shrimply.core.states import EVENT_ALERT, EVENT_RENAG
+    app_module.ShrimplyApp._handle_event(controller, EVENT_ALERT)
     controller.hud.show_feedback.assert_called_once_with("Adjust posture")
-    app_module.UnshrimpApp._handle_event(controller, EVENT_RENAG)
+    app_module.ShrimplyApp._handle_event(controller, EVENT_RENAG)
     controller.hud.show_feedback.assert_called_once()
 
 
@@ -371,7 +371,7 @@ def test_break_prompt_matches_meter_and_stays_on_screen(controller, anchor, visi
     controller.hud.bar.width.return_value = bar_width
     controller.hud.bar.height.return_value = 40
     controller.hud.screen.return_value.availableGeometry.return_value = bounds
-    app_module.UnshrimpApp._position_break_prompt(controller)
+    app_module.ShrimplyApp._position_break_prompt(controller)
     x, y = controller.break_prompt.move.call_args.args
     expected_width = bar_width if visible else 340
     assert controller.break_prompt.width() == expected_width
@@ -394,7 +394,7 @@ def test_vertical_meter_keeps_break_prompt_readable(controller):
     controller.hud.bar.height.return_value = 218
     controller.hud.frameGeometry.return_value = QRect(500, 200, 78, 218)
     controller.hud.screen.return_value.availableGeometry.return_value = QRect(0, 0, 1280, 800)
-    app_module.UnshrimpApp._position_break_prompt(controller)
+    app_module.ShrimplyApp._position_break_prompt(controller)
     assert controller.break_prompt.width() == 340
 
 
@@ -436,7 +436,7 @@ def test_resume_after_quit_does_not_restart_worker(controller):
 
 
 def test_settings_opens_inside_main_and_reuses_page_until_done(controller, monkeypatch):
-    import unshrimp.ui.settings as settings
+    import shrimply.ui.settings as settings
 
     dialog = Mock()
     factory = Mock(return_value=dialog)
@@ -515,7 +515,7 @@ def test_camera_preview_reuses_window_without_resuming_paused_capture(controller
     factory = Mock(return_value=preview)
     monkeypatch.setattr(app_module, "CameraPreviewWindow", factory)
     for _ in range(2):
-        app_module.UnshrimpApp.open_camera_preview(controller)
+        app_module.ShrimplyApp.open_camera_preview(controller)
     factory.assert_called_once_with(controller)
     assert preview.show.call_count == 2
     controller.worker.start.assert_not_called()
@@ -634,9 +634,9 @@ def test_stale_worker_signals_cannot_enter_a_new_calibration():
         error = Signal()
 
     class Receiver(QObject):
-        _on_frame = app_module.UnshrimpApp._on_frame
-        _on_calibration_preview = app_module.UnshrimpApp._on_calibration_preview
-        _on_cam_error = app_module.UnshrimpApp._on_cam_error
+        _on_frame = app_module.ShrimplyApp._on_frame
+        _on_calibration_preview = app_module.ShrimplyApp._on_calibration_preview
+        _on_cam_error = app_module.ShrimplyApp._on_cam_error
 
     receiver = Receiver()
     old, current = Worker(), Worker()
@@ -693,7 +693,7 @@ def test_opening_preview_during_tracking_keeps_scoring_continuity(controller):
 
 def test_resetting_calibration_preserves_pause(controller):
     controller.machine.pause()
-    app_module.UnshrimpApp._reset_baseline(controller)
+    app_module.ShrimplyApp._reset_baseline(controller)
     assert controller.baseline is None
     assert controller.machine.state is State.PAUSED
     controller.worker.start.assert_not_called()
@@ -707,7 +707,7 @@ def test_failed_reset_keeps_previous_calibration(controller, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
     monkeypatch.setattr(QMessageBox, "warning", warning)
 
-    app_module.UnshrimpApp._reset_baseline(controller)
+    app_module.ShrimplyApp._reset_baseline(controller)
 
     assert controller.baseline is original
     assert controller.cfg["baseline"] == original.to_dict()
@@ -822,7 +822,7 @@ def test_calibration_failure_explicitly_reports_previous_baseline_retained(contr
 
 def test_successful_calibration_waits_for_explicit_start(controller):
     controller._cal = CalibrationSession()
-    controller._accept_baseline = MethodType(app_module.UnshrimpApp._accept_baseline, controller)
+    controller._accept_baseline = MethodType(app_module.ShrimplyApp._accept_baseline, controller)
     built = Baseline(signals={"head_pitch": SignalCal(4., 9., 1)})
     controller._apply_cal_result(StepResult("done", events=["calibrated"], baseline=built))
     assert controller.baseline is built
@@ -846,7 +846,7 @@ def test_failed_calibration_write_keeps_previous_baseline_and_finishes_flow(cont
     old = controller.baseline
     controller.cfg["baseline"] = old.to_dict()
     controller._cal = CalibrationSession()
-    controller._accept_baseline = MethodType(app_module.UnshrimpApp._accept_baseline, controller)
+    controller._accept_baseline = MethodType(app_module.ShrimplyApp._accept_baseline, controller)
     config.save.side_effect = OSError("disk full")
     candidate = Baseline(signals={"head_pitch": SignalCal(4., 9., 1)})
 
@@ -874,13 +874,13 @@ def test_start_after_calibration_requires_saved_result(controller, mode):
 
 
 def test_dismissing_first_run_keeps_camera_off(controller, monkeypatch):
-    from unshrimp.ui import welcome
+    from shrimply.ui import welcome
 
     dialog = Mock()
     dialog.exec.return_value = False
     monkeypatch.setattr(welcome, "WelcomeDialog", Mock(return_value=dialog))
     controller.baseline = None
-    app_module.UnshrimpApp._show_welcome(controller)
+    app_module.ShrimplyApp._show_welcome(controller)
     assert controller.machine.state is State.PAUSED
     assert controller.cfg["tracking_paused"]
     controller.worker.start.assert_not_called()
@@ -890,7 +890,7 @@ def test_startup_keeps_calibration_in_front(controller, monkeypatch):
     monkeypatch.setattr(app_module.QTimer, "singleShot", lambda *_: None)
     controller.baseline = None
     controller._show_welcome = lambda: setattr(controller, "_cal", CalibrationSession())
-    app_module.UnshrimpApp.start(controller)
+    app_module.ShrimplyApp.start(controller)
     controller.main_window.show.assert_not_called()
 
 
@@ -920,7 +920,7 @@ def test_duplicate_calibration_request_keeps_session_and_setup_override_is_scope
 
 
 def test_calibration_diagnostics_contain_only_numeric_signals(controller, monkeypatch):
-    from unshrimp import diag
+    from shrimply import diag
 
     sample = Mock()
     monkeypatch.setattr(diag, "sample", sample)
@@ -934,7 +934,7 @@ def test_calibration_diagnostics_contain_only_numeric_signals(controller, monkey
 
 
 def test_history_tracks_rate_changes_and_flushes_once(controller, monkeypatch, tmp_path):
-    from unshrimp.storage.db import PostureLog
+    from shrimply.storage.db import PostureLog
 
     clock = [0.]
     base = PostureLog._day_start(app_module.time.time()) + 12 * 3600
@@ -942,7 +942,7 @@ def test_history_tracks_rate_changes_and_flushes_once(controller, monkeypatch, t
     monkeypatch.setattr(app_module.time, "time", lambda: base + clock[0])
     controller.log = PostureLog(tmp_path / "log.db")
     for name in ("_accumulate", "_flush_bucket"):
-        setattr(controller, name, MethodType(getattr(app_module.UnshrimpApp, name), controller))
+        setattr(controller, name, MethodType(getattr(app_module.ShrimplyApp, name), controller))
     for second in range(30):
         clock[0] = float(second)
         controller._accumulate(State.GOOD, .2)
@@ -963,12 +963,12 @@ def test_failed_history_write_retains_pending_time(controller):
     controller.history.minutes[6000] = {"good": 1., "drifting": 0., "bad": 0.}
     controller.log.record_duration.side_effect = OSError("disk unavailable")
     with pytest.raises(OSError):
-        app_module.UnshrimpApp._flush_bucket(controller)
+        app_module.ShrimplyApp._flush_bucket(controller)
     assert controller.history.minutes[6000]["good"] == 1.
 
 
 def test_sqlite_failure_does_not_block_pause_and_retains_pending_time(controller):
-    controller._flush_bucket = MethodType(app_module.UnshrimpApp._flush_bucket, controller)
+    controller._flush_bucket = MethodType(app_module.ShrimplyApp._flush_bucket, controller)
     controller.history.minutes[6000] = {"good": 40., "drifting": 0., "bad": 0.}
     controller.log.record_duration.side_effect = sqlite3.OperationalError("database locked")
 
@@ -979,7 +979,7 @@ def test_sqlite_failure_does_not_block_pause_and_retains_pending_time(controller
 
 
 def test_pausing_flushes_pending_history_without_waiting_for_next_frame(controller):
-    controller._flush_bucket = MethodType(app_module.UnshrimpApp._flush_bucket, controller)
+    controller._flush_bucket = MethodType(app_module.ShrimplyApp._flush_bucket, controller)
     controller.history.minutes[6000] = {"good": 40., "drifting": 0., "bad": 0.}
 
     controller._on_pause_toggled(True)
@@ -992,7 +992,7 @@ def test_unscorable_frame_breaks_history_continuity(controller, monkeypatch):
     clock = [0.]
     monkeypatch.setattr(app_module.time, "monotonic", lambda: clock[0])
     monkeypatch.setattr(app_module.time, "time", lambda: 6000 + clock[0])
-    controller._accumulate = MethodType(app_module.UnshrimpApp._accumulate, controller)
+    controller._accumulate = MethodType(app_module.ShrimplyApp._accumulate, controller)
     controller._accumulate(State.GOOD, .2)
     clock[0] = 1.
     controller._on_frame(FrameSignals(ok=False))

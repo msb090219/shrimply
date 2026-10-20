@@ -1,4 +1,4 @@
-"""Unit tests for unshrimp.vision.metrics — synthetic poses, no camera needed."""
+"""Unit tests for shrimply.vision.metrics — synthetic poses, no camera needed."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -43,7 +43,7 @@ IDENTITY_MATRIX = [
 
 
 def signals(ear_y, sh_y, face_halfw, matrix=IDENTITY_MATRIX, sh_halfw=0.18):
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     return compute_signals(pose(ear_y, sh_y, sh_halfw), face(face_halfw), matrix)
 
@@ -68,7 +68,7 @@ def test_hunching_decreases_sink_and_increases_lean():
 
 
 def test_missing_any_model_yields_not_ok():
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     assert compute_signals(None, face(0.07), IDENTITY_MATRIX).rejection_reason == "missing_detection"
     assert not compute_signals(pose(0.3, 0.6), None, IDENTITY_MATRIX).ok
@@ -85,7 +85,7 @@ def test_too_far_away_not_ok():
 def test_euler_identity_and_simple_rotations():
     import math
 
-    from unshrimp.vision.metrics import euler_from_matrix
+    from shrimply.vision.metrics import euler_from_matrix
 
     assert all(abs(a) < 1e-9 for a in euler_from_matrix(IDENTITY_MATRIX))
 
@@ -107,7 +107,7 @@ def test_euler_identity_and_simple_rotations():
 @pytest.mark.parametrize("field_name", ["visibility", "presence"])
 @pytest.mark.parametrize("value", [0.49, None, float("nan"), float("inf"), -1., 1.1])
 def test_each_required_pose_point_must_have_reliable_confidence(index, field_name, value):
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     points = pose(.3, .6)
     setattr(points[index], field_name, value)
@@ -121,7 +121,7 @@ def test_each_required_pose_point_must_have_reliable_confidence(index, field_nam
 
 
 def test_confidence_boundary_and_unneeded_points():
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     points = pose(.3, .6)
     points[7].visibility = .5
@@ -137,7 +137,7 @@ def test_confidence_boundary_and_unneeded_points():
 @pytest.mark.parametrize("coordinate", ["x", "y"])
 @pytest.mark.parametrize("value", [float("nan"), float("inf"), None, -.1, 1.1])
 def test_required_points_must_be_finite_and_in_frame(index, is_face, coordinate, value):
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     pose_points, face_points = pose(.3, .6), face(.07)
     setattr((face_points if is_face else pose_points)[index], coordinate, value)
@@ -150,7 +150,7 @@ def test_required_points_must_be_finite_and_in_frame(index, is_face, coordinate,
 
 
 def test_nonfinite_orientation_and_collapsed_face_are_unscorable():
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     matrix = [row[:] for row in IDENTITY_MATRIX]
     matrix[0][0] = math.nan
@@ -159,7 +159,7 @@ def test_nonfinite_orientation_and_collapsed_face_are_unscorable():
 
 
 def test_missing_required_landmark_arrays_are_unscorable():
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     assert compute_signals([], face(.07), IDENTITY_MATRIX).rejection_reason == "incomplete_landmarks"
     assert not compute_signals(pose(.3, .6), [], IDENTITY_MATRIX).ok
@@ -167,7 +167,7 @@ def test_missing_required_landmark_arrays_are_unscorable():
 
 
 def test_face_confidence_is_optional_but_pose_confidence_is_required():
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.vision.metrics import compute_signals
 
     points = face(.07)
     for index in (234, 454):
@@ -176,9 +176,9 @@ def test_face_confidence_is_optional_but_pose_confidence_is_required():
 
 
 def test_rejected_pose_never_enters_scoring_or_calibration():
-    from unshrimp.core.baseline import Baseline
-    from unshrimp.core.calibration import CalibrationSession
-    from unshrimp.vision.metrics import compute_signals
+    from shrimply.core.baseline import Baseline
+    from shrimply.core.calibration import CalibrationSession
+    from shrimply.vision.metrics import compute_signals
 
     points = pose(.3, .6)
     points[11].visibility = .1

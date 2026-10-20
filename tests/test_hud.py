@@ -6,8 +6,8 @@ from PySide6.QtCore import QPoint, Qt
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.ui.hud import Hud
-from unshrimp.ui import theme
+from shrimply.ui.hud import Hud
+from shrimply.ui import theme
 
 
 @pytest.fixture

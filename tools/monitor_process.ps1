@@ -1,4 +1,4 @@
-# Sample an existing Unshrimp process without opening its camera or changing settings.
+# Sample an existing Shrimply process without opening its camera or changing settings.
 param(
     [Parameter(Mandatory = $true)]
     [ValidateRange(1, 2147483647)]

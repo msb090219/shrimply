@@ -1,11 +1,11 @@
-"""Tests for unshrimp.core.calibration — the guided 5-phase pipeline."""
+"""Tests for shrimply.core.calibration — the guided 5-phase pipeline."""
 from __future__ import annotations
 
 import math
 import pytest
 
-from unshrimp.core.calibration import CalibrationSession
-from unshrimp.vision.metrics import FrameSignals
+from shrimply.core.calibration import CalibrationSession
+from shrimply.vision.metrics import FrameSignals
 
 STEP = 0.5
 

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import config
 
-_PATH: Path = config.APP_DIR / "unshrimp.log"
+_PATH: Path = config.APP_DIR / "shrimply.log"
 _lock = threading.Lock()
 _f = None
 _detailed = False
@@ -37,12 +37,12 @@ def start(detailed: bool = False) -> None:
         _f = None  # logging is best-effort; never break the app over it
 
     try:
-        from unshrimp import __version__
+        from shrimply import __version__
 
         ver = __version__
     except ImportError:
         ver = "?"
-    log(f"=== Unshrimp {ver} · {time.strftime('%Y-%m-%d %H:%M:%S')} · {sys.platform} ===")
+    log(f"=== Shrimply {ver} · {time.strftime('%Y-%m-%d %H:%M:%S')} · {sys.platform} ===")
     if _f is not None:
         log(f"log file: {_f.name}")
 
@@ -65,7 +65,7 @@ def log(msg: str) -> None:
                 _f.write(line + "\n")
             except OSError:
                 pass
-    print(f"[unshrimp] {msg}", file=sys.stderr)
+    print(f"[shrimply] {msg}", file=sys.stderr)
 
 
 def sample(kind: str, **values) -> None:

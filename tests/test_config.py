@@ -4,6 +4,28 @@ import json
 import config
 
 
+def test_rename_keeps_existing_settings_and_history(tmp_path, monkeypatch):
+    old = tmp_path / "Unshrimp"
+    older = tmp_path / "OSA"
+    new = tmp_path / "Shrimply"
+    old.mkdir()
+    older.mkdir()
+    new.mkdir()
+    (old / "config.json").write_text('{"welcome_seen": true}', encoding="utf-8")
+    (old / "log.db").write_bytes(b"history")
+    (older / "config.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(config, "APP_DIR", new)
+    monkeypatch.setattr(config, "LEGACY_APP_DIR", old)
+    monkeypatch.setattr(config, "_data_dir", lambda name: tmp_path / name)
+
+    config.migrate_legacy()
+    assert (new / "config.json").read_bytes() == (old / "config.json").read_bytes()
+    assert (new / "log.db").read_bytes() == b"history"
+    (new / "config.json").write_text("saved later", encoding="utf-8")
+    config.migrate_legacy()
+    assert (new / "config.json").read_text(encoding="utf-8") == "saved later"
+
+
 def test_invalid_startup_settings_fall_back_without_rewriting_file(tmp_path, monkeypatch):
     path = tmp_path / "config.json"
     saved = {"fps": 0, "hud": None, "camera_index": "zero",

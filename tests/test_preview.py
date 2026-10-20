@@ -6,11 +6,11 @@ from PySide6.QtGui import QImage, QPalette, QColor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.ui.preview import PreviewWindow
-from unshrimp.ui.preview import CameraPreviewWindow
-from unshrimp.vision.worker import PreviewPayload
+from shrimply.ui.preview import PreviewWindow
+from shrimply.ui.preview import CameraPreviewWindow
+from shrimply.vision.worker import PreviewPayload
 from types import SimpleNamespace
-from unshrimp.core.states import State
+from shrimply.core.states import State
 
 
 @pytest.fixture

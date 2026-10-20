@@ -12,15 +12,19 @@ import main as entry
 
 @pytest.fixture
 def startup(tmp_path, monkeypatch):
-    monkeypatch.setattr(entry.sys, "argv", ["unshrimp"])
+    from PySide6.QtWidgets import QApplication
+
+    qt_app = QApplication.instance() or QApplication([])
+    monkeypatch.setattr(entry.sys, "argv", ["shrimply"])
     monkeypatch.setattr(entry.config_mod, "APP_DIR", tmp_path)
+    monkeypatch.setattr(entry.config_mod, "LEGACY_APP_DIR", tmp_path / "Unshrimp")
     monkeypatch.setattr(entry, "QApplication", Mock())
     monkeypatch.setattr(entry, "QMessageBox", Mock())
     monkeypatch.setattr(entry.config_mod, "migrate_legacy", Mock())
     monkeypatch.setattr(entry.diag, "start", Mock())
-    monkeypatch.setattr(entry, "UnshrimpApp", Mock())
+    monkeypatch.setattr(entry, "ShrimplyApp", Mock())
     monkeypatch.setattr(entry, "_activate_existing", Mock(return_value=False))
-    return tmp_path
+    yield tmp_path
 
 
 def test_second_launch_exits_before_shared_data_or_camera(startup):
@@ -33,7 +37,7 @@ def test_second_launch_exits_before_shared_data_or_camera(startup):
         entry.QMessageBox.information.assert_called_once()
         entry.config_mod.migrate_legacy.assert_not_called()
         entry.diag.start.assert_not_called()
-        entry.UnshrimpApp.assert_not_called()
+        entry.ShrimplyApp.assert_not_called()
         assert (startup / "instance.lock").read_bytes() == original
     finally:
         owner.unlock()
@@ -49,20 +53,35 @@ def test_lock_error_is_not_reported_as_running(startup, monkeypatch):
     assert entry.main() == 1
     entry.QMessageBox.critical.assert_called_once()
     entry.QMessageBox.information.assert_not_called()
-    entry.UnshrimpApp.assert_not_called()
+    entry.ShrimplyApp.assert_not_called()
+
+
+def test_running_old_app_blocks_data_copy(startup):
+    old = startup / "Unshrimp"
+    old.mkdir()
+    owner = QLockFile(str(old / "instance.lock"))
+    owner.setStaleLockTime(0)
+    assert owner.tryLock(0)
+    try:
+        assert entry.main() == 0
+        entry.QMessageBox.information.assert_called_once()
+        entry.config_mod.migrate_legacy.assert_not_called()
+        entry.ShrimplyApp.assert_not_called()
+    finally:
+        owner.unlock()
 
 
 @pytest.mark.parametrize("background", [False, True])
 def test_duplicate_launch_activation_policy(startup, monkeypatch, background):
     owner = QLockFile(str(startup / "instance.lock"))
     assert owner.tryLock(0)
-    monkeypatch.setattr(entry.sys, "argv", ["unshrimp"] + (["--background"] if background else []))
+    monkeypatch.setattr(entry.sys, "argv", ["shrimply"] + (["--background"] if background else []))
     entry._activate_existing.return_value = True
     try:
         assert entry.main() == 0
         assert entry._activate_existing.call_count == (0 if background else 1)
         entry.QMessageBox.information.assert_not_called()
-        entry.UnshrimpApp.assert_not_called()
+        entry.ShrimplyApp.assert_not_called()
     finally:
         owner.unlock()
 
@@ -89,21 +108,21 @@ def test_local_activation_opens_existing_controller(tmp_path, monkeypatch):
 @pytest.mark.parametrize("background", [False, True])
 @pytest.mark.parametrize("login_enabled", [False, True])
 def test_launch_forwards_mode_and_refreshes_only_enabled_login(startup, monkeypatch, background, login_enabled):
-    from unshrimp import autostart
-    from unshrimp.ui import power
+    from shrimply import autostart
+    from shrimply.ui import power
 
-    monkeypatch.setattr(entry.sys, "argv", ["unshrimp"] + (["--background"] if background else []))
+    monkeypatch.setattr(entry.sys, "argv", ["shrimply"] + (["--background"] if background else []))
     monkeypatch.setattr(autostart, "is_enabled", Mock(return_value=login_enabled))
     monkeypatch.setattr(autostart, "set_enabled", Mock())
     monkeypatch.setattr(power, "PowerMonitor", Mock())
     monkeypatch.setattr(entry, "_activation_server", Mock())
     entry.QApplication.return_value.exec.return_value = 0
     assert entry.main() == 0
-    entry.UnshrimpApp.return_value.start.assert_called_once_with(background=background)
+    entry.ShrimplyApp.return_value.start.assert_called_once_with(background=background)
     assert autostart.set_enabled.call_count == int(login_enabled)
     if login_enabled:
         autostart.set_enabled.assert_called_once_with(True)
-    entry.UnshrimpApp.return_value.shutdown.assert_called_once()
+    entry.ShrimplyApp.return_value.shutdown.assert_called_once()
 
 
 def test_process_lock_survives_old_timestamp_and_recovers_after_owner_exit(startup):
@@ -116,7 +135,7 @@ def test_process_lock_survives_old_timestamp_and_recovers_after_owner_exit(start
         assert child.stdout.readline().strip() == "ready"
         os.utime(path, (1, 1))
         assert entry.main() == 0
-        entry.UnshrimpApp.assert_not_called()
+        entry.ShrimplyApp.assert_not_called()
         child.kill()  # only this disposable test child; simulate an unclean exit
         child.wait(timeout=10)
         recovered = QLockFile(str(path))

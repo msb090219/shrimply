@@ -2,6 +2,10 @@
 
 ## 1.3.0 — 20 October 2026
 
+Unshrimp is now Shrimply, with a new banner and renamed app/downloads. Existing
+settings, calibration and history are copied to the Shrimply data folder on first
+launch; the old data stays available. Windows login startup moves to the new app.
+
 The Windows Dashboard now puts today's monitored time, the weekly posture mix,
 and a square-cell activity calendar together. A collapsible sidebar opens
 Settings in the same window. Setup and camera-recovery actions appear only when
@@ -21,7 +25,7 @@ The welcome screen, README, and website now disclose MediaPipe SDK usage metrics
 and the Windows package includes the upstream MediaPipe and OpenCV notices.
 
 Real-camera occlusion limits and remaining hardware checks are tracked in the
-[work list](docs/TODO.md). Unshrimp is a habit reminder, not a medical device.
+[work list](docs/TODO.md). Shrimply is a habit reminder, not a medical device.
 
 ## 1.2.1 — 18 October 2026
 

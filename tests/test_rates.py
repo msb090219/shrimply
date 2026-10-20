@@ -1,5 +1,5 @@
 """Tests for the adaptive inference-rate table."""
-from unshrimp.core.rates import GOOD_STREAK_NEEDED, inference_rate
+from shrimply.core.rates import GOOD_STREAK_NEEDED, inference_rate
 
 
 def test_fast_while_slouching():

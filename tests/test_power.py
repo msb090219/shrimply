@@ -6,7 +6,7 @@ import sys
 import pytest
 from PySide6.QtWidgets import QApplication, QWidget
 
-from unshrimp.ui import power
+from shrimply.ui import power
 
 
 def test_windows_notifications_are_scoped_and_resume_is_not_duplicated(monkeypatch):

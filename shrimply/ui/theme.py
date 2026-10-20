@@ -1,4 +1,4 @@
-"""Design tokens — the single source of truth for Unshrimp's look.
+"""Design tokens — the single source of truth for Shrimply's look.
 
 Every window (HUD, preview, mascot, dialogs, tray) draws from here, so
 the brand can be retuned by editing one file. Palette, radii, typography.
@@ -271,7 +271,7 @@ def apply_titlebar_theme(widget) -> None:
 
 
 def app_icon():
-    return QIcon(str(Path(__file__).resolve().parents[2] / "assets" / "unshrimp.png"))
+    return QIcon(str(Path(__file__).resolve().parents[2] / "assets" / "shrimply.png"))
 
 
 def font(pt: int, bold: bool = False):

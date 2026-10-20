@@ -1,4 +1,4 @@
-"""The ordinary desktop home for Unshrimp; closing it leaves tracking in the tray."""
+"""The ordinary desktop home for Shrimply; closing it leaves tracking in the tray."""
 from __future__ import annotations
 
 from datetime import date
@@ -19,24 +19,24 @@ from .status import camera_status
 
 DAILY_LINES = (
     "Stop shrimping. Start shining.",
-    "Keep calm and unshrimp on.",
-    "Just keep unshrimping.",
-    "Seas the day—unshrimp your way.",
-    "Fall seven times, unshrimp eight.",
-    "Where there's a will, there's an unshrimp.",
-    "Every journey begins with one unshrimp.",
-    "Good things come to those who unshrimp.",
-    "Dream big. Start small. Unshrimp now.",
-    "If at first you don't unshrimp, try again.",
-    "There's no time like now to unshrimp.",
-    "Believe you can, and you're halfway unshrimped.",
+    "Keep calm and sit tall.",
+    "Just keep straightening up.",
+    "Seas the day. Sit tall your way.",
+    "Fall seven times, straighten up eight.",
+    "Where there's a will, there's a straighter way.",
+    "Every journey begins with one small stretch.",
+    "Good things come to those who take a break.",
+    "Dream big. Start small. Sit tall.",
+    "If at first you shrimp, straighten up again.",
+    "There's no time like now to sit tall.",
+    "Believe you can, and you're halfway upright.",
     "Rise and shine. Leave shrimp mode behind.",
-    "When life curls you up, unshrimp again.",
+    "When life curls you up, rise again.",
     "Progress, not prawn-fection.",
-    "The world is your oyster. Unshrimp first.",
+    "The world is your oyster. Stretch first.",
     "Be the change you wish to sea.",
     "Shell yeah, you've got this.",
-    "One day or day one? Unshrimp today.",
+    "One day or day one? Stand tall today.",
     "Never give up. Never shrimp in.",
 )
 
@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
-        self.setWindowTitle("Unshrimp")
+        self.setWindowTitle("Shrimply")
         self.resize(960, 680)
         self.setMinimumSize(620, 480)
         theme.apply_desktop_theme(self)

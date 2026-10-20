@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.ui.tray import Tray
+from shrimply.ui.tray import Tray
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ def test_visibility_sync_does_not_emit_user_changes(tray):
 
 
 def test_unavailable_tray_keeps_retrying_and_signals_fallback(tray, monkeypatch):
-    from unshrimp.ui import tray as tray_module
+    from shrimply.ui import tray as tray_module
 
     available = iter((False, False, True))
     monkeypatch.setattr(tray_module.QSystemTrayIcon, "isSystemTrayAvailable",

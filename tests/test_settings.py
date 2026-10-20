@@ -11,8 +11,8 @@ from PySide6.QtWidgets import QApplication, QComboBox, QPushButton
 from PySide6.QtWidgets import QTabWidget
 
 import config
-from unshrimp.core.states import State
-import unshrimp.ui.settings as settings
+from shrimply.core.states import State
+import shrimply.ui.settings as settings
 
 
 @pytest.fixture(scope="module")
@@ -101,7 +101,7 @@ def test_mascot_response_delays_save_and_restore(preferences):
 
 @pytest.fixture
 def preferences(qt_app, monkeypatch):
-    import unshrimp.autostart as autostart
+    import shrimply.autostart as autostart
     monkeypatch.setattr(autostart, "is_enabled", lambda: False)
     controller = Mock()
     controller.log.day_summaries.return_value = []
@@ -128,7 +128,7 @@ def preferences(qt_app, monkeypatch):
 
 
 def test_settings_status_tracks_camera_recovery_and_saved_baseline(preferences, qt_app):
-    from unshrimp.ui.status import calibration_status
+    from shrimply.ui.status import calibration_status
     dialog, controller = preferences
     dialog.show()
     assert "Paused" in dialog.camera_status_label.text()
@@ -168,14 +168,14 @@ def test_suggestion_editor_is_visible_inline(preferences, qt_app):
 
 
 def test_settings_contains_only_configuration_and_can_open_a_specific_page(preferences):
-    from unshrimp.ui.stats import StatsTab
-    from unshrimp.ui.app import UnshrimpApp
+    from shrimply.ui.stats import StatsTab
+    from shrimply.ui.app import ShrimplyApp
     dialog, controller = preferences
     assert dialog.findChild(StatsTab) is None
     assert [dialog.tabs.tabText(i) for i in range(dialog.tabs.count())] == [
         "Tracking", "Alerts and breaks", "Appearance", "General"]
     owner = SimpleNamespace(_open_settings=Mock(), _settings_dlg=dialog)
-    UnshrimpApp._open_settings_page(owner, "Alerts and breaks")
+    ShrimplyApp._open_settings_page(owner, "Alerts and breaks")
     owner._open_settings.assert_called_once()
     assert dialog.tabs.currentIndex() == 1
     controller.apply_breaks.assert_not_called()
@@ -225,10 +225,10 @@ def test_suggestion_editing_preserves_multiline_text_and_empty_list_state(prefer
 
 
 def test_embedded_settings_reuses_main_window_without_probing_cameras(qt_app, monkeypatch):
-    import unshrimp.autostart as autostart
-    from unshrimp.ui import theme
-    from unshrimp.ui.app import UnshrimpApp
-    from unshrimp.ui.main_window import MainWindow
+    import shrimply.autostart as autostart
+    from shrimply.ui import theme
+    from shrimply.ui.app import ShrimplyApp
+    from shrimply.ui.main_window import MainWindow
 
     probe = Mock(side_effect=AssertionError("Settings opening must not probe cameras"))
     monkeypatch.setattr(settings, "available_cameras", probe)
@@ -245,7 +245,7 @@ def test_embedded_settings_reuses_main_window_without_probing_cameras(qt_app, mo
     parent.setAttribute(settings.Qt.WA_DontShowOnScreen)
     parent.resize(620, 600)
     try:
-        UnshrimpApp._open_settings(controller)
+        ShrimplyApp._open_settings(controller)
         dialog = controller._settings_dlg
         qt_app.processEvents()
         assert dialog.isVisible()
@@ -310,7 +310,7 @@ def test_embedded_settings_reuses_main_window_without_probing_cameras(qt_app, mo
         assert parent.pages.currentWidget() is parent.dashboard_page
         assert parent.dashboard_button.isChecked()
         parent.showMinimized()
-        UnshrimpApp._open_settings(controller)
+        ShrimplyApp._open_settings(controller)
         assert parent.pages.currentWidget() is controller._settings_dlg
         assert not parent.isMinimized()
         parent.close()
@@ -326,7 +326,7 @@ def test_embedded_settings_reuses_main_window_without_probing_cameras(qt_app, mo
     ("time", "<1 min monitored"),
 ])
 def test_stats_distinguish_timed_history_from_legacy(qt_app, measurement, expected):
-    from unshrimp.ui.stats import StatsTab
+    from shrimply.ui.stats import StatsTab
 
     log = Mock()
     log.day_summaries.return_value = [{"ts": datetime.now().timestamp(), "pct_good": 50.,
@@ -528,7 +528,7 @@ def test_disabled_controls_retain_choices_and_display_selection_is_always_visibl
 
 def test_reminder_examples_and_tests_have_separate_effects(preferences, monkeypatch):
     dialog, controller = preferences
-    from unshrimp.ui import app as app_module
+    from shrimply.ui import app as app_module
     chime = Mock()
     monkeypatch.setattr(app_module, "_chime", chime)
     dialog.sound.setChecked(False)

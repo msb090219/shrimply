@@ -17,7 +17,7 @@ coverage, tuning that preserves the demonstrated hunch, and recovery notificatio
 
 ## Short camera check
 
-Close Unshrimp and other camera apps first. This opens camera 0 four times, at
+Close Shrimply and other camera apps first. This opens camera 0 four times, at
 0.5, 1, 2, and 4 fps. Each rate runs for eight seconds, including startup.
 
 ```powershell
@@ -60,8 +60,8 @@ Launch the real app with additional diagnostics:
 .\.venv\Scripts\python.exe main.py --diagnostics
 ```
 
-For a packaged build use `unshrimp.exe --diagnostics`. The log path is printed
-at startup; Windows logs are in `%APPDATA%\Unshrimp\diagnostics-*.log`. Each run
+For a packaged build use `shrimply.exe --diagnostics`. The log path is printed
+at startup; Windows logs are in `%APPDATA%\Shrimply\diagnostics-*.log`. Each run
 gets its own file. Normal launches retain the existing, less detailed logging.
 Detailed logs grow throughout the run: use them for testing, then quit the app.
 
@@ -96,7 +96,7 @@ Use the updated source version for T06; earlier packaged builds retain the old l
 
 ## Windows lifecycle session
 
-For a short numeric landmark check, pause Unshrimp and close its preview to release the camera, then run:
+For a short numeric landmark check, pause Shrimply and close its preview to release the camera, then run:
 
 ```powershell
 .\.venv\Scripts\python.exe tools/vision_demo.py --seconds 8 --camera 0 --preview --report diagnostics/landmark-check.json
@@ -120,7 +120,7 @@ To compare pose tracking with independent detection on identical frames:
 .\.venv\Scripts\python.exe tools/compare_pose_modes.py --camera 0 --seconds 8 --report diagnostics/pose-mode-comparison.json
 ```
 
-Keep Unshrimp paused. In the preview, press Space separately for `normal`,
+Keep Shrimply paused. In the preview, press Space separately for `normal`,
 `shoulder_out`, and `normal_return`. Each stage lasts eight seconds and both
 models remain alive across stages, including preparation. Green markers show
 VIDEO predictions; blue markers show IMAGE predictions. Escape cancels and saves
@@ -149,7 +149,7 @@ privacy or startup settings solely to pass a test.
 | Lock/unlock and sleep/wake while tracking | App remains usable; record camera behavior during lock and recovery after wake. |
 | Lock/unlock and sleep/wake while paused | With preview closed, capture stays off. With preview open, sleep stops capture and wake restores preview only, preserving the tracking pause. |
 | Privacy shutter or unplug/reconnect | Loss is reported and recovery does not freeze or overlap capture. |
-| Teams/Zoom opens the same camera | Either sharing works or Unshrimp reports a recoverable failure. Check again after the other app releases it. |
+| Teams/Zoom opens the same camera | Either sharing works or Shrimply reports a recoverable failure. Check again after the other app releases it. |
 | Quit during active capture or retry | Process exits after resource cleanup; camera becomes available to another app. |
 
 Repeat sleep/wake and device-loss scenarios three times. Native drivers vary;
@@ -191,8 +191,8 @@ Use a fresh output filename for each run.
 
 ```powershell
 .\.venv\Scripts\python.exe main.py --smoke-test diagnostics/source-smoke.json
-.\.venv\Scripts\python.exe -m PyInstaller unshrimp.spec --noconfirm --clean
-Start-Process -FilePath .\dist\unshrimp\unshrimp.exe -ArgumentList '--smoke-test diagnostics/packaged-smoke.json' -Wait -PassThru -WindowStyle Hidden
+.\.venv\Scripts\python.exe -m PyInstaller shrimply.spec --noconfirm --clean
+Start-Process -FilePath .\dist\shrimply\shrimply.exe -ArgumentList '--smoke-test diagnostics/packaged-smoke.json' -Wait -PassThru -WindowStyle Hidden
 ```
 
 Inspect the report: `ok` must be true, and `frozen` must be true for the executable.

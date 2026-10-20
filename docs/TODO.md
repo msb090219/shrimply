@@ -1,4 +1,4 @@
-# Unshrimp work list
+# Shrimply work list
 
 Last reviewed: 20 October 2026.
 
@@ -77,7 +77,7 @@ See the [progress audit](audits/progress-2026-10-18.md) for evidence and scope.
     keep ten shrimp and accessible controls, and show a roomy live preview.
     Follow Mac task M08.
 13. **U20 — offer a discreet text posture cue.** Let users choose the familiar
-    shrimp or a compact “Unshrimp yourself” text cue. Follow Mac task M09.
+    shrimp or a compact “Don't get shrimped.” text cue. Follow Mac task M09.
 14. **Before release:** record the accepted T08 occlusion limitation, then finish
    the feasible H01–H06 checks, clean-machine distribution P01, and W01. Earlier sleep/wake successes remain
    evidence; they do not close all lifecycle scenarios. Mac packaging and first-run
@@ -175,7 +175,7 @@ its camera permissions, or its overlays on each desktop.
   - Complete when: low-confidence or occluded required landmarks produce an
     unscorable frame, clean frames still work, and synthetic confidence tests
     plus a live occlusion check pass.
-  - Files: `unshrimp/vision/metrics.py`, `unshrimp/vision/landmarks.py`,
+  - Files: `shrimply/vision/metrics.py`, `shrimply/vision/landmarks.py`,
     `tests/test_metrics.py`.
 
 ## Hardware and lifecycle follow-ups
@@ -188,7 +188,7 @@ its camera permissions, or its overlays on each desktop.
     cycles. Deliberately slow-stop indicator verification remains pending.
   - Complete when: manual pause/resume checks agree with the worker lifecycle
     and physical indicator, including a deliberately slow stop.
-  - Files: `unshrimp/ui/app.py`, `unshrimp/vision/worker.py`.
+  - Files: `shrimply/ui/app.py`, `shrimply/vision/worker.py`.
 
 - [ ] **H02 — Investigate occasional frame-delivery gaps.**
   - Observed: short 2 fps worker tests had delivery gaps up to about 1.8 seconds,
@@ -394,7 +394,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     history acceptance remain. Focused Progress and Settings modules pass separately
     (25 and 26 checks); their combined invocation reports 51 passes but exits 1
     during teardown. Native desktop and screen-reader acceptance remain open.
-  - Files: unshrimp/ui/stats.py, unshrimp/storage/db.py, tests/test_settings.py,
+  - Files: shrimply/ui/stats.py, shrimply/storage/db.py, tests/test_settings.py,
     tests/test_history.py, tests/test_db.py.
 
 - [x] **U09 — Simplify the tray popup and share it with the HUD.**
@@ -591,7 +591,7 @@ implementation or acceptance work, not a request to rebuild those surfaces.
   - [ ] Check the packaged Windows app. Mac handoff: M08; implementation commit `2b22b16`.
 
 - [ ] **U20 — Offer a discreet text posture cue.**
-  - [x] Add a Shrimp/Text choice in Appearance. Text shows “Unshrimp yourself”
+  - [x] Add a Shrimp/Text choice in Appearance. Text shows “Don't get shrimped.”
     in a compact floating cue with the same sustained posture trigger, placement,
     size, opacity, and motion controls; default remains Shrimp. Match the preview.
   - [x] Run overlay and Settings regressions (full local suite: 488 passed).
@@ -600,6 +600,17 @@ implementation or acceptance work, not a request to rebuild those surfaces.
     screen and scale the preview down without clipping or collapsing size order.
   - [ ] Check Light/Dark contrast and placement in the packaged Windows app.
     Mac handoff: M09; implementation commit `2b22b16`.
+
+- [ ] **U21 — Rename the app to Shrimply.**
+  - [x] Use the supplied Shrimply banner in the README and update visible app,
+    website, package, icon, download, posture-text cue, and GitHub branding.
+    Keep existing user settings/history and login startup behavior through the rename.
+    Python package, spec and icon filenames are now `shrimply`; release output
+    is `shrimply-win64.zip` containing `shrimply/shrimply.exe`. Shared migration
+    and startup regressions pass; full Windows suite: 507 tests.
+  - [ ] Rename the GitHub repository and local checkout folder to `shrimply`.
+  - [ ] Run Windows tests and a packaged smoke check, then check a real upgrade
+    from Unshrimp and a fresh Shrimply profile separately. Mac handoff: M12.
 
 ## Break reminders
 
@@ -704,9 +715,9 @@ the matching M task rather than duplicating shared Python behavior.
   - Windows reference: U12 above; implementation commit `2b22b16`. The behavior
     is implemented locally but has not been checked in the packaged Windows app.
   - Windows code to inspect: `config.py` (bad/recovery hold defaults),
-    `unshrimp/ui/app.py` (saved options, posture events, interruption handling),
-    `unshrimp/ui/mascot.py` (`MascotWindow`/`MascotGroup` hold timing), and
-    `unshrimp/ui/settings.py` (Appearance controls and defaults). Regressions:
+    `shrimply/ui/app.py` (saved options, posture events, interruption handling),
+    `shrimply/ui/mascot.py` (`MascotWindow`/`MascotGroup` hold timing), and
+    `shrimply/ui/settings.py` (Appearance controls and defaults). Regressions:
     `tests/test_mascot.py`, `tests/test_settings.py`, `tests/test_app.py`.
   - [ ] Pull the U12 implementation commit and run its timing test on Mac.
   - [ ] In the packaged Mac app, check delayed appearance during sustained poor
@@ -718,8 +729,8 @@ the matching M task rather than duplicating shared Python behavior.
 
 - [ ] **M02 — Expanded activity calendar (from U13).**
   - Windows reference: U13 above; implementation commit `2b22b16`.
-  - Windows code to inspect: `unshrimp/ui/stats.py` (`StatsTab`, `_MixBar`,
-    `_build_calendar`, `refresh`) and `unshrimp/ui/main_window.py` (Dashboard
+  - Windows code to inspect: `shrimply/ui/stats.py` (`StatsTab`, `_MixBar`,
+    `_build_calendar`, `refresh`) and `shrimply/ui/main_window.py` (Dashboard
     placement). Regressions: `tests/test_main_window.py` calendar/resize cases
     and `tests/test_settings.py` older-history distinction.
   - [ ] Pull the U13 implementation commit and run the Dashboard tests on Mac.
@@ -733,9 +744,9 @@ the matching M task rather than duplicating shared Python behavior.
 - [ ] **M03 — Floating shrimp entrance choices (from U14).**
   - Windows reference: U14 above; implementation commit `2b22b16`.
   - Windows code to inspect: `config.py` (`mascot_entrance` default),
-    `unshrimp/ui/mascot.py` (`MascotWindow` entrance and bobbing),
-    `unshrimp/ui/app.py` (`apply_mascot_settings`), and
-    `unshrimp/ui/settings.py` (Appearance selector, Reduce motion, defaults).
+    `shrimply/ui/mascot.py` (`MascotWindow` entrance and bobbing),
+    `shrimply/ui/app.py` (`apply_mascot_settings`), and
+    `shrimply/ui/settings.py` (Appearance selector, Reduce motion, defaults).
     Regressions: `tests/test_mascot.py`, `tests/test_settings.py`.
   - [ ] Pull the U14 implementation commit and run mascot and Settings tests on Mac.
   - [ ] In the packaged Mac app, try all three entrances with bobbing on/off;
@@ -744,9 +755,9 @@ the matching M task rather than duplicating shared Python behavior.
 
 - [ ] **M04 — Focused Dashboard layout (from U15).**
   - Windows reference: U15 above; implementation commit `2b22b16`.
-  - Windows code to inspect: `unshrimp/ui/main_window.py` (Dashboard cards,
-    contextual setup/recovery state, heading and quote), `unshrimp/ui/stats.py`
-    (weekly mix, activity calendar, Refresh), and `unshrimp/ui/app.py` (state and
+  - Windows code to inspect: `shrimply/ui/main_window.py` (Dashboard cards,
+    contextual setup/recovery state, heading and quote), `shrimply/ui/stats.py`
+    (weekly mix, activity calendar, Refresh), and `shrimply/ui/app.py` (state and
     Settings routes). Regression: `tests/test_main_window.py`.
   - [ ] Pull the U15 implementation commit and run the Dashboard tests on Mac.
   - [ ] In the packaged Mac app, check the stats-only normal view, contextual
@@ -760,9 +771,9 @@ the matching M task rather than duplicating shared Python behavior.
 
 - [ ] **M05 — Embedded Settings page (from U16).**
   - Windows reference: U16 above; implementation commit `2b22b16`.
-  - Windows code to inspect: `unshrimp/ui/main_window.py` (`show_settings`,
-    Dashboard return/close handling), `unshrimp/ui/settings.py`
-    (`SettingsDialog`, autosave), and `unshrimp/ui/app.py` (Settings routing and
+  - Windows code to inspect: `shrimply/ui/main_window.py` (`show_settings`,
+    Dashboard return/close handling), `shrimply/ui/settings.py`
+    (`SettingsDialog`, autosave), and `shrimply/ui/app.py` (Settings routing and
     quit handling). Regressions: `tests/test_main_window.py`,
     `tests/test_settings.py`, `tests/test_app.py`.
   - [ ] Pull the U16 implementation commit and run Main/Settings tests on Mac.
@@ -775,10 +786,10 @@ the matching M task rather than duplicating shared Python behavior.
   - Windows reference: U17 above; implementation commit `2b22b16`, with the
     narrow Break suggestions editor fix in `7cc276b` and the cross-platform
     page-edge test update in `7cdf805`.
-  - Windows code to inspect: `unshrimp/ui/settings.py` (`_SettingsTabs`, page
+  - Windows code to inspect: `shrimply/ui/settings.py` (`_SettingsTabs`, page
     scroll areas, `_preview_area`, `_refresh_samples`),
-    `unshrimp/ui/break_prompt.py` (shared live/example popup), and
-    `unshrimp/ui/hud.py` (sample meter). Regressions: `tests/test_settings.py`.
+    `shrimply/ui/break_prompt.py` (shared live/example popup), and
+    `shrimply/ui/hud.py` (sample meter). Regressions: `tests/test_settings.py`.
   - [ ] Pull the U17 implementation commit and run Settings layout tests on Mac.
   - [ ] In the packaged Mac app, check the four horizontal categories, selected
     tab, aligned card/footer/preview edges, realistic break popup buttons and
@@ -790,9 +801,9 @@ the matching M task rather than duplicating shared Python behavior.
 
 - [ ] **M07 — Collapsible main sidebar (from U18).**
   - Windows reference: U18 above; implementation commit `2b22b16`.
-  - Windows code to inspect: `unshrimp/ui/main_window.py` (rail, page routing,
-    selection, collapsed state), `unshrimp/ui/icons.py` (`sidebar_icon`, home
-    and settings icons), and `unshrimp/ui/theme.py` (shared colors/focus plus
+  - Windows code to inspect: `shrimply/ui/main_window.py` (rail, page routing,
+    selection, collapsed state), `shrimply/ui/icons.py` (`sidebar_icon`, home
+    and settings icons), and `shrimply/ui/theme.py` (shared colors/focus plus
     Windows-only title-bar integration). Regressions: `tests/test_main_window.py`
     and `tests/test_window_header.py`; the latter checks Windows DWM behavior
     and should not be copied into the Mac UI.
@@ -813,10 +824,10 @@ the matching M task rather than duplicating shared Python behavior.
 - [ ] **M08 — Vertical posture meter (from U19).**
   - Windows reference: U19 above; implementation commit `2b22b16`.
   - Windows code to inspect: `config.py` (`hud.orientation` defaults to
-    `horizontal`), `unshrimp/ui/hud.py` (`ShrimpMeter` and `Hud.set_orientation`;
+    `horizontal`), `shrimply/ui/hud.py` (`ShrimpMeter` and `Hud.set_orientation`;
     vertical shrimp run bottom-to-top with Pause and More stacked),
-    `unshrimp/ui/settings.py` (Appearance selector, immediate save, both live
-    previews and restore defaults), and `unshrimp/ui/app.py` (startup/live
+    `shrimply/ui/settings.py` (Appearance selector, immediate save, both live
+    previews and restore defaults), and `shrimply/ui/app.py` (startup/live
     preference application and minimum break-prompt width). Regressions:
     `tests/test_hud.py`, `tests/test_settings.py`, `tests/test_app.py`.
   - [ ] Pull the U19 implementation commit and run shared HUD, Settings, and
@@ -842,11 +853,11 @@ the matching M task rather than duplicating shared Python behavior.
   - Windows reference: U20 above; implementation commit `2b22b16`. Windows
     source and tests are committed; the packaged Windows check is open.
   - Reuse the shared implementation: `config.py` defaults `mascot_style` to
-    `shrimp`; `unshrimp/ui/mascot.py` keeps the existing sustained-Bad/recovery
+    `shrimp`; `shrimply/ui/mascot.py` keeps the existing sustained-Bad/recovery
     timing and click-through overlay for both styles and paints the compact
-    “Unshrimp yourself” text cue; `unshrimp/ui/appearance.py` uses that same
-    text painter in the preview; `unshrimp/ui/settings.py` saves the Shrimp/Text
-    choice immediately and restores Shrimp; `unshrimp/ui/app.py` applies it live.
+    “Don't get shrimped.” text cue; `shrimply/ui/appearance.py` uses that same
+    text painter in the preview; `shrimply/ui/settings.py` saves the Shrimp/Text
+    choice immediately and restores Shrimp; `shrimply/ui/app.py` applies it live.
     Relevant tests: `tests/test_mascot.py`, `tests/test_settings.py`,
     `tests/test_app.py`.
   - [ ] Pull the U20 implementation commit and run those tests and the shared
@@ -872,8 +883,8 @@ the matching M task rather than duplicating shared Python behavior.
 - [ ] **M10 — Shared release-hardening fixes (from P02).**
   - Windows reference: P02 above; implementation commit `2b22b16`.
   - [ ] Pull the P02 commit and run config, calibration, history, tray, and full
-    regressions on Mac. Inspect `config.py`, `unshrimp/ui/app.py`,
-    `unshrimp/core/history.py`, and `unshrimp/ui/tray.py`; reuse shared fixes.
+    regressions on Mac. Inspect `config.py`, `shrimply/ui/app.py`,
+    `shrimply/core/history.py`, and `shrimply/ui/tray.py`; reuse shared fixes.
   - [ ] In the packaged Mac app, try invalid saved startup settings, a simulated
     failed calibration save, pause/resume history persistence, and a launch while
     the status area is temporarily unavailable. Confirm accessible controls.
@@ -884,6 +895,25 @@ the matching M task rather than duplicating shared Python behavior.
   - [ ] Check that the packaged Mac welcome/About, README, and site accurately
     disclose the MediaPipe SDK metrics and that camera frames stay local.
   - [ ] Record packaged Mac results separately from Windows and any Mac-only fix.
+
+- [ ] **M12 — Shrimply rename (from U21).**
+  - Windows reference: U21 above; implementation commit `pending`.
+  - Shared Windows code: `config.py` copies missing config/history from
+    Unshrimp, then OSA; `main.py` holds the old instance lock during the new
+    session; `shrimply/autostart.py` replaces the old Windows login entry.
+    Packaging: `shrimply.spec`, `pyproject.toml`, `tools/build_win.ps1`, and
+    `.github/workflows/release.yml`. All imports now use `shrimply`.
+    Mac bundle ID is `com.msb090219.shrimply`; expect camera permission to be
+    requested for the renamed bundle. Update any separate native Mac project,
+    login-item registration and signing settings to match.
+  - [ ] Pull the rename commit and run the shared suite on Mac. Check the
+    Shrimply app/bundle name, icon, About/welcome/tray labels, website links,
+    README banner, and release asset names against the Windows implementation.
+  - [ ] In a packaged Mac upgrade, confirm settings, calibration and history
+    migrate from the old Unshrimp data folder; check a fresh profile separately.
+    Verify login startup, one running instance, camera permission, and Quit.
+  - [ ] Record the packaged Mac result separately from Windows and any Mac-only
+    fix or package-signing change.
 
 ## Landing page
 

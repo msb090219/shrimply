@@ -1,7 +1,7 @@
-"""Tests for unshrimp.core.states — the alert state machine, fake clock."""
+"""Tests for shrimply.core.states — the alert state machine, fake clock."""
 from __future__ import annotations
 
-from unshrimp.core.states import (
+from shrimply.core.states import (
     EVENT_ALERT,
     EVENT_BACK,
     EVENT_DRIFT,

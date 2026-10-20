@@ -1,5 +1,5 @@
 """Tests for the mascot mapping — pure math, no Qt app needed."""
-from unshrimp.ui.mascot import mascot_params
+from shrimply.ui.mascot import mascot_params
 import pytest
 
 
@@ -39,7 +39,7 @@ def test_opacity_grows_to_bad_threshold():
 def test_large_shrimp_waits_for_sustained_bad_and_stays_through_brief_recovery():
     from unittest.mock import Mock
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.mascot import MascotGroup, _RECOVERY_HOLD_S
+    from shrimply.ui.mascot import MascotGroup, _RECOVERY_HOLD_S
 
     application = QApplication.instance() or QApplication([])
     group = MascotGroup()
@@ -94,7 +94,7 @@ def test_large_shrimp_waits_for_sustained_bad_and_stays_through_brief_recovery()
 def test_zero_delay_appears_at_bad_and_fades_at_first_good_sample():
     from unittest.mock import Mock
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.mascot import MascotGroup
+    from shrimply.ui.mascot import MascotGroup
 
     application = QApplication.instance() or QApplication([])
     group = MascotGroup()
@@ -116,7 +116,7 @@ def test_zero_delay_appears_at_bad_and_fades_at_first_good_sample():
 ])
 def test_entrance_options_keep_movement_independent_of_bobbing(entrance, expected_lift, instant):
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.mascot import MascotWindow
+    from shrimply.ui.mascot import MascotWindow
 
     application = QApplication.instance() or QApplication([])
     window = MascotWindow()
@@ -144,7 +144,7 @@ def test_text_cue_uses_compact_window_and_shared_posture_response():
     from PySide6.QtCore import QPoint
     from PySide6.QtGui import QImage, QPainter
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.mascot import MascotWindow
+    from shrimply.ui.mascot import MascotWindow
 
     application = QApplication.instance() or QApplication([])
     window = MascotWindow()
@@ -176,7 +176,7 @@ def test_text_sizes_have_wider_range_and_fit_selected_screen():
     from types import SimpleNamespace
     from PySide6.QtCore import QRect
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.mascot import MascotWindow
+    from shrimply.ui.mascot import MascotWindow
 
     application = QApplication.instance() or QApplication([])
     window = MascotWindow()
@@ -200,7 +200,7 @@ def test_text_preview_keeps_sizes_distinct_in_narrow_panel():
     from PySide6.QtCore import QPoint
     from PySide6.QtGui import QImage, QPainter
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.appearance import ShrimpPreview
+    from shrimply.ui.appearance import ShrimpPreview
 
     application = QApplication.instance() or QApplication([])
     preview = ShrimpPreview()
@@ -223,7 +223,7 @@ def test_text_preview_keeps_sizes_distinct_in_narrow_panel():
 @pytest.mark.parametrize("key", ["s", "m", "l"])
 def test_all_sizes_fit_at_maximum_rise_and_bob(key):
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.mascot import MascotWindow, _BOTTOM_MARGIN, _BOB_PX
+    from shrimply.ui.mascot import MascotWindow, _BOTTOM_MARGIN, _BOB_PX
     application = QApplication.instance() or QApplication([])
     widget = MascotWindow()
     try:
@@ -241,7 +241,7 @@ def test_display_group_hotplug_fallback_suppression_and_fit(monkeypatch):
     from PySide6.QtCore import QRect
     from PySide6.QtWidgets import QApplication
     from unittest.mock import Mock
-    from unshrimp.ui import mascot
+    from shrimply.ui import mascot
     application = QApplication.instance() or QApplication([])
 
     class Screen:
@@ -304,7 +304,7 @@ def test_display_group_hotplug_fallback_suppression_and_fit(monkeypatch):
 def test_mascot_anchor_positions(position, horizontal, vertical):
     from PySide6.QtCore import QRect
     from PySide6.QtWidgets import QApplication
-    from unshrimp.ui.mascot import MascotWindow
+    from shrimply.ui.mascot import MascotWindow
 
     class Screen:
         def availableGeometry(self):

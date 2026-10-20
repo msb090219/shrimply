@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from tools import vision_demo
-from unshrimp.vision.metrics import FrameSignals
+from shrimply.vision.metrics import FrameSignals
 
 
 @pytest.mark.parametrize("reliable", [True, False])

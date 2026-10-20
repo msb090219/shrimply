@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from PySide6.QtCore import QCoreApplication, QTimer
-from unshrimp.vision.worker import VisionWorker
+from shrimply.vision.worker import VisionWorker
 
 
 def main() -> int:

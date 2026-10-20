@@ -1,4 +1,4 @@
-"""Posture history — SQLite at %APPDATA%\\Unshrimp\\log.db. Numbers only.
+"""Posture history — SQLite at %APPDATA%\\Shrimply\\log.db. Numbers only.
 
 Timed rows store observed seconds per state. The original frame-based rows are
 preserved separately as legacy estimates. Local days use calendar boundaries.

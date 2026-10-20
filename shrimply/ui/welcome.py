@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea, QVBoxLayout, QWidget,
 )
 
-from unshrimp import __version__
+from shrimply import __version__
 from . import theme
 from .sections import section
 
@@ -30,7 +30,7 @@ class WelcomeDialog(QDialog):
         scroll.setWidgetResizable(True)
         scroll.setWidget(body)
         layout.addWidget(scroll, 1)
-        brand, form = section("Unshrimp" if about_mode else "Welcome to Unshrimp")
+        brand, form = section("Shrimply" if about_mode else "Welcome to Shrimply")
         if about_mode:
             form.addRow(QLabel(f"Version {__version__}"))
         description = QLabel("A private posture companion for your desk. Gentle posture cues and break reminders help you notice your sitting habits.")
@@ -41,7 +41,7 @@ class WelcomeDialog(QDialog):
             setup, form = section("A minute to get set up")
             for text in (
                 "Keep your face and both shoulders visible. The live mirror will help you check your framing.",
-                "Sit tall to show your upright range, sit normally to set your everyday baseline, then demonstrate a comfortable slouch so Unshrimp can tell them apart.",
+                "Sit tall to show your upright range, sit normally to set your everyday baseline, then demonstrate a comfortable slouch so Shrimply can tell them apart.",
                 "Finally, sit normally again to check the result. Preparation cues guide each pose; setup may take longer if tracking is interrupted.",
             ):
                 label = QLabel(text)

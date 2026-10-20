@@ -16,11 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import config
-from unshrimp.core.breaks import BreakReminder
-from unshrimp.core.states import State
-from unshrimp.ui import theme
-from unshrimp.ui.main_window import MainWindow
-from unshrimp.ui.settings import SettingsDialog
+from shrimply.core.breaks import BreakReminder
+from shrimply.core.states import State
+from shrimply.ui import theme
+from shrimply.ui.main_window import MainWindow
+from shrimply.ui.settings import SettingsDialog
 
 
 OUT = ROOT / "docs" / "shots" / "landing"

@@ -2,8 +2,8 @@ import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.core.calibration import StepResult
-from unshrimp.ui.countdown import ShrimpCountdown
+from shrimply.core.calibration import StepResult
+from shrimply.ui.countdown import ShrimpCountdown
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def progress(activity, elapsed, duration=8., pose=8.):
 
 def test_preparation_motion_never_advances_observed_time_and_stops_on_loss(countdown, monkeypatch):
     clock = [0.]
-    monkeypatch.setattr("unshrimp.ui.countdown.time.monotonic", lambda: clock[0])
+    monkeypatch.setattr("shrimply.ui.countdown.time.monotonic", lambda: clock[0])
     countdown.set_progress(progress("preparing", 0., 3.))
     assert countdown.timer.isActive()
     clock[0] = 1.

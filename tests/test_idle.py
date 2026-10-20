@@ -1,7 +1,7 @@
 """Tests for the system-idle policy (pure part)."""
 from __future__ import annotations
 
-from unshrimp.core.idle import IDLE_STOP_S, should_idle_stop
+from shrimply.core.idle import IDLE_STOP_S, should_idle_stop
 
 
 def test_stops_after_threshold():

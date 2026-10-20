@@ -1,4 +1,4 @@
-# Build the Windows release zip: dist/unshrimp-win64.zip
+# Build the Windows release zip: dist/shrimply-win64.zip
 # Usage: powershell -ExecutionPolicy Bypass -File tools\build_win.ps1
 param([string]$ReleaseTag = "")
 $ErrorActionPreference = "Stop"
@@ -22,7 +22,7 @@ if (Get-Command uv -ErrorAction SilentlyContinue) {
 }
 if ($LASTEXITCODE -ne 0) { throw "Build dependencies conflict" }
 if ($ReleaseTag) {
-    $installedVersion = & .venv\Scripts\python.exe -c "import importlib.metadata; print(importlib.metadata.version('unshrimp'))"
+    $installedVersion = & .venv\Scripts\python.exe -c "import importlib.metadata; print(importlib.metadata.version('shrimply'))"
     if ($LASTEXITCODE -ne 0 -or $ReleaseTag -ne "v$installedVersion") {
         throw "Release tag $ReleaseTag does not match app version v$installedVersion"
     }
@@ -30,18 +30,18 @@ if ($ReleaseTag) {
 & .venv\Scripts\python.exe fetch_models.py
 if ($LASTEXITCODE -ne 0) { throw "Model verification failed" }
 
-& .venv\Scripts\python.exe -m PyInstaller unshrimp.spec --noconfirm --clean
+& .venv\Scripts\python.exe -m PyInstaller shrimply.spec --noconfirm --clean
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed" }
 
-$smokePath = Join-Path $root "dist\unshrimp-build-smoke.json"
+$smokePath = Join-Path $root "dist\shrimply-build-smoke.json"
 if (Test-Path -LiteralPath $smokePath) { Remove-Item -LiteralPath $smokePath }
-$smoke = Start-Process -FilePath (Join-Path $root "dist\unshrimp\unshrimp.exe") -ArgumentList @('--smoke-test', "`"$smokePath`"") -Wait -PassThru -WindowStyle Hidden
+$smoke = Start-Process -FilePath (Join-Path $root "dist\shrimply\shrimply.exe") -ArgumentList @('--smoke-test', "`"$smokePath`"") -Wait -PassThru -WindowStyle Hidden
 if ($smoke.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $smokePath) -or
     -not (Get-Content -LiteralPath $smokePath -Raw | ConvertFrom-Json).ok) {
     throw "Packaged executable smoke test failed"
 }
 
-if (Test-Path dist\unshrimp-win64.zip) { Remove-Item dist\unshrimp-win64.zip }
-Compress-Archive -Path dist\unshrimp -DestinationPath dist\unshrimp-win64.zip
-$mb = [math]::Round((Get-Item dist\unshrimp-win64.zip).Length / 1MB, 1)
-Write-Host "built dist\unshrimp-win64.zip ($mb MB)"
+if (Test-Path dist\shrimply-win64.zip) { Remove-Item dist\shrimply-win64.zip }
+Compress-Archive -Path dist\shrimply -DestinationPath dist\shrimply-win64.zip
+$mb = [math]::Round((Get-Item dist\shrimply-win64.zip).Length / 1MB, 1)
+Write-Host "built dist\shrimply-win64.zip ($mb MB)"

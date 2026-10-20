@@ -48,7 +48,7 @@ def paint_text_cue(painter: QPainter, rect: QRectF, scale: float = 1.0) -> None:
     font.setBold(True)
     painter.setFont(font)
     painter.setPen(QColor(255, 255, 255))
-    painter.drawText(rect, Qt.AlignCenter, "Unshrimp yourself")
+    painter.drawText(rect, Qt.AlignCenter, "Don't get shrimped.")
 
 
 def mascot_params(dev: float | None, bad_threshold: float = _BAD_THRESHOLD) -> tuple[float, float]:

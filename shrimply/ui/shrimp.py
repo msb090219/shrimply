@@ -1,4 +1,4 @@
-"""The Unshrimp shrimp — drawn entirely in code, one mark for every size.
+"""The Shrimply shrimp — drawn entirely in code, one mark for every size.
 
 Design language comes from the reference that inspired the app: a wide,
 low arch in cooked-shrimp salmon — the shrimp *is* the hunched back

@@ -1,7 +1,7 @@
 """Shared camera and calibration descriptions for desktop surfaces."""
 from datetime import datetime
 
-from unshrimp.core.states import State
+from shrimply.core.states import State
 
 
 def camera_mode(app):

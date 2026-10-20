@@ -61,8 +61,8 @@ tracking preference, calibration session, and visible preview.
 - Keep Pause, Resume, device switching, Retry, reset, sleep/wake, and Quit using
   the same camera-mode decision. No second capture thread or camera handle.
 
-Main files: `unshrimp/ui/app.py`, `unshrimp/vision/worker.py`,
-`unshrimp/ui/status.py`, `unshrimp/ui/preview.py`, and the status/action presentation
+Main files: `shrimply/ui/app.py`, `shrimply/vision/worker.py`,
+`shrimply/ui/status.py`, `shrimply/ui/preview.py`, and the status/action presentation
 in Main, Settings, tray, and HUD. Configuration needs no new camera preference.
 
 ## 2. Add the visual calibration countdown
@@ -95,8 +95,8 @@ is visible. The visual timer never advances calibration. Loss of tracking, hidde
 windows, cancellation, sleep, completion, and shutdown stop the relevant motion.
 Keep state and remaining time accessible as text; color is supplementary.
 
-Main files: `unshrimp/core/calibration.py`, `unshrimp/ui/preview.py`,
-`unshrimp/ui/app.py`, and a small `unshrimp/ui/countdown.py` widget.
+Main files: `shrimply/core/calibration.py`, `shrimply/ui/preview.py`,
+`shrimply/ui/app.py`, and a small `shrimply/ui/countdown.py` widget.
 
 ## 3. Compact indicator (supersedes the initial moving-shrimp proposal)
 
@@ -116,7 +116,7 @@ Reuse cached shrimp art; meter updates are immediate. The separately configurabl
 large desktop mascot retains its rise/fade behavior and remains hidden during
 calibration, breaks, and other non-scoring states.
 
-Main files: unshrimp/ui/hud.py and controller render/menu routing.
+Main files: shrimply/ui/hud.py and controller render/menu routing.
 
 ## 4. Motion preference and verification
 

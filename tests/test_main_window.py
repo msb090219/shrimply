@@ -11,9 +11,9 @@ from PySide6.QtCore import QEvent
 from PySide6.QtTest import QTest
 
 import config
-from unshrimp.core.states import State
-from unshrimp.core.breaks import BreakReminder
-from unshrimp.ui.main_window import MainWindow
+from shrimply.core.states import State
+from shrimply.core.breaks import BreakReminder
+from shrimply.ui.main_window import MainWindow
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def test_missing_score_does_not_claim_good_posture(window):
 
 
 def test_daily_line_changes_only_with_local_date(window, monkeypatch):
-    import unshrimp.ui.main_window as module
+    import shrimply.ui.main_window as module
 
     view, _, _ = window
     assert view.dashboard_heading.text() == "Dashboard"
@@ -159,7 +159,7 @@ def test_settings_cog_border_is_for_keyboard_focus_only(window):
 def test_sidebar_collapses_and_routes_between_pages(window):
     view, controller, application = window
     assert view.sidebar.width() == 168
-    assert not any(label.text() == "Unshrimp" for label in view.sidebar.findChildren(QLabel))
+    assert not any(label.text() == "Shrimply" for label in view.sidebar.findChildren(QLabel))
     assert view.dashboard_button.text().startswith("\u2002")
     assert view.settings_button.text().startswith("\u2002")
     assert view.dashboard_button.isChecked()
@@ -455,7 +455,7 @@ def test_progress_empty_and_legacy_cells_are_neutral_without_marks(window):
 
 
 def test_break_card_switches_actions_and_restores_the_next_suggestion(window):
-    from unshrimp.ui.break_prompt import BreakPrompt
+    from shrimply.ui.break_prompt import BreakPrompt
     prompt = BreakPrompt()
     prompt.setAttribute(Qt.WA_DontShowOnScreen)
     take, end = Mock(), Mock()
@@ -479,7 +479,7 @@ def test_break_card_switches_actions_and_restores_the_next_suggestion(window):
 
 
 def test_break_card_shows_duration_and_later_menu_actions(window):
-    from unshrimp.ui.break_prompt import BreakPrompt
+    from shrimply.ui.break_prompt import BreakPrompt
     prompt = BreakPrompt(break_minutes=5)
     prompt.setAttribute(Qt.WA_DontShowOnScreen)
     later, skip = Mock(), Mock()
@@ -509,7 +509,7 @@ def test_progress_shares_dashboard_and_calibration_hides_setup_card(window):
 
 
 def test_controller_wires_tray_to_main_window_without_opening_camera(window, monkeypatch):
-    import unshrimp.ui.app as module
+    import shrimply.ui.app as module
 
     _, _, application = window
     cfg = copy.deepcopy(config.DEFAULTS)
@@ -522,7 +522,7 @@ def test_controller_wires_tray_to_main_window_without_opening_camera(window, mon
     log = Mock()
     log.day_summaries.return_value = []
     monkeypatch.setattr(module, "PostureLog", Mock(return_value=log))
-    controller = module.UnshrimpApp("models")
+    controller = module.ShrimplyApp("models")
     controller.main_window.setAttribute(Qt.WA_DontShowOnScreen)
     try:
         worker.start.assert_not_called()

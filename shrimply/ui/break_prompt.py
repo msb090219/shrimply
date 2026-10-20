@@ -21,7 +21,7 @@ class BreakPrompt(QFrame):
         self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_ShowWithoutActivating)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setWindowTitle("Unshrimp — Break reminder")
+        self.setWindowTitle("Shrimply — Break reminder")
         self.setObjectName("breakPrompt")
         self.setFrameShape(QFrame.NoFrame)
         self.setFixedWidth(340)

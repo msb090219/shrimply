@@ -21,9 +21,9 @@ from PySide6.QtWidgets import QApplication
 from PyInstaller.archive.readers import CArchiveReader
 
 import config
-from unshrimp.ui.app import UnshrimpApp
-from unshrimp.ui.status import camera_status
-from unshrimp.core.states import State
+from shrimply.ui.app import ShrimplyApp
+from shrimply.ui.status import camera_status
+from shrimply.core.states import State
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
     lock = QLockFile(str(config.APP_DIR / "instance.lock"))
     lock.setStaleLockTime(0)
     if not lock.tryLock(0):
-        parser.error("Quit Unshrimp before running this camera check")
+        parser.error("Quit Shrimply before running this camera check")
     report = {"camera": args.camera, "ok": False, "steps": [], "workers": [],
               "scope": "Real camera in a source Qt host; package bytecode compared. No desktop automation or physical disconnect. No frames saved."}
 
@@ -75,11 +75,11 @@ def main():
         return row
 
     try:
-        archive = CArchiveReader(str(ROOT / "dist/unshrimp/unshrimp.exe"))
+        archive = CArchiveReader(str(ROOT / "dist/shrimply/shrimply.exe"))
         pyz = archive.open_embedded_archive(next(n for n, e in archive.toc.items() if e[-1] == "z"))
-        modules = ["unshrimp.ui.app", "unshrimp.ui.main_window", "unshrimp.ui.settings",
-                   "unshrimp.ui.preview", "unshrimp.ui.status", "unshrimp.vision.worker",
-                   "unshrimp.ui.countdown", "unshrimp.ui.hud", "unshrimp.core.calibration", "config"]
+        modules = ["shrimply.ui.app", "shrimply.ui.main_window", "shrimply.ui.settings",
+                   "shrimply.ui.preview", "shrimply.ui.status", "shrimply.vision.worker",
+                   "shrimply.ui.countdown", "shrimply.ui.hud", "shrimply.core.calibration", "config"]
         for name in modules:
             bundled = pyz.extract(name)
             source = (ROOT / (name.replace(".", "/") + ".py")).read_text(encoding="utf-8")
@@ -94,7 +94,7 @@ def main():
                            toasts_enabled=False, mascot_enabled=False, reminder_enabled=False, sound_on=False)
                 cfg["hud"]["visible"] = False
                 config.save(cfg)
-                controller = UnshrimpApp(ROOT / "dist/unshrimp/_internal/models")
+                controller = ShrimplyApp(ROOT / "dist/shrimply/_internal/models")
                 try:
                     controller._on_pause_toggled(True)
                     controller.main_window.camera_preview.click()

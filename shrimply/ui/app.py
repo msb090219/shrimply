@@ -1,4 +1,4 @@
-"""UnshrimpApp — the controller wiring worker, state machine, tray, HUD,
+"""ShrimplyApp — the controller wiring worker, state machine, tray, HUD,
 camera preview, mascot, and the adaptive inference-rate engine."""
 from __future__ import annotations
 
@@ -10,14 +10,14 @@ from pathlib import Path
 from PySide6.QtCore import QObject, Qt, QTimer
 
 import config as config_mod
-from unshrimp.core.baseline import Baseline
-from unshrimp.core.breaks import BreakReminder
-from unshrimp.core.calibration import CalibrationSession
-from unshrimp.core.idle import IDLE_STOP_S, seconds_idle, should_idle_stop
-from unshrimp.core.history import HistoryAccumulator
-from unshrimp.core.rates import inference_rate
-from unshrimp.core.smoother import Smoother
-from unshrimp.core.states import (
+from shrimply.core.baseline import Baseline
+from shrimply.core.breaks import BreakReminder
+from shrimply.core.calibration import CalibrationSession
+from shrimply.core.idle import IDLE_STOP_S, seconds_idle, should_idle_stop
+from shrimply.core.history import HistoryAccumulator
+from shrimply.core.rates import inference_rate
+from shrimply.core.smoother import Smoother
+from shrimply.core.states import (
     EVENT_ALERT,
     EVENT_CAM_ERROR,
     EVENT_RECOVERED,
@@ -26,8 +26,8 @@ from unshrimp.core.states import (
     PostureStateMachine,
     Thresholds,
 )
-from unshrimp.storage.db import PostureLog
-from unshrimp.vision.worker import VisionWorker
+from shrimply.storage.db import PostureLog
+from shrimply.vision.worker import VisionWorker
 from .hud import Hud
 from .mascot import MascotGroup
 from .preview import PreviewWindow, CameraPreviewWindow
@@ -70,7 +70,7 @@ _CAL_INSTRUCTIONS = {
 }
 
 
-class UnshrimpApp(QObject):
+class ShrimplyApp(QObject):
     def __init__(self, models_dir: Path):
         super().__init__()
         self.models_dir = Path(models_dir)
@@ -198,7 +198,7 @@ class UnshrimpApp(QObject):
         monitor was unplugged since last run), bring it home."""
         from PySide6.QtGui import QGuiApplication
 
-        from unshrimp import diag
+        from shrimply import diag
 
         screens = [s.availableGeometry() for s in QGuiApplication.screens()]
         if not screens:
@@ -222,7 +222,7 @@ class UnshrimpApp(QObject):
 
     # ------------------------------------------------------------------
     def start(self, *, background: bool = False) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         diag.log(f"app: starting (baseline={'yes' if self.baseline else 'no'})")
         QTimer.singleShot(0, self.tray.show_when_ready)
@@ -289,7 +289,7 @@ class UnshrimpApp(QObject):
     def apply_preferences(self, changes, startup=None):
         """Save before applying; merge only edited fields into current runtime state."""
         import copy
-        import unshrimp.autostart as autostart
+        import shrimply.autostart as autostart
         candidate = copy.deepcopy(self.cfg)
         for key, value in changes.items():
             if key == "hud":
@@ -401,7 +401,7 @@ class UnshrimpApp(QObject):
         try:
             self.log.end_session(self.session_id)
         except (OSError, sqlite3.Error) as exc:
-            from unshrimp import diag
+            from shrimply import diag
             diag.log(f"history: could not close session: {exc}")
         self.cfg["hud"]["x"], self.cfg["hud"]["y"] = (
             self.hud.pos().x(),
@@ -411,12 +411,12 @@ class UnshrimpApp(QObject):
         try:
             config_mod.save(self.cfg)
         except OSError as exc:
-            from unshrimp import diag
+            from shrimply import diag
             diag.log(f"app: could not save final window state: {exc}")
         try:
             self.log.close()
         except sqlite3.Error as exc:
-            from unshrimp import diag
+            from shrimply import diag
             diag.log(f"history: could not close database: {exc}")
         self.hud.hide()
         self._shutdown_done = True
@@ -506,7 +506,7 @@ class UnshrimpApp(QObject):
     def _cancel_calibration(self) -> None:
         if self._cal is None:
             return
-        from unshrimp import diag
+        from shrimply import diag
 
         diag.log("cal: cancelled — previous baseline unchanged")
         self._cal = None
@@ -531,7 +531,7 @@ class UnshrimpApp(QObject):
                 self._render(self.machine.state, None)
 
     def _cal_step(self, sig) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         diag.sample("calibration", phase=self._cal.phase, ok=sig.ok,
                     head_pitch=sig.head_pitch, head_yaw=sig.head_yaw,
@@ -542,7 +542,7 @@ class UnshrimpApp(QObject):
         self._apply_cal_result(res)
 
     def _apply_cal_result(self, res) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         self.hud.set_status("calibrating", res.progress or res.phase)
         for ev in res.events:
@@ -619,7 +619,7 @@ class UnshrimpApp(QObject):
         try:
             config_mod.save(candidate)
         except OSError as exc:
-            from unshrimp import diag
+            from shrimply import diag
             diag.log(f"cal: could not save baseline: {exc}")
             return False
         self.cfg.update(baseline=candidate["baseline"], tracking_paused=True)
@@ -672,7 +672,7 @@ class UnshrimpApp(QObject):
         )
         previous = self.machine.state
         state, events = self.machine.update(dev, now)
-        from unshrimp import diag
+        from shrimply import diag
 
         diag.sample("posture", state=state.value, deviation=dev, raw_ok=sig.ok)
         if state is not previous:
@@ -690,7 +690,7 @@ class UnshrimpApp(QObject):
         any input. Never while calibrating or manually paused."""
         if self._quitting:
             return
-        from unshrimp import diag
+        from shrimply import diag
 
         if self._suspended:
             return
@@ -745,7 +745,7 @@ class UnshrimpApp(QObject):
         try:
             self._flush_bucket()
         except (OSError, sqlite3.Error) as exc:
-            from unshrimp import diag
+            from shrimply import diag
             if not self._history_save_failed:
                 diag.log(f"history: could not save pending time: {exc}")
             self._history_save_failed = True
@@ -901,7 +901,7 @@ class UnshrimpApp(QObject):
 
     # ------------------------------------------------------------------
     def _on_pause_toggled(self, paused: bool) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         self.cfg["tracking_paused"] = paused
         try:
@@ -956,7 +956,7 @@ class UnshrimpApp(QObject):
         config_mod.save(self.cfg)
 
     def _on_cam_error(self) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         if isinstance(self, QObject) and self.sender() is not None and self.sender() is not self.worker:
             return
@@ -978,7 +978,7 @@ class UnshrimpApp(QObject):
                 self._handle_event(ev)
 
     def _on_cam_recovered(self) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         diag.log("camera: recovered")
         if isinstance(self, QObject) and self.sender() is not None and self.sender() is not self.worker:
@@ -1087,7 +1087,7 @@ class UnshrimpApp(QObject):
         self.worker.start()
 
     def _on_system_suspend(self) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         diag.log("power: suspend — stopping camera")
         self._suspended = True
@@ -1105,7 +1105,7 @@ class UnshrimpApp(QObject):
             self.preview_win.camera_unavailable("The camera is off while the computer sleeps.", retry=False)
 
     def _on_system_resume(self) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         diag.log("power: resume — restoring camera policy")
         self._suspended = False

@@ -1,14 +1,17 @@
-<p align="center"><img src="assets/brand/banner.png" alt="Unshrimp — Don't get shrimped." width="640"></p>
+<p align="center"><img src="assets/brand/banner.png" alt="Shrimply — Don't get shrimped." width="640"></p>
 
-# Unshrimp
+# Shrimply
 
-**A gentle posture and break reminder for Windows.** Unshrimp learns your usual sitting position with your webcam, then nudges you when you drift and when it is time to move. Camera processing stays on your device.
+**A gentle posture and break reminder for Windows.** Shrimply learns your usual sitting position with your webcam, then nudges you when you drift and when it is time to move. Camera processing stays on your device.
 
-## Get Unshrimp
+## Get Shrimply
 
-**Windows:** Download `unshrimp-win64.zip` from the [latest release](https://github.com/msb090219/unshrimp/releases), extract it, and run `unshrimp.exe`. The app and posture models are included; Python is not needed. Windows may show a SmartScreen warning because the app is unsigned. Allow camera access when prompted.
+Previously called Unshrimp. Existing settings, calibration and history carry
+forward automatically; quit the old app before opening Shrimply for the first time.
 
-Unshrimp opens its Dashboard on a normal launch. Closing the window keeps tracking in the system tray; choose **Quit** from the shrimp tray icon to exit.
+**Windows:** Download `shrimply-win64.zip` from the [latest release](https://github.com/msb090219/shrimply/releases), extract it, and run `shrimply.exe`. The app and posture models are included; Python is not needed. Windows may show a SmartScreen warning because the app is unsigned. Allow camera access when prompted.
+
+Shrimply opens its Dashboard on a normal launch. Closing the window keeps tracking in the system tray; choose **Quit** from the shrimp tray icon to exit.
 
 <p align="center"><img src="docs/shots/landing/dashboard.webp" alt="Current Windows Dashboard with sidebar, today's monitored time, weekly posture mix, and activity heatmap. Example history data." width="720"></p>
 
@@ -18,7 +21,7 @@ Unshrimp opens its Dashboard on a normal launch. Closing the window keeps tracki
 
 Choose **Calibrate** from the Dashboard or tray menu. The guide checks camera framing, then asks you to sit tall, sit normally, and hunch briefly. Your normal pose anchors scoring; the hunch shows how far you can drift. Recalibrate after moving your chair or camera.
 
-<p align="center"><img src="docs/shots/landing/calibration.webp" alt="Unshrimp calibration asking the user to sit normally, with the shrimp countdown and an illustrative camera preview." width="440"></p>
+<p align="center"><img src="docs/shots/landing/calibration.webp" alt="Shrimply calibration asking the user to sit normally, with the shrimp countdown and an illustrative camera preview." width="440"></p>
 
 ## See when you drift
 
@@ -28,7 +31,7 @@ The floating meter fills from green to red as posture drifts. If poor posture co
 
 ## Make room for a break
 
-After a configurable amount of detected sitting, Unshrimp suggests a stretch or short walk. Start a timed break, choose **Later**, or skip the reminder. Time away, pauses, and calibration do not count toward sitting time.
+After a configurable amount of detected sitting, Shrimply suggests a stretch or short walk. Start a timed break, choose **Later**, or skip the reminder. Time away, pauses, and calibration do not count toward sitting time.
 
 <p align="center"><img src="docs/shots/landing/break-reminder.webp" alt="Break reminder suggesting chin tucks with Start and Later buttons." width="500"></p>
 
@@ -40,7 +43,7 @@ The Dashboard shows today's monitored time, a weekly posture mix, and an activit
 
 ## Privacy
 
-Unshrimp runs pose detection locally, does not save camera frames, and has no account or cloud sync. Posture history is stored on your computer in `%APPDATA%\Unshrimp`. The bundled MediaPipe Tasks SDK sends API performance and usage metrics to Google; [Google says camera input stays on your device](https://github.com/google-ai-edge/mediapipe#privacy-notice). Unshrimp is a habit aid, not a medical device.
+Shrimply runs pose detection locally, does not save camera frames, and has no account or cloud sync. Posture history is stored on your computer in `%APPDATA%\Shrimply`. The bundled MediaPipe Tasks SDK sends API performance and usage metrics to Google; [Google says camera input stays on your device](https://github.com/google-ai-edge/mediapipe#privacy-notice). Shrimply is a habit aid, not a medical device.
 
 ## Run from source
 
@@ -55,7 +58,7 @@ python -m venv .venv
 .venv\Scripts\python -m pytest -q
 ```
 
-For known issues and planned work, see the [work list](docs/TODO.md). If something goes wrong, attach `%APPDATA%\Unshrimp\unshrimp.log` to a bug report. The landing page lives in [`docs/`](docs/), and artwork guidance is in the [brand asset guide](docs/ASSETS.md).
+For known issues and planned work, see the [work list](docs/TODO.md). If something goes wrong, attach `%APPDATA%\Shrimply\shrimply.log` to a bug report. The landing page lives in [`docs/`](docs/), and artwork guidance is in the [brand asset guide](docs/ASSETS.md).
 
 ## License
 

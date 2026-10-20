@@ -130,7 +130,7 @@ class VisionWorker(QThread):
                         sig = replace(sig, luminance=float(frame.mean()))
                         self.camera_error = ""
                         self.camera_state = "running"
-                        from unshrimp import diag
+                        from shrimply import diag
 
                         diag.sample("vision", capture_ms=round((now - capture_start) * 1000, 2),
                                     inference_ms=round((time.perf_counter() - inference_start) * 1000, 2),
@@ -169,7 +169,7 @@ class VisionWorker(QThread):
                 self.camera_error = str(e) or type(e).__name__
                 self.camera_state = "reconnecting"
                 if not in_error:
-                    from unshrimp import diag
+                    from shrimply import diag
 
                     diag.log(f"camera problem: {e} — retrying every few seconds")
                     diag.log(traceback.format_exc())

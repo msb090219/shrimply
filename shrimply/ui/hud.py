@@ -92,9 +92,9 @@ class Hud(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_MacAlwaysShowToolWindow, True)
-        self.setWindowTitle("Unshrimp posture indicator")
+        self.setWindowTitle("Shrimply posture indicator")
         self.setCursor(Qt.OpenHandCursor)
-        self.setAccessibleName("Unshrimp posture indicator")
+        self.setAccessibleName("Shrimply posture indicator")
         self.level = None
         self.mode = "uncalibrated"
         self.text = "Calibration required"

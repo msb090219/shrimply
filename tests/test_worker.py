@@ -4,8 +4,8 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 
-import unshrimp.vision.worker as worker_module
-from unshrimp.vision.metrics import FrameSignals
+import shrimply.vision.worker as worker_module
+from shrimply.vision.metrics import FrameSignals
 
 
 @pytest.mark.parametrize("stage", ["capture", "inference"])

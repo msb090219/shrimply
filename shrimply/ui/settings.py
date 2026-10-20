@@ -168,7 +168,7 @@ class SettingsDialog(QDialog):
         self.theme_mode.setCurrentIndex(selected_theme if selected_theme >= 0 else self.theme_mode.findData("dark"))
         self.theme_mode.currentIndexChanged.connect(self._theme_changed)
         form.addRow("Colour mode", self.theme_mode)
-        theme_note = QLabel("Use your device setting, or choose a theme for all Unshrimp windows and the posture meter.")
+        theme_note = QLabel("Use your device setting, or choose a theme for all Shrimply windows and the posture meter.")
         theme_note.setWordWrap(True)
         form.addRow(theme_note)
         col.addWidget(card)
@@ -183,7 +183,7 @@ class SettingsDialog(QDialog):
 
         self.mascot_style = QComboBox()
         self.mascot_style.addItem("Shrimp", "shrimp")
-        self.mascot_style.addItem("Text · Unshrimp yourself", "text")
+        self.mascot_style.addItem("Text · Don't get shrimped.", "text")
         self.mascot_style.setMaximumWidth(220)
         self.mascot_style.setCurrentIndex(max(0, self.mascot_style.findData(c.get("mascot_style", "shrimp"))))
         self.mascot_style.currentIndexChanged.connect(self._mascot_changed)
@@ -427,7 +427,7 @@ class SettingsDialog(QDialog):
         explanation = QLabel("The reminder counts detected sitting; time away, pauses and calibration do not count. Breaks use a countdown while camera tracking continues.")
         explanation.setWordWrap(True)
         form.addRow(explanation)
-        restart_note = QLabel("The sitting timer starts fresh when Unshrimp restarts.")
+        restart_note = QLabel("The sitting timer starts fresh when Shrimply restarts.")
         restart_note.setWordWrap(True)
         form.addRow(restart_note)
         col.addWidget(card)
@@ -535,10 +535,10 @@ class SettingsDialog(QDialog):
         col = columns["General"]
         card, form = section("Startup")
 
-        import unshrimp.autostart as autostart
+        import shrimply.autostart as autostart
 
         if sys.platform == "win32":
-            self.autostart = QCheckBox("Start Unshrimp at login")
+            self.autostart = QCheckBox("Start Shrimply at login")
             self.autostart.setToolTip("Start quietly in the system tray; keep the main window hidden.")
             try:
                 self.autostart.setChecked(autostart.is_enabled())
@@ -554,12 +554,12 @@ class SettingsDialog(QDialog):
             self.autostart = None
         col.addWidget(card)
 
-        note = QLabel("Closing the main window leaves Unshrimp in the system tray. Use Quit in the tray menu to exit completely.")
+        note = QLabel("Closing the main window leaves Shrimply in the system tray. Use Quit in the tray menu to exit completely.")
         note.setWordWrap(True)
         form.addRow(note)
-        from unshrimp import __version__
+        from shrimply import __version__
         card, form = section("About")
-        form.addRow(QLabel(f"Unshrimp {__version__}"))
+        form.addRow(QLabel(f"Shrimply {__version__}"))
         about = QPushButton("Open About…")
         about.clicked.connect(lambda: self._task(self.app._show_about))
         form.addRow(about)
@@ -982,7 +982,7 @@ class SettingsDialog(QDialog):
 
     def _test_notification(self):
         if self._commit():
-            self.app.tray.toast("Unshrimp · test notification", "Example posture reminder. Your tracking and reminder timer have not changed.")
+            self.app.tray.toast("Shrimply · test notification", "Example posture reminder. Your tracking and reminder timer have not changed.")
             self.test_status.setText("Test notification requested. Windows controls whether it is displayed.")
             self.test_status.show()
 
@@ -1025,7 +1025,7 @@ class SettingsDialog(QDialog):
             self,
             "Reset baseline",
             "Discard your calibrated baseline?\n"
-            "You'll need to calibrate again before Unshrimp can score your posture.\n"
+            "You'll need to calibrate again before Shrimply can score your posture.\n"
             "Your saved history and other settings will be kept.",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,

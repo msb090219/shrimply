@@ -1,10 +1,10 @@
-"""Tests for unshrimp.core.baseline — deviation scoring + v3 persistence."""
+"""Tests for shrimply.core.baseline — deviation scoring + v3 persistence."""
 from __future__ import annotations
 
 import pytest
 
-from unshrimp.core.baseline import BASELINE_VERSION, TOL_FLOOR, Baseline, SignalCal
-from unshrimp.vision.metrics import FrameSignals
+from shrimply.core.baseline import BASELINE_VERSION, TOL_FLOOR, Baseline, SignalCal
+from shrimply.vision.metrics import FrameSignals
 
 
 def fs(pitch=5.0, sink=0.72, lean=0.52, ok=True):

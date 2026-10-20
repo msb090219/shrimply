@@ -85,7 +85,7 @@ class Tray(QObject):
         super().__init__(parent)
         self.icon = QSystemTrayIcon(self)
         self.icon.setIcon(shrimp_icon(STATE_COLORS["uncalibrated"]))
-        self.icon.setToolTip("Unshrimp — not calibrated yet")
+        self.icon.setToolTip("Shrimply — not calibrated yet")
         # NOTE: .show() is deferred into the event loop via show_when_ready()
         # — status items created before the macOS event loop runs are the
         # classic "icon never appears" failure.
@@ -111,7 +111,7 @@ class Tray(QObject):
         labels = self._header_labels = QVBoxLayout()
         labels.setSpacing(3)
         labels.setAlignment(Qt.AlignTop)
-        labels.addWidget(QLabel("Unshrimp"))
+        labels.addWidget(QLabel("Shrimply"))
         labels.addWidget(self._header_text)
         self._break_text = QLabel()
         self._break_text.hide()
@@ -124,7 +124,7 @@ class Tray(QObject):
         header_action.setDefaultWidget(self._header_widget)
 
         self.cal_action = QAction("&Calibrate…", self.menu)
-        self.open_action = QAction("&Open Unshrimp", self.menu)
+        self.open_action = QAction("&Open Shrimply", self.menu)
         self.cont_action = QAction("Continue setup &anyway…", self.menu)
         self.cont_action.setVisible(False)
         self.pause_action = QAction("&Pause tracking", self.menu)
@@ -138,7 +138,7 @@ class Tray(QObject):
         self.compact_action.setCheckable(True)
         self.compact_action.toggled.connect(self.compact_toggled.emit)
         self.settings_action = QAction("&Settings…", self.menu)
-        self.about_action = QAction("&About Unshrimp", self.menu)
+        self.about_action = QAction("&About Shrimply", self.menu)
         self.quit_action = QAction("&Quit", self.menu)
 
         self.menu.addAction(header_action)
@@ -178,7 +178,7 @@ class Tray(QObject):
     # ------------------------------------------------------------------
     def show_when_ready(self) -> None:
         """Call from the running event loop (e.g. QTimer.singleShot(0, …))."""
-        from unshrimp import diag
+        from shrimply import diag
 
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.icon.show()
@@ -188,7 +188,7 @@ class Tray(QObject):
             QTimer.singleShot(3000, self._retry_show)
 
     def _retry_show(self) -> None:
-        from unshrimp import diag
+        from shrimply import diag
 
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.icon.show()
@@ -248,7 +248,7 @@ class Tray(QObject):
             self._state_key = key
         label = STATE_LABELS.get(key, "Finding your posture")
         self._header_text.setText(label)
-        self.icon.setToolTip(f"Unshrimp · {label}")
+        self.icon.setToolTip(f"Shrimply · {label}")
 
     def toast(self, title: str, body: str, seconds: int = 6) -> None:
         self.icon.showMessage(title, body, QSystemTrayIcon.Information, seconds * 1000)

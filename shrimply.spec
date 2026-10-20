@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# PyInstaller spec for Unshrimp; Windows is the supported release target.
+# PyInstaller spec for Shrimply; Windows is the supported release target.
 # One-dir layout (fast startup; onefile would unpack ~150 MB per launch).
 import sys
 from importlib.metadata import distribution
@@ -8,7 +8,7 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_dynamic_libs, collect_submodules
 
 ROOT = Path(SPECPATH)
-NAME = "Unshrimp" if sys.platform == "darwin" else "unshrimp"
+NAME = "Shrimply" if sys.platform == "darwin" else "shrimply"
 
 
 def wheel_file(package, suffix):
@@ -58,7 +58,7 @@ exe = EXE(
     strip=False,
     upx=False,
     console=False,
-    icon=str(ROOT / "assets" / "unshrimp.ico") if sys.platform == "win32" else None,
+    icon=str(ROOT / "assets" / "shrimply.ico") if sys.platform == "win32" else None,
 )
 
 coll = COLLECT(
@@ -74,12 +74,12 @@ coll = COLLECT(
 if sys.platform == "darwin":
     BUNDLE(
         coll,
-        name="Unshrimp.app",
-        bundle_identifier="com.msb090219.unshrimp",
+        name="Shrimply.app",
+        bundle_identifier="com.msb090219.shrimply",
         info_plist={
             # without this macOS denies (or crashes on) camera access
             "NSCameraUsageDescription": (
-                "Unshrimp uses the camera locally to measure your posture. "
+                "Shrimply uses the camera locally to measure your posture. "
                 "No video ever leaves your machine."
             ),
             "LSUIElement": True,  # tray app: no Dock icon

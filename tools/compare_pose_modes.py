@@ -14,14 +14,14 @@ sys.path.insert(0, str(ROOT))
 
 import cv2
 
-from unshrimp.vision.camera import open_camera, paced_frames
-from unshrimp.vision.landmarks import ImageFormat, MpImage, Vision, mp
-from unshrimp.vision.metrics import LEFT_EAR, RIGHT_EAR, LEFT_SHOULDER, RIGHT_SHOULDER
+from shrimply.vision.camera import open_camera, paced_frames
+from shrimply.vision.landmarks import ImageFormat, MpImage, Vision, mp
+from shrimply.vision.metrics import LEFT_EAR, RIGHT_EAR, LEFT_SHOULDER, RIGHT_SHOULDER
 
 POINTS = {"left_ear": LEFT_EAR, "right_ear": RIGHT_EAR,
           "left_shoulder": LEFT_SHOULDER, "right_shoulder": RIGHT_SHOULDER}
 PHASES = ("normal", "shoulder_out", "normal_return")
-WINDOW = "Unshrimp pose comparison"
+WINDOW = "Shrimply pose comparison"
 
 
 def pose_snapshot(result):
