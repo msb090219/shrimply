@@ -10,7 +10,19 @@ Previously called Unshrimp. Existing settings, calibration and history carry
 forward automatically; quit the old app before opening Shrimply for the first time.
 Older published releases still use the `unshrimp-win64.zip` and `unshrimp.exe` names.
 
-**Windows:** Download `shrimply-win64.zip` from the [latest release](https://github.com/msb090219/shrimply/releases), extract it, and run `shrimply.exe`. The app and posture models are included; Python is not needed. Windows may show a SmartScreen warning because the app is unsigned. Allow camera access when prompted.
+| Platform | Download |
+| --- | --- |
+| Windows · 64-bit | [shrimply-win64.zip](https://github.com/msb090219/shrimply/releases/download/v1.3.0/shrimply-win64.zip) |
+| macOS 15+ · Intel Macs | [shrimply-macos-x86_64.zip](https://github.com/msb090219/shrimply/releases/download/v1.3.0/shrimply-macos-x86_64.zip) |
+
+Extract the ZIP and run `shrimply/shrimply.exe` on Windows. On Mac, move
+`Shrimply.app` to Applications and open it. The app and posture models are
+included; Python is not required. Allow camera access when you calibrate.
+
+These beta downloads are unsigned. Windows may show SmartScreen. On Mac,
+follow [Apple's opening instructions](https://support.apple.com/en-nz/102445)
+if blocked. See the [joint release notes](https://github.com/msb090219/shrimply/releases/tag/v1.3.0)
+for upgrade information.
 
 Shrimply opens its Dashboard on a normal launch. Closing the window keeps tracking in the system tray; choose **Quit** from the shrimp tray icon to exit.
 

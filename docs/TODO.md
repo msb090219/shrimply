@@ -1,6 +1,16 @@
 # Shrimply work list
 
-Last reviewed: 20 October 2026.
+## Joint beta — 21 October 2026
+
+- [x] Publish [Shrimply 1.3.0 Windows and Mac beta](https://github.com/msb090219/shrimply/releases/tag/v1.3.0)
+  with separate Windows and Intel Mac ZIPs and SHA-256 checksums. Windows uses
+  `1f0253f` (507 tests plus frozen smoke passed); Mac uses `acdad79` (573 tests,
+  2 Windows-only skips, signature/source/extracted inference checks passed).
+  Mac compatibility: macOS 15+ · Intel Macs. Preserve platform-specific source
+  branches and prior release assets. Clean-machine/physical acceptance remains
+  tracked separately; Apple Silicon is not listed for this release.
+
+Last reviewed: 21 October 2026.
 
 This is the shared list of outstanding work from the tracking review and local
 webcam checks. Completed tasks stay checked below so progress remains visible.
