@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from tools.check_camera import summarize
-from unshrimp import smoke
+from shrimply import smoke
 
 
 def test_camera_summary_does_not_confuse_detection_with_accuracy():

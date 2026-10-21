@@ -1,6 +1,6 @@
 import pytest
 
-from unshrimp.core.breaks import BreakReminder
+from shrimply.core.breaks import BreakReminder
 
 
 def observe_for(reminder, start, seconds):

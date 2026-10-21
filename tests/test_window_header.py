@@ -1,12 +1,13 @@
-﻿from types import SimpleNamespace
+from types import SimpleNamespace
 
 import pytest
-from PySide6.QtCore import Qt
+import sys
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
 from PySide6.QtTest import QTest
 
-from unshrimp.ui import theme
-from unshrimp.ui.welcome import WelcomeDialog
+from shrimply.ui import theme
+from shrimply.ui.welcome import WelcomeDialog
 
 
 @pytest.fixture
@@ -23,13 +24,13 @@ def test_application_icon_loads_photo_shrimp(qt_app):
 def test_windows_keep_standard_native_titlebar(qt_app):
     window = QMainWindow()
     theme.apply_desktop_theme(window)
-    window.setWindowTitle("Unshrimp")
+    window.setWindowTitle("Shrimply")
     window.setAttribute(Qt.WA_DontShowOnScreen)
     try:
         window.show()
         qt_app.processEvents()
         assert not window.windowIcon().isNull()
-        assert window.windowTitle() == "Unshrimp"
+        assert window.windowTitle() == "Shrimply"
         assert not window.windowFlags() & Qt.FramelessWindowHint
         assert window.windowFlags() & Qt.WindowTitleHint
         assert window.windowFlags() & Qt.WindowCloseButtonHint
@@ -38,15 +39,38 @@ def test_windows_keep_standard_native_titlebar(qt_app):
         window.deleteLater()
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows DWM title-bar colour")
+def test_dark_titlebar_uses_grey_on_show_and_activation(qt_app, monkeypatch):
+    seen = []
+    def set_attribute(_hwnd, attribute, value, _size):
+        seen.append((attribute, value._obj.value))
+
+    monkeypatch.setattr(theme.ctypes, "windll", SimpleNamespace(
+        dwmapi=SimpleNamespace(DwmSetWindowAttribute=set_attribute)))
+    monkeypatch.setattr(theme, "_MODE", "dark")
+    window = QMainWindow()
+    window.setAttribute(Qt.WA_DontShowOnScreen)
+    try:
+        window.show()
+        theme.apply_titlebar_theme(window)
+        theme._WindowsTitlebarTheme().eventFilter(window, QEvent(QEvent.WindowDeactivate))
+        assert (35, 0x242424) in seen
+        assert all(value == 0x242424 for attribute, value in seen if attribute == 35)
+        assert all(value == 0xFFFFFF for attribute, value in seen if attribute == 36)
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 def test_about_is_modeless_reused_and_released_on_close(qt_app):
-    from unshrimp.ui.app import UnshrimpApp
+    from shrimply.ui.app import ShrimplyApp
     controller = SimpleNamespace(_about_dlg=None)
     try:
-        UnshrimpApp._show_about(controller)
+        ShrimplyApp._show_about(controller)
         dialog = controller._about_dlg
         assert not dialog.isModal()
         assert not dialog.windowIcon().isNull()
-        UnshrimpApp._show_about(controller)
+        ShrimplyApp._show_about(controller)
         assert controller._about_dlg is dialog
         dialog.reject()
         assert controller._about_dlg is None

@@ -1,0 +1,12 @@
+{
+  "version": "1.3.0",
+  "frozen": true,
+  "ok": true,
+  "checks": [
+    "qt_image_plugins_and_icon",
+    "both_models_loaded",
+    "native_inference"
+  ],
+  "camera_authorization": "authorized",
+  "bundle_version": "1.3.0"
+}

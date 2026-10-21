@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+import sys
 
 import pytest
 from PySide6.QtCore import Qt, QObject, Signal
@@ -6,11 +7,11 @@ from PySide6.QtGui import QImage, QPalette, QColor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.ui.preview import PreviewWindow
-from unshrimp.ui.preview import CameraPreviewWindow
-from unshrimp.vision.worker import PreviewPayload
+from shrimply.ui.preview import PreviewWindow
+from shrimply.ui.preview import CameraPreviewWindow
+from shrimply.vision.worker import PreviewPayload
 from types import SimpleNamespace
-from unshrimp.core.states import State
+from shrimply.core.states import State
 
 
 @pytest.fixture
@@ -129,17 +130,25 @@ def test_details_disclosure_keeps_keyboard_access_and_does_not_use_native_blue_f
     palette.setColor(QPalette.Highlight, QColor("#2b99f3"))
     palette.setColor(QPalette.Accent, QColor("#2b99f3"))
     button.setPalette(palette)
+    collapsed_icon = button.icon().cacheKey()
     button.setFocus()
     QTest.keyClick(button, Qt.Key_Space)
     QApplication.processEvents()
-    assert button.isChecked() and button.arrowType() == Qt.DownArrow
+    assert button.isChecked()
+    if sys.platform == "darwin":
+        assert button.arrowType() == Qt.NoArrow
+        assert button.iconSize().width() == button.iconSize().height() == 16
+        assert not button.icon().isNull() and button.icon().cacheKey() != collapsed_icon
+    else:
+        assert button.arrowType() == Qt.DownArrow
     assert not panel.check_group.isHidden()
     image = button.grab().toImage()
     assert not any(color.blue() > color.red() + 40 and color.blue() > color.green() + 40
                    for y in range(image.height()) for x in range(image.width())
                    for color in [image.pixelColor(x, y)])
     QTest.keyClick(button, Qt.Key_Space)
-    assert not button.isChecked() and button.arrowType() == Qt.RightArrow
+    assert not button.isChecked()
+    assert button.arrowType() == (Qt.NoArrow if sys.platform == "darwin" else Qt.RightArrow)
     assert panel.check_group.isHidden()
 
 

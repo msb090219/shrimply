@@ -1,18 +1,19 @@
 # Brand assets — design spec
 
-Unshrimp's built-in art is drawn in code, but **designed art always wins**:
+Shrimply's built-in art is drawn in code, but **designed art always wins**:
 drop PNGs into `assets/brand/` and the app uses them instead — no code
-changes, no rebuild. Missing files quietly fall back to the drawn shrimp.
+changes. Missing files quietly fall back to the drawn shrimp. After changing
+the app icon PNG, run `python tools/make_icon.py` and rebuild the executable.
 
-## The four deliverables
+## The five deliverables
 
 | # | File | Size (px) | Where it appears | Color rules |
 |---|---|---|---|---|
 | 1 | `shrimp_master.png` | **1024 × 1024** | State-colored shrimp in the tray and HUD meter | **One flat solid color on transparency** (the app re-tints per posture state). |
 | 2 | `shrimp_mascot.png` | **1280 × 800** | The big shrimp that fades in when you slouch | Full color, go wild. Wide horizontal composition (the hunch arch); generous margins — the whole image fades/bobs |
 | 3 | `welcome_art.png` | **900 × 520** | Welcome / About card | Full color. No text in the image (the card lays text itself) |
-| 4 | `banner.png` | **1280 × 640** | GitHub social preview (README top) | Full color. Text allowed if you want it in the banner; keep it out of the outer ~64 px (GitHub crops slightly) |
-| 5 | `unshrimp.png` / `unshrimp.ico` | **256 × 256 PNG**, multi-size ICO | App identity in Windows title bars and task switcher | Full-color real shrimp, derived from `shrimp_mascot.png`; the state-colored tray shrimp stays separate |
+| 4 | `banner.png` | **2048 × 683** | README banner | Supplied Shrimply artwork; source copy lives in `assets/brand/src/`. |
+| 5 | `shrimply.png` / `shrimply.ico` | **256 × 256 PNG**, multi-size ICO | App identity in Windows title bars and task switcher | Full-color real shrimp, derived from `shrimp_mascot.png`; the state-colored tray shrimp stays separate |
 
 ## Design guidance
 

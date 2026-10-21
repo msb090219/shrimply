@@ -1,9 +1,10 @@
 from unittest.mock import Mock
 
 import pytest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 
-from unshrimp.ui.tray import Tray
+from shrimply.ui.tray import Tray
+import shrimply.ui.tray as tray_module
 
 
 @pytest.fixture
@@ -31,6 +32,29 @@ def test_visibility_sync_does_not_emit_user_changes(tray):
     tray.hud_action.trigger()
     mascot.assert_called_once_with(True)
     hud.assert_called_once_with(True)
+
+
+def test_unavailable_tray_keeps_retrying_and_signals_fallback(tray, monkeypatch):
+    from shrimply.ui import tray as tray_module
+
+    available = iter((False, False, True))
+    monkeypatch.setattr(tray_module.QSystemTrayIcon, "isSystemTrayAvailable",
+                        staticmethod(lambda: next(available)))
+    scheduled = []
+    monkeypatch.setattr(tray_module.QTimer, "singleShot",
+                        staticmethod(lambda delay, callback: scheduled.append((delay, callback))))
+    tray.icon.show = Mock()
+    fallback = Mock()
+    tray.unavailable.connect(fallback)
+
+    tray.show_when_ready()
+    assert len(scheduled) == 1
+    scheduled.pop()[1]()
+    fallback.assert_called_once()
+    assert len(scheduled) == 1
+    scheduled.pop()[1]()
+    tray.icon.show.assert_called_once()
+    assert scheduled == []
 
 
 def test_calibration_override_is_in_menu_and_primary_controls_route(tray):
@@ -77,3 +101,21 @@ def test_compact_action_sync_is_silent_and_user_toggle_emits(tray):
     assert tray.compact_action.isChecked()
     tray.compact_action.trigger()
     changed.assert_called_once_with(False)
+
+
+@pytest.mark.parametrize("platform,expected", [("darwin", 0), ("win32", 1)])
+def test_native_mac_menu_does_not_also_open_a_widget_popup(tray, monkeypatch, platform, expected):
+    monkeypatch.setattr(tray_module.sys, "platform", platform)
+    popup = Mock()
+    monkeypatch.setattr(tray.menu, "popup", popup)
+    tray._on_activated(QSystemTrayIcon.ActivationReason.Trigger)
+    assert popup.call_count == expected
+
+
+def test_notification_uses_shrimp_icon_and_requested_duration(tray, monkeypatch):
+    show = Mock()
+    monkeypatch.setattr(tray.icon, "showMessage", show)
+    tray.toast("Camera unavailable", "Check camera access.", seconds=4)
+    title, body, icon, duration = show.call_args.args
+    assert (title, body, duration) == ("Camera unavailable", "Check camera access.", 4000)
+    assert icon.cacheKey() == tray.icon.icon().cacheKey()

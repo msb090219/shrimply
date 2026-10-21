@@ -1,0 +1,10 @@
+Matplotlib is building the font cache; this may take a moment.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792484370.895258 1718835 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1792484371.025655 1719317 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792484371.051885 1719315 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+I0000 00:00:1792484371.056788 1718835 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792484371.057251 1718835 face_landmarker_graph.cc:174] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+W0000 00:00:1792484371.065733 1719331 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792484371.086222 1719328 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.

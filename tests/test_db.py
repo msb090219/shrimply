@@ -1,4 +1,4 @@
-"""Tests for unshrimp.storage.db — minute rollups + day summaries."""
+"""Tests for shrimply.storage.db — minute rollups + day summaries."""
 from __future__ import annotations
 
 import time
@@ -6,7 +6,7 @@ import sqlite3
 
 import pytest
 
-from unshrimp.storage.db import PostureLog
+from shrimply.storage.db import PostureLog
 
 
 def mklog(tmp_path):
@@ -99,7 +99,7 @@ def test_invalid_durations_are_rejected(tmp_path, seconds):
 def test_local_calendar_days_survive_a_23_hour_day(tmp_path, monkeypatch):
     """Simulate NZ's spring clock change without changing the machine timezone."""
     from datetime import date, datetime, timezone
-    import unshrimp.storage.db as db_module
+    import shrimply.storage.db as db_module
 
     class LocalDate(date):
         @classmethod

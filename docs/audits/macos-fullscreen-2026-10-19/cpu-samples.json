@@ -1,0 +1,18 @@
+{
+  "pid": 21805,
+  "samples": [
+    {
+      "seconds": 5.013,
+      "cpu_percent_one_logical_cpu": 13.37
+    },
+    {
+      "seconds": 5.016,
+      "cpu_percent_one_logical_cpu": 14.75
+    },
+    {
+      "seconds": 5.014,
+      "cpu_percent_one_logical_cpu": 10.37
+    }
+  ],
+  "note": "Short live-process measurements, not a battery benchmark. Inference and camera settings unchanged."
+}

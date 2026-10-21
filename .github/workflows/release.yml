@@ -14,30 +14,43 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            asset: unshrimp-win64.zip
-          # macOS packaging paused until its first-run UI issues are fixed
-          # and human-verified (tracked for a future release)
+            asset: shrimply-win64.zip
+          # Attach the separately verified Mac package to the draft before publishing.
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require a Windows release from main history
+        shell: pwsh
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          if ($LASTEXITCODE -ne 0) { throw 'Windows releases must use a commit from main history.' }
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
       - run: pip install -e .
       - run: python fetch_models.py
+      - name: verify tag and dependency versions
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python -m pip check
+          python -c 'import importlib.metadata as m, os; tag = os.environ["RELEASE_TAG"]; version = "v" + m.version("shrimply"); assert tag == version, f"Tag {tag} does not match {version}"'
       - run: python -m pytest -q
 
       - name: build with PyInstaller
-        run: python -m PyInstaller unshrimp.spec --noconfirm --clean
+        run: python -m PyInstaller shrimply.spec --noconfirm --clean
 
       - name: smoke test Windows executable
         if: runner.os == 'Windows'
         timeout-minutes: 2
         shell: pwsh
         run: |
-          $reportPath = Join-Path $env:RUNNER_TEMP 'unshrimp-smoke.json'
-          $exePath = Join-Path $PWD 'dist/unshrimp/unshrimp.exe'
+          $reportPath = Join-Path $env:RUNNER_TEMP 'shrimply-smoke.json'
+          $exePath = Join-Path $PWD 'dist/shrimply/shrimply.exe'
           $process = Start-Process -FilePath $exePath -ArgumentList @('--smoke-test', "`"$reportPath`"") -Wait -PassThru -WindowStyle Hidden
           if ($process.ExitCode -ne 0) { throw "Executable smoke test failed: $($process.ExitCode)" }
           $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
@@ -47,11 +60,7 @@ jobs:
       - name: package (windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path dist/unshrimp -DestinationPath dist/${{ matrix.asset }}
-
-      - name: package (macos)
-        if: runner.os == 'macOS'
-        run: cd dist && zip -qry ${{ matrix.asset }} Unshrimp.app
+        run: Compress-Archive -Path dist/shrimply -DestinationPath dist/${{ matrix.asset }}
 
       - name: attach to draft release
         shell: bash  # backslash continuations + `|| true` are bash syntax
@@ -62,4 +71,4 @@ jobs:
           gh release create "${{ github.ref_name }}" --draft \
             --title "${{ github.ref_name }}" \
             --notes "Auto-built artifacts. Fill in the notes, then publish." || true
-          gh release upload "${{ github.ref_name }}" dist/${{ matrix.asset }} --clobber
+          gh release upload "${{ github.ref_name }}" dist/${{ matrix.asset }}

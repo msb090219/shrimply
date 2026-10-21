@@ -1,10 +1,10 @@
-"""Tests for unshrimp.core.baseline — deviation scoring + v3 persistence."""
+"""Tests for shrimply.core.baseline — deviation scoring + v3 persistence."""
 from __future__ import annotations
 
 import pytest
 
-from unshrimp.core.baseline import BASELINE_VERSION, TOL_FLOOR, Baseline, SignalCal
-from unshrimp.vision.metrics import FrameSignals
+from shrimply.core.baseline import BASELINE_VERSION, TOL_FLOOR, Baseline, SignalCal
+from shrimply.vision.metrics import FrameSignals
 
 
 def fs(pitch=5.0, sink=0.72, lean=0.52, ok=True):
@@ -67,3 +67,29 @@ def test_stale_version_rejected():
     d["version"] = 3
     with pytest.raises(ValueError):
         Baseline.from_dict(d)
+
+
+def test_out_of_range_saved_date_is_rejected_before_settings_formats_it():
+    saved = make().to_dict()
+    saved["created_at"] = 1e300
+    with pytest.raises(ValueError, match="date"):
+        Baseline.from_dict(saved)
+
+
+@pytest.mark.parametrize("field", ["created_at", "value", "tol"])
+def test_oversized_json_numbers_in_baseline_are_rejected(field):
+    saved = make().to_dict()
+    if field == "created_at":
+        saved[field] = 10**400
+    else:
+        saved["signals"]["head_pitch"][field] = 10**400
+    with pytest.raises(ValueError):
+        Baseline.from_dict(saved)
+
+
+@pytest.mark.parametrize("signals", [[], {"head_pitch": {"value": "bad", "tol": 8, "bad_dir": 1}},
+                                         {"head_pitch": {"value": 5, "tol": 0, "bad_dir": 1}},
+                                         {"head_pitch": {"value": 5, "tol": 8, "bad_dir": 0}}])
+def test_malformed_saved_baseline_is_rejected(signals):
+    with pytest.raises(ValueError):
+        Baseline.from_dict({"version": BASELINE_VERSION, "signals": signals})

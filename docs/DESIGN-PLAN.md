@@ -1,4 +1,4 @@
-# Unshrimp desktop redesign plan
+# Shrimply desktop redesign plan
 
 Status: progressively implemented, with current scope in TODO.md. The accepted
 direction is compact native Qt windows with shared section styling, a main window
@@ -52,7 +52,7 @@ The legacy duplicate Stats tab has been removed from Settings.
 Earlier Today layout exploration (current implementation uses two compact sections):
 
 ```
-Unshrimp                                      Standard window controls
+Shrimply                                      Standard window controls
 ──────────────────────────────────────────────────────────────────────
 Today       Tracking                          Pause
 Progress    Sitting comfortably
@@ -82,7 +82,7 @@ Current accepted layout (18 October): one row with Small/Medium/Large presets
 shrimp lighting from green through amber to red, Pause/Resume, and More. Feedback
 floats centred beneath the bar on a transparent area with a small text shadow.
 There is no separate app icon/button or drag grip. More shares the tray
-menu, including Open Unshrimp and a saved Compact indicator toggle.
+menu, including Open Shrimply and a saved Compact indicator toggle.
 
 The scale has 12 px spacing on each side. The surface uses an open-hand cursor,
 changing to a closed hand during dragging; buttons keep their pointer cursors.
@@ -156,7 +156,7 @@ language. A marker or high confidence must not be labelled proof of visibility.
 
 ## Tray popup
 
-Keep this short: current state, camera status, Pause/Resume, Open Unshrimp,
+Keep this short: current state, camera status, Pause/Resume, Open Shrimply,
 Calibrate, Settings, floating-indicator visibility, and Quit. Show the next break
 only if reminders are enabled and its timing is meaningful. Remove raw deviation,
 exercise editing, and long instructional text from this surface.

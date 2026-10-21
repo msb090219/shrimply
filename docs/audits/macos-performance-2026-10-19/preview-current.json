@@ -1,0 +1,61 @@
+{
+  "scope": "Source worker and production Cocoa widgets; fixed rates; live input varies; no settings/history writes or saved frames",
+  "variant": "current",
+  "ok": true,
+  "python": "3.12.15 (main, Oct 14 2026, 00:55:54) [Clang 23.1.3 ]",
+  "platform": "macOS-15.7.9-x86_64-i386-64bit",
+  "modes": [
+    {
+      "mode": "tracking_preview",
+      "seconds": 20.003,
+      "cpu_percent_one_logical_cpu": 28.24,
+      "animation_paints": 0,
+      "animation_paint_requests": 0,
+      "animation_exposed": false,
+      "frames": 38,
+      "valid_frames": 31,
+      "face_frames": 37,
+      "pose_frames": 38,
+      "previews": 239,
+      "animation_ticks": 0,
+      "camera_errors": 0,
+      "inference_fps": 1.9,
+      "inference_max_gap_s": 0.54,
+      "preview_fps": 11.95,
+      "preview_max_gap_s": 0.14
+    },
+    {
+      "mode": "preview_only",
+      "seconds": 20.002,
+      "cpu_percent_one_logical_cpu": 19.97,
+      "animation_paints": 0,
+      "animation_paint_requests": 0,
+      "animation_exposed": false,
+      "frames": 0,
+      "valid_frames": 0,
+      "face_frames": 0,
+      "pose_frames": 0,
+      "previews": 287,
+      "animation_ticks": 0,
+      "camera_errors": 0,
+      "inference_fps": 0.0,
+      "inference_max_gap_s": 20.002,
+      "preview_fps": 14.35,
+      "preview_max_gap_s": 0.102
+    }
+  ],
+  "camera_setups": [
+    {
+      "mode": "tracking_preview",
+      "reported_fps": 15.0,
+      "width": 640.0,
+      "height": 480.0
+    },
+    {
+      "mode": "preview_only",
+      "reported_fps": 15.0,
+      "width": 640.0,
+      "height": 480.0
+    }
+  ]
+}

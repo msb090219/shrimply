@@ -3,8 +3,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from unshrimp.core.states import State
-from unshrimp.ui.status import camera_status, calibration_status, camera_mode
+from shrimply.core.states import State
+from shrimply.ui.status import camera_status, calibration_status, camera_mode
 
 
 @pytest.fixture

@@ -6,8 +6,8 @@ from PySide6.QtCore import QPoint, Qt
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.ui.hud import Hud
-from unshrimp.ui import theme
+from shrimply.ui.hud import Hud
+from shrimply.ui import theme
 
 
 @pytest.fixture
@@ -71,7 +71,9 @@ def test_zero_drag_offset_is_valid_and_release_ends_drag(hud):
     assert hud.pos() == QPoint(140, 150)
 
 
-def test_bar_surface_forwards_drag_press_and_release(hud):
+@pytest.mark.parametrize("orientation", ["horizontal", "vertical"])
+def test_bar_surface_forwards_drag_press_and_release(hud, orientation):
+    hud.set_orientation(orientation)
     hud.show()
     QApplication.processEvents()
     QTest.mousePress(hud.bar, Qt.LeftButton, Qt.NoModifier, QPoint(3, 3))
@@ -159,7 +161,7 @@ def test_feedback_is_brief_and_break_prompt_takes_its_place(hud):
         assert hud.height() == hud.bar.height()
     hud.show_feedback("Adjust posture")
     QApplication.processEvents()
-    assert hud.shrimp.geometry().right() < hud.pause_button.x() < hud.menu_button.x()
+    assert hud.shrimp.geometry().right() < hud.pause_button.mapTo(hud.bar, QPoint()).x() < hud.menu_button.mapTo(hud.bar, QPoint()).x()
     assert hud.label.text() == "Adjust posture"
     assert abs(hud.label.geometry().center().x() - hud.bar.geometry().center().x()) <= 1
     assert hud.label.y() > hud.bar.geometry().bottom()
@@ -193,7 +195,10 @@ def test_adjustment_caption_fades_and_recovery_clears_it(hud):
     assert not hud.label.isHidden()
     hud._caption_timer.stop()
     hud._fade_caption()
-    QTest.qWait(300)
+    for _ in range(20):
+        if hud.label.isHidden():
+            break
+        QTest.qWait(50)
     assert hud.label.isHidden()
     hud.show_feedback("Adjust posture")
     hud.set_live(.4, "")
@@ -244,3 +249,67 @@ def test_meter_presets_scale_all_parts_and_keep_ten_segments(hud, key, height):
     hud.set_compact(True)
     assert hud.height() == height
     assert hud.width() == width
+
+
+@pytest.mark.parametrize("key,cell", [("s", 14), ("m", 16), ("l", 20)])
+def test_vertical_meter_keeps_ten_segments_and_controls_below(hud, key, cell):
+    hud.set_orientation("vertical")
+    hud.set_size(key)
+    hud.set_live(1.5, "")
+    hud.show()
+    QApplication.processEvents()
+    assert hud.shrimp.height() == 10 * cell
+    assert hud.shrimp.lit_count == 10
+    assert hud.bar.height() > hud.shrimp.height()
+    pause = hud.pause_button.mapTo(hud.bar, QPoint())
+    menu = hud.menu_button.mapTo(hud.bar, QPoint())
+    assert pause.y() > hud.shrimp.geometry().bottom()
+    assert menu.y() >= pause.y() + hud.pause_button.height() + 6
+    assert abs(menu.x() - pause.x()) <= 1
+    assert menu.x() + hud.menu_button.width() < hud.bar.width()
+    width = hud.width()
+    hud.show_feedback("Adjust posture")
+    QApplication.processEvents()
+    assert hud.width() == width == hud.bar.width()
+    assert hud.label.isWindow()
+    assert hud.label.windowFlags() & Qt.WindowTransparentForInput
+    assert hud.label.isVisible()
+    assert hud.label.y() >= hud.frameGeometry().bottom()
+    hud.set_orientation("horizontal")
+    QApplication.processEvents()
+    assert not hud.label.isWindow()
+    assert hud.shrimp.width() == 10 * cell
+    assert hud.shrimp.height() < hud.bar.height()
+
+
+def test_vertical_feedback_stays_on_screen_near_edge(hud):
+    hud.set_orientation("vertical")
+    hud.set_live(1.8, "")
+    hud.show()
+    area = hud.screen().availableGeometry()
+    hud.move(area.right() - hud.width() + 1, area.top())
+    hud.show_feedback("Adjust posture")
+    QApplication.processEvents()
+    assert hud.label.frameGeometry().left() >= area.left()
+    assert hud.label.frameGeometry().right() <= area.right()
+    assert hud.label.frameGeometry().top() >= hud.frameGeometry().bottom()
+    hud.move(area.right() - hud.width() + 1, area.bottom() - hud.height() + 1)
+    QApplication.processEvents()
+    assert hud.frameGeometry().right() <= area.right()
+    assert hud.frameGeometry().bottom() <= area.bottom()
+    assert hud.label.frameGeometry().bottom() < hud.frameGeometry().top()
+    assert hud.label.frameGeometry().left() >= area.left()
+    assert hud.label.frameGeometry().right() <= area.right()
+    hud.set_break_prompt_visible(True)
+    assert hud.label.isHidden()
+
+
+def test_vertical_caption_follows_meter_opacity_and_orientation(hud):
+    hud.setWindowOpacity(.4)
+    hud.set_orientation("vertical")
+    assert hud.label.windowOpacity() == hud.windowOpacity() == pytest.approx(.4, abs=1 / 255)
+    hud.setWindowOpacity(.7)
+    assert hud.label.windowOpacity() == hud.windowOpacity() == pytest.approx(.7, abs=1 / 255)
+    hud.set_orientation("horizontal")
+    hud.set_orientation("vertical")
+    assert hud.label.windowOpacity() == hud.windowOpacity() == pytest.approx(.7, abs=1 / 255)

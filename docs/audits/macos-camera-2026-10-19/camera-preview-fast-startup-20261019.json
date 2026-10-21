@@ -1,0 +1,66 @@
+{
+  "camera": 0,
+  "results": [
+    {
+      "requested_fps": 15.0,
+      "frames": 0,
+      "usable_frames": 0,
+      "max_delivery_gap_s": 0.113,
+      "stop_ms": 54.01,
+      "errors": [],
+      "ok": true,
+      "preview_frames": 110,
+      "first_output_ms": 2305.15,
+      "startup_stages": [
+        {
+          "stage": "camera_open_and_warmup",
+          "ms": 2290.21
+        }
+      ],
+      "read_median_ms": 14.75,
+      "read_max_ms": 70.3,
+      "failed_reads": []
+    },
+    {
+      "requested_fps": 15.0,
+      "frames": 0,
+      "usable_frames": 0,
+      "max_delivery_gap_s": 0.101,
+      "stop_ms": 67.67,
+      "errors": [],
+      "ok": true,
+      "preview_frames": 118,
+      "first_output_ms": 1823.05,
+      "startup_stages": [
+        {
+          "stage": "camera_open_and_warmup",
+          "ms": 1802.4
+        }
+      ],
+      "read_median_ms": 15.91,
+      "read_max_ms": 34.62,
+      "failed_reads": []
+    },
+    {
+      "requested_fps": 15.0,
+      "frames": 0,
+      "usable_frames": 0,
+      "max_delivery_gap_s": 0.101,
+      "stop_ms": 66.93,
+      "errors": [],
+      "ok": true,
+      "preview_frames": 117,
+      "first_output_ms": 1801.03,
+      "startup_stages": [
+        {
+          "stage": "camera_open_and_warmup",
+          "ms": 1787.72
+        }
+      ],
+      "read_median_ms": 16.59,
+      "read_max_ms": 34.7,
+      "failed_reads": []
+    }
+  ],
+  "scope": "worker health only; posture accuracy and physical camera light not verified"
+}

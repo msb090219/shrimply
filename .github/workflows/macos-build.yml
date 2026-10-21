@@ -1,0 +1,48 @@
+name: Mac development builds
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [macos-development]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            arch: x86_64
+          - os: macos-15
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check build architecture
+        env:
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: python -c "import os, platform; assert platform.machine() == os.environ['EXPECTED_ARCH'], platform.machine()"
+      - run: pip install -r requirements-dev.txt -e .
+      - run: python fetch_models.py
+      - run: python -m pip check
+      - name: Run shared and native regressions
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest -q
+      - name: Prepare unsigned beta artifact
+        run: python tools/build_macos.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shrimply-macos-${{ matrix.arch }}
+          path: |
+            dist/macos-release/shrimply-macos-${{ matrix.arch }}.zip
+            dist/macos-release/shrimply-macos-${{ matrix.arch }}.sha256
+            dist/macos-release/shrimply-macos-${{ matrix.arch }}-smoke.json
+            dist/macos-release/shrimply-macos-${{ matrix.arch }}-verification.json
+          if-no-files-found: error

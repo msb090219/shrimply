@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 
-from unshrimp.vision.landmarks import Landmarkers
+from shrimply.vision.landmarks import Landmarkers
 
 
 def landmarker():

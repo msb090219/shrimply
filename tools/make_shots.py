@@ -18,14 +18,14 @@ from PySide6.QtCore import QPoint, QRect, Qt
 from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPen
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.ui import theme
-from unshrimp.ui.hud import Hud
-from unshrimp.ui.mascot import MascotWindow
-from unshrimp.ui.preview import PreviewWindow
-from unshrimp.ui.settings import SettingsDialog
-from unshrimp.ui.main_window import MainWindow
-from unshrimp.ui.tray import Tray
-from unshrimp.vision.worker import PreviewPayload
+from shrimply.ui import theme
+from shrimply.ui.hud import Hud
+from shrimply.ui.mascot import MascotWindow
+from shrimply.ui.preview import PreviewWindow
+from shrimply.ui.settings import SettingsDialog
+from shrimply.ui.main_window import MainWindow
+from shrimply.ui.tray import Tray
+from shrimply.vision.worker import PreviewPayload
 
 OUT = ROOT / "docs" / "shots"
 DESK = QColor(24, 33, 43)  # desktop-tone backdrop
@@ -107,7 +107,7 @@ class _StubApp:
 
     def __init__(self, cfg):
         from types import SimpleNamespace
-        from unshrimp.core.states import State
+        from shrimply.core.states import State
         self.cfg = cfg
         self.worker = SimpleNamespace(isRunning=lambda: False)
         self.machine = SimpleNamespace(state=State.PAUSED)
@@ -158,8 +158,8 @@ def shot_dashboard(app: QApplication) -> None:
     from types import SimpleNamespace
     from unittest.mock import Mock
     import config
-    from unshrimp.core.breaks import BreakReminder
-    from unshrimp.core.states import State
+    from shrimply.core.breaks import BreakReminder
+    from shrimply.core.states import State
 
     controller = SimpleNamespace(
         cfg=copy.deepcopy(config.DEFAULTS), machine=SimpleNamespace(state=State.PAUSED),

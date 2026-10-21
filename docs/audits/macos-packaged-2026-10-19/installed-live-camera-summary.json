@@ -1,0 +1,8 @@
+{
+  "installed_app": "~/Applications/Unshrimp.app",
+  "packaged_live_camera": true,
+  "processed_frames": 71,
+  "frames_with_landmarks": 51,
+  "user_confirmed_camera_and_smaller_arrow": true,
+  "median_inference_ms": 36.51
+}

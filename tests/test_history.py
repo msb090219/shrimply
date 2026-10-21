@@ -1,6 +1,6 @@
 import pytest
 
-from unshrimp.core.history import HistoryAccumulator
+from shrimply.core.history import HistoryAccumulator
 
 
 def totals(history):

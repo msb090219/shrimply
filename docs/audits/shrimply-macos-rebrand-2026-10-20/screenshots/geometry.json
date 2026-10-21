@@ -1,0 +1,114 @@
+[
+  {
+    "theme": "light",
+    "width": 620,
+    "tab_bar_x": 0,
+    "list_height": 166,
+    "list_parent_height": 188,
+    "list_minimum": 50,
+    "buttons": {
+      "Add": [
+        0,
+        156,
+        78,
+        32
+      ],
+      "Update": [
+        86,
+        156,
+        78,
+        32
+      ],
+      "Remove": [
+        172,
+        156,
+        78,
+        32
+      ]
+    }
+  },
+  {
+    "theme": "light",
+    "width": 960,
+    "tab_bar_x": 0,
+    "list_height": 166,
+    "list_parent_height": 188,
+    "list_minimum": 50,
+    "buttons": {
+      "Add": [
+        0,
+        156,
+        78,
+        32
+      ],
+      "Update": [
+        86,
+        156,
+        78,
+        32
+      ],
+      "Remove": [
+        172,
+        156,
+        78,
+        32
+      ]
+    }
+  },
+  {
+    "theme": "dark",
+    "width": 620,
+    "tab_bar_x": 0,
+    "list_height": 166,
+    "list_parent_height": 188,
+    "list_minimum": 50,
+    "buttons": {
+      "Add": [
+        0,
+        156,
+        78,
+        32
+      ],
+      "Update": [
+        86,
+        156,
+        78,
+        32
+      ],
+      "Remove": [
+        172,
+        156,
+        78,
+        32
+      ]
+    }
+  },
+  {
+    "theme": "dark",
+    "width": 960,
+    "tab_bar_x": 0,
+    "list_height": 166,
+    "list_parent_height": 188,
+    "list_minimum": 50,
+    "buttons": {
+      "Add": [
+        0,
+        156,
+        78,
+        32
+      ],
+      "Update": [
+        86,
+        156,
+        78,
+        32
+      ],
+      "Remove": [
+        172,
+        156,
+        78,
+        32
+      ]
+    }
+  }
+]

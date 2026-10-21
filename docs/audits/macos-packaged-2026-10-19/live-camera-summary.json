@@ -1,0 +1,6 @@
+{
+  "packaged_live_camera": true,
+  "processed_frames": 265,
+  "frames_with_landmarks": 265,
+  "median_inference_ms": 28.15
+}

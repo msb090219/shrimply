@@ -1,0 +1,14 @@
+{
+  "unshrimp/vision/camera.py": {
+    "baseline_sha256": "12ae8bcec7bcf902f35a4ff21d4779b84cfa4d75225722b01a773f18bf1cdad4",
+    "current_sha256": "12ae8bcec7bcf902f35a4ff21d4779b84cfa4d75225722b01a773f18bf1cdad4"
+  },
+  "unshrimp/vision/worker.py": {
+    "baseline_sha256": "2c82163e6749df8b7be3244bb247cafbed947d6c31fdd667307cecda6eefd85f",
+    "current_sha256": "b972dd0c5919a33b44395781e0c962c5ef3f9a7489cb0c7280809013eb13ece9"
+  },
+  "unshrimp/ui/mascot.py": {
+    "baseline_sha256": "95fec75cbc7605235020860a7c809930c0f0d5d7db3534e3ccaace3c2c8c98e9",
+    "current_sha256": "f068f86a06c541bd3263b6c46d0cc8c502af02e39f8a9e1c1f1a92d6d94cc22e"
+  }
+}

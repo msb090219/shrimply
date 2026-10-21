@@ -1,7 +1,7 @@
 import json
 from unittest.mock import Mock
 
-from unshrimp import diag
+from shrimply import diag
 
 
 def test_numeric_diagnostics_are_opt_in(monkeypatch):

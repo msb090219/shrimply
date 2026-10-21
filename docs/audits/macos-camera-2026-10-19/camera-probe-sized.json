@@ -1,0 +1,607 @@
+{
+  "opencv": "4.11.0",
+  "gap": 0.0,
+  "configure_size": true,
+  "cycles": [
+    {
+      "cycle": 1,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 46.7,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": false,
+          "ms": 1002.2,
+          "shape": null
+        },
+        {
+          "stage": "after_size",
+          "ok": false,
+          "ms": 1005.1,
+          "shape": null
+        },
+        {
+          "stage": "after_size",
+          "ok": false,
+          "ms": 1001.0,
+          "shape": null
+        }
+      ],
+      "open_ms": 1164.4,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 2,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 14.6,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 5.0,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 34.5,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 31.3,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 794.0,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 3,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 21.6,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 11.8,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 37.6,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 27.7,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 769.6,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 4,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 14.7,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 13.8,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 35.4,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 32.2,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 769.6,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 5,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 20.8,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 7.0,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 34.0,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 31.1,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 755.0,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 6,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 14.4,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 9.1,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 34.0,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 33.0,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 760.6,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 7,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 19.0,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 8.2,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 33.9,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 32.6,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 756.2,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 8,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 15.0,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 8.2,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 34.1,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 31.3,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 758.2,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 9,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 16.0,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 11.7,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 30.6,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 32.4,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 755.9,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 10,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 21.1,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 9.3,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 3.1,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 32.4,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 758.1,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 11,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 19.5,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 6.2,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 35.1,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 31.3,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 751.0,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    },
+    {
+      "cycle": 12,
+      "reads": [
+        {
+          "stage": "before_size",
+          "ok": true,
+          "ms": 17.7,
+          "shape": [
+            720,
+            1280,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 6.4,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 8.8,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        },
+        {
+          "stage": "after_size",
+          "ok": true,
+          "ms": 32.4,
+          "shape": [
+            480,
+            640,
+            3
+          ]
+        }
+      ],
+      "open_ms": 757.1,
+      "opened": true,
+      "size": [
+        1280.0,
+        720.0
+      ]
+    }
+  ]
+}

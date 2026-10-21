@@ -10,26 +10,32 @@ import sys
 import tempfile
 import time
 import traceback
+import weakref
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ.setdefault("QT_QPA_PLATFORM", "cocoa" if sys.platform == "darwin" else "offscreen")
 
-from PySide6.QtCore import QLockFile
+from PySide6.QtCore import QEventLoop, QLockFile, QTimer
 from PySide6.QtWidgets import QApplication
 from PyInstaller.archive.readers import CArchiveReader
 
 import config
-from unshrimp.ui.app import UnshrimpApp
-from unshrimp.ui.status import camera_status
-from unshrimp.core.states import State
+from shrimply.ui.app import ShrimplyApp
+import shrimply.ui.app as app_module
+from shrimply.ui.status import camera_status
+from shrimply.core.states import State
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--camera", type=int, default=0)
+    parser.add_argument("--source-only", action="store_true", help="Use source models and skip packaged-bytecode verification")
     parser.add_argument("--unavailable-camera", type=int, default=9999)
+    parser.add_argument("--executable", type=Path, default=ROOT / (
+        "dist/macos-parity/Shrimply.app/Contents/MacOS/Shrimply" if sys.platform == "darwin"
+        else "dist/shrimply/shrimply.exe"))
     parser.add_argument("--output", type=Path, default=ROOT / "diagnostics" / f"camera-ui-{time.time_ns()}.json")
     args = parser.parse_args()
     if args.camera < 0 or args.unavailable_camera < 0 or args.camera == args.unavailable_camera:
@@ -42,9 +48,17 @@ def main():
     lock = QLockFile(str(config.APP_DIR / "instance.lock"))
     lock.setStaleLockTime(0)
     if not lock.tryLock(0):
-        parser.error("Quit Unshrimp before running this camera check")
+        parser.error("Quit Shrimply before running this camera check")
     report = {"camera": args.camera, "ok": False, "steps": [], "workers": [],
-              "scope": "Real camera in a source Qt host; package bytecode compared. No desktop automation or physical disconnect. No frames saved."}
+              "power_events": [], "qt_errors": [],
+              "scope": ("Real camera in a source Qt host; "
+                        + ("source only. " if args.source_only else "package bytecode compared. ")
+                        + "No desktop automation or physical disconnect. No frames saved.")}
+    previous_hook = sys.excepthook
+    def qt_error(kind, value, tb):
+        report["qt_errors"].append("".join(traceback.format_exception(kind, value, tb)))
+        previous_hook(kind, value, tb)
+    sys.excepthook = qt_error
 
     def record(name, **values):
         row = {"step": name, **values}
@@ -52,52 +66,93 @@ def main():
         print(json.dumps(row), flush=True)
 
     def wait_for(condition, name, seconds=20):
-        deadline = time.monotonic() + seconds
-        while time.monotonic() < deadline:
-            application.processEvents()
-            if condition():
-                return
-            time.sleep(.01)
-        raise TimeoutError(name)
+        if condition():
+            return
+        loop = QEventLoop()
+        poll, deadline = QTimer(), QTimer()
+        poll.setInterval(20)
+        poll.timeout.connect(lambda: loop.quit() if condition() else None)
+        deadline.setSingleShot(True)
+        deadline.timeout.connect(loop.quit)
+        poll.start()
+        deadline.start(round(seconds * 1000))
+        loop.exec()
+        poll.stop()
+        deadline.stop()
+        if not condition():
+            raise TimeoutError(name)
 
+    observed = weakref.WeakKeyDictionary()
     def observe(worker):
-        row = {"camera": worker.camera_index, "frames": 0, "previews": 0, "errors": 0}
+        if worker in observed:
+            return observed[worker]
+        row = {"camera": worker.camera_index, "frames": 0, "previews": 0, "errors": 0,
+               "error_messages": []}
+        observed[worker] = row
         report["workers"].append(row)
+        reference = weakref.ref(worker)
         def frame(_):
             row["frames"] += 1
         def preview(_):
             row["previews"] += 1
         def error():
             row["errors"] += 1
+            current = reference()
+            row["error_messages"].append(current.camera_error if current is not None else "worker released")
         worker.frame.connect(frame)
         worker.preview.connect(preview)
         worker.cam_error.connect(error)
         return row
 
+    original_worker = app_module.VisionWorker
+    def create_worker(*args, **kwargs):
+        worker = original_worker(*args, **kwargs)
+        observe(worker)
+        return worker
+
     try:
-        archive = CArchiveReader(str(ROOT / "dist/unshrimp/unshrimp.exe"))
-        pyz = archive.open_embedded_archive(next(n for n, e in archive.toc.items() if e[-1] == "z"))
-        modules = ["unshrimp.ui.app", "unshrimp.ui.main_window", "unshrimp.ui.settings",
-                   "unshrimp.ui.preview", "unshrimp.ui.status", "unshrimp.vision.worker",
-                   "unshrimp.ui.countdown", "unshrimp.ui.hud", "unshrimp.core.calibration", "config"]
-        for name in modules:
-            bundled = pyz.extract(name)
-            source = (ROOT / (name.replace(".", "/") + ".py")).read_text(encoding="utf-8")
-            assert compile(source, bundled.co_filename, "exec", dont_inherit=True) == bundled, f"Stale package module: {name}"
-        record("package_matches_source", modules=len(modules))
+        if args.source_only:
+            models = ROOT / "models"
+            record("source_only_no_package_verification")
+        else:
+            archive = CArchiveReader(str(args.executable))
+            pyz = archive.open_embedded_archive(next(n for n, e in archive.toc.items() if e[-1] == "z"))
+            modules = ["shrimply.ui.app", "shrimply.ui.main_window", "shrimply.ui.settings",
+                       "shrimply.ui.preview", "shrimply.ui.status", "shrimply.vision.worker",
+                       "shrimply.ui.countdown", "shrimply.ui.hud", "shrimply.core.calibration",
+                       "shrimply.vision.camera", "config"]
+            for name in modules:
+                bundled = pyz.extract(name)
+                source = (ROOT / (name.replace(".", "/") + ".py")).read_text(encoding="utf-8")
+                assert compile(source, bundled.co_filename, "exec", dont_inherit=True) == bundled, f"Stale package module: {name}"
+            record("package_matches_source", modules=len(modules))
+            models = (args.executable.parent.parent / "Resources/models" if sys.platform == "darwin"
+                      else args.executable.parent / "_internal/models")
         with tempfile.TemporaryDirectory(prefix="camera-ui-", dir=args.output.parent) as session:
             isolated = Path(session).resolve()
             assert isolated.is_relative_to(ROOT.resolve()), "Test data must remain inside the workspace"
-            with patch.object(config, "APP_DIR", isolated), patch.object(config, "CONFIG_PATH", isolated / "config.json"):
+            with (patch.object(config, "APP_DIR", isolated),
+                  patch.object(config, "CONFIG_PATH", isolated / "config.json"),
+                  patch.object(app_module, "VisionWorker", create_worker)):
                 cfg = copy.deepcopy(config.DEFAULTS)
                 cfg.update(camera_index=args.camera, tracking_paused=True, welcome_seen=True,
                            toasts_enabled=False, mascot_enabled=False, reminder_enabled=False, sound_on=False)
                 cfg["hud"]["visible"] = False
                 config.save(cfg)
-                controller = UnshrimpApp(ROOT / "dist/unshrimp/_internal/models")
+                controller = ShrimplyApp(models)
+                power_monitor = None
                 try:
+                    if sys.platform == "darwin":
+                        from shrimply.ui.power import PowerMonitor
+                        def suspend():
+                            report["power_events"].append("suspend")
+                            controller._on_system_suspend()
+                        def resume():
+                            report["power_events"].append("resume")
+                            controller._on_system_resume()
+                        power_monitor = PowerMonitor(controller.hud.winId(), suspend, resume)
                     controller._on_pause_toggled(True)
-                    controller.main_window.camera_preview.click()
+                    controller.open_camera_preview()
                     controller._open_settings()
                     mirror = controller._camera_preview
                     row = observe(controller.worker)
@@ -127,14 +182,14 @@ def main():
 
                     controller.main_window.refresh()
                     old = controller.worker
-                    controller.main_window.pause.click()
+                    controller.tray.pause_action.trigger()
                     wait_for(lambda: controller.worker is not old, "Resuming tracking did not replace preview-only worker")
                     row = observe(controller.worker)
                     wait_for(lambda: camera_status(controller)[0] == "running" and mirror.video.image is not None
                              and row["previews"] >= 2, "Live preview did not receive real frames")
                     controller.main_window.refresh()
                     controller._settings_dlg.refresh_status()
-                    assert "Running" in controller.main_window.camera.text()
+                    assert camera_status(controller)[0] == "running"
                     assert controller._settings_dlg.camera_status_label.text().startswith("Running")
                     record("live_camera_and_shared_status", frames=row["frames"], previews=row["previews"])
 
@@ -172,7 +227,7 @@ def main():
                     for cycle in range(2):
                         controller.main_window.refresh()
                         old = controller.worker
-                        controller.main_window.pause.click()
+                        controller.tray.pause_action.trigger()
                         wait_for(lambda: controller.worker is not old and camera_status(controller)[0] == "preview"
                                  and mirror.video.image is not None, "Pausing did not preserve preview-only capture")
                         assert not controller.worker.inference_enabled and controller.machine.state is State.PAUSED
@@ -189,13 +244,20 @@ def main():
                                      "Paused preview failed to reopen")
                             controller.main_window.refresh()
                             old = controller.worker
-                            controller.main_window.pause.click()
+                            controller.tray.pause_action.trigger()
                             wait_for(lambda: controller.worker is not old, "Tracking did not replace preview-only worker")
                             observe(controller.worker)
                             wait_for(lambda: camera_status(controller)[0] == "running" and mirror.video.image is not None,
                                      "Camera did not reopen after pause")
+                    unexpected = [row for row in report["workers"] if row["camera"] == args.camera and row["errors"]]
+                    assert not unexpected, f"Unexpected camera interruption, even if recovered: {unexpected}"
+                    assert not report["power_events"], "Power/session change interrupted the check"
                     report["ok"] = True
                 finally:
+                    if power_monitor is not None:
+                        power_monitor.close()
+                    controller._quitting = True
+                    controller._restart_pending = False
                     controller.worker.stop()
                     controller.worker.wait()
                     application.processEvents()
@@ -209,6 +271,9 @@ def main():
         report["error"] = traceback.format_exc()
         print(report["error"], flush=True)
     finally:
+        sys.excepthook = previous_hook
+        if report["qt_errors"]:
+            report["ok"] = False
         lock.unlock()
         with args.output.open("x", encoding="utf-8") as output:
             json.dump(report, output, indent=2)

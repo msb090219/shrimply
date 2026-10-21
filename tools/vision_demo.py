@@ -21,9 +21,9 @@ sys.path.insert(0, str(ROOT))
 
 import cv2
 
-from unshrimp.vision import camera as camera_mod
-from unshrimp.vision.camera import CameraError, open_camera, paced_frames, warm_up
-from unshrimp.vision.landmarks import Landmarkers
+from shrimply.vision import camera as camera_mod
+from shrimply.vision.camera import CameraError, open_camera, paced_frames, warm_up
+from shrimply.vision.landmarks import Landmarkers
 
 
 def list_cameras() -> None:
@@ -43,7 +43,7 @@ def list_cameras() -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Unshrimp vision stack demo")
+    ap = argparse.ArgumentParser(description="Shrimply vision stack demo")
     ap.add_argument("--seconds", type=float, default=20.0)
     ap.add_argument("--camera", type=int, default=0)
     ap.add_argument("--fps", type=float, default=2.0)
@@ -78,9 +78,9 @@ def main() -> int:
                 display = frame.copy()
                 label = "Measuring - hold position" if measuring else "Check framing; SPACE to start, ESC to cancel"
                 cv2.putText(display, label, (8, 24), cv2.FONT_HERSHEY_SIMPLEX, .45, (0, 255, 255), 1)
-                cv2.imshow("Unshrimp framing check", display)
+                cv2.imshow("Shrimply framing check", display)
                 key = cv2.waitKey(1) & 0xff
-                if key == 27 or cv2.getWindowProperty("Unshrimp framing check", cv2.WND_PROP_VISIBLE) < 1:
+                if key == 27 or cv2.getWindowProperty("Shrimply framing check", cv2.WND_PROP_VISIBLE) < 1:
                     break
                 if not measuring and key == 32:
                     measuring = True

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QPushButton, QWidget,
 )
 
-from unshrimp.ui import theme
+from shrimply.ui import theme
 
 
 def test_pointer_feedback_covers_desktop_controls_but_not_disabled_or_passive_widgets():

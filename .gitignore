@@ -27,3 +27,6 @@ diagnostics/
 # Tooling
 .idea/
 .vscode/
+
+# macOS Finder metadata
+.DS_Store

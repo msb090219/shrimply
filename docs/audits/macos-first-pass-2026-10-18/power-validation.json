@@ -1,0 +1,18 @@
+{
+  "native_idle_seconds": 84.528898264,
+  "checks": [
+    "real_camera_tracking_started",
+    "camera_released_on_suspend",
+    "wake_does_not_restart_while_locked",
+    "real_camera_tracking_resumed",
+    "camera_released_after_idle",
+    "real_camera_resumed_after_input",
+    "manual_pause_releases_camera",
+    "manual_pause_preserved_after_wake"
+  ],
+  "cpu_percent_one_core": {
+    "tracking": 10.0,
+    "suspended": 0.11
+  },
+  "ok": true
+}

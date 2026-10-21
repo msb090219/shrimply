@@ -1,0 +1,15 @@
+{
+  "platform": "macOS-15.7.9-x86_64-i386-64bit",
+  "architecture": "x86_64",
+  "models": {
+    "pose_landmarker_lite.task": "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a",
+    "face_landmarker.task": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff"
+  },
+  "packages": {
+    "PySide6": "6.12.0",
+    "mediapipe": "0.10.21",
+    "opencv-contrib-python": "4.11.0.86",
+    "numpy": "1.26.4",
+    "pyinstaller": "6.22.3"
+  }
+}

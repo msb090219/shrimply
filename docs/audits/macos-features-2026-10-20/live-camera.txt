@@ -1,0 +1,82 @@
+{"step": "package_matches_source", "modules": 11}
+[unshrimp] pause: applying camera policy
+[unshrimp] camera: opened in 1.35s; models in 0.00s
+[unshrimp] camera: first live frame after 1.38s
+{"step": "preview_only_preserves_pause_without_inference", "previews": 2}
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792481858.965964 1680806 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1792481859.157319 1680837 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481859.201879 1680837 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+I0000 00:00:1792481859.206205 1680806 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792481859.208903 1680806 face_landmarker_graph.cc:174] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+W0000 00:00:1792481859.236087 1680846 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481859.266489 1680850 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[unshrimp] camera: opened in 2.31s; models in 0.36s
+[unshrimp] camera: first live frame after 2.69s
+W0000 00:00:1792481859.363807 1680843 landmark_projection_calculator.cc:186] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
+{"step": "calibration_receives_frames_without_normal_tracking", "frames": 2}
+[unshrimp] cal: cancelled — previous baseline unchanged
+[unshrimp] pause: applying camera policy
+[unshrimp] camera: opened in 0.79s; models in 0.00s
+[unshrimp] camera: first live frame after 0.82s
+[unshrimp] resume: restarting camera
+I0000 00:00:1792481863.165368 1680868 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792481863.294599 1680880 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481863.319763 1680882 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+I0000 00:00:1792481863.322171 1680868 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792481863.322498 1680868 face_landmarker_graph.cc:174] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+W0000 00:00:1792481863.330421 1680893 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481863.349427 1680893 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[unshrimp] camera: opened in 2.29s; models in 0.19s
+[unshrimp] camera: first live frame after 2.49s
+{"step": "live_camera_and_shared_status", "frames": 1, "previews": 2}
+{"step": "closing_preview_keeps_tracking_and_clears_image"}
+OpenCV: out device of bound (0-0): 9999
+OpenCV: camera failed to properly initialize!
+[ WARN:4@11.318] global cap.cpp:480 open VIDEOIO(AVFOUNDATION): backend is generally available but can't be used to capture by index
+[unshrimp] camera problem: Could not open camera 9999. Is another app (Zoom/Teams) using it? — retrying every few seconds
+[unshrimp] Traceback (most recent call last):
+  File "/Users/min-seo/Downloads/unshrimp/unshrimp/vision/worker.py", line 92, in run
+    cap = (open_camera(self.camera_index) if self.inference_enabled else
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/min-seo/Downloads/unshrimp/unshrimp/vision/camera.py", line 79, in open_camera
+    raise CameraError(
+unshrimp.vision.camera.CameraError: Could not open camera 9999. Is another app (Zoom/Teams) using it?
+
+[unshrimp] camera: error
+{"step": "unavailable_device_shows_retry_and_clears_image", "detail": "Could not open camera 9999. Is another app (Zoom/Teams) using it?"}
+I0000 00:00:1792481866.914717 1680904 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792481867.045348 1680930 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481867.070137 1680933 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+I0000 00:00:1792481867.074031 1680904 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792481867.074396 1680904 face_landmarker_graph.cc:174] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+W0000 00:00:1792481867.081957 1680941 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481867.102114 1680944 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[unshrimp] camera: opened in 2.28s; models in 0.20s
+[unshrimp] camera: first live frame after 2.49s
+[unshrimp] camera: recovered
+{"step": "retry_recovers_real_camera_and_mirror"}
+[unshrimp] pause: applying camera policy
+[unshrimp] camera: opened in 0.78s; models in 0.00s
+[unshrimp] camera: first live frame after 0.81s
+{"step": "pause_with_open_mirror_keeps_preview_only", "cycle": 1}
+{"step": "pause_releases_camera", "cycle": 1, "stop_ms": 70.9}
+[unshrimp] camera: opened in 0.79s; models in 0.00s
+[unshrimp] camera: first live frame after 0.82s
+[unshrimp] resume: restarting camera
+I0000 00:00:1792481871.387674 1680976 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792481871.513268 1680997 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481871.538632 1680996 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+I0000 00:00:1792481871.541204 1680976 gl_context.cc:369] GL version: 2.1 (2.1 INTEL-23.7.4), renderer: Intel(R) Iris(TM) Plus Graphics 645
+W0000 00:00:1792481871.541526 1680976 face_landmarker_graph.cc:174] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+W0000 00:00:1792481871.548941 1681003 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792481871.568846 1681007 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[unshrimp] camera: opened in 2.29s; models in 0.19s
+[unshrimp] camera: first live frame after 2.50s
+[unshrimp] pause: applying camera policy
+[unshrimp] camera: opened in 0.78s; models in 0.00s
+[unshrimp] camera: first live frame after 0.81s
+{"step": "pause_with_open_mirror_keeps_preview_only", "cycle": 2}
+{"step": "pause_releases_camera", "cycle": 2, "stop_ms": 91.9}
+Report: diagnostics/macos-features-camera-final-20261020.json

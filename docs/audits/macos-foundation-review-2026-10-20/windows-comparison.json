@@ -1,0 +1,264 @@
+{
+  "windows_reference": "cdfebc08e41f7dba4b9641109779c73107b03dc0",
+  "scope": "Local Windows reference tree versus current Mac working tree; no fetch, push, branch switch or Windows build",
+  "modules": [
+    {
+      "path": "config.py",
+      "identical": false,
+      "windows_sha256": "9e8fe8710c012bd043c955be13de9f8d812b7cdb0a0551bfefacfc8e787ee84b",
+      "mac_sha256": "3fce1054deb4a9b788a72a2c5fe98e160b6841bf097a62d77d610e7407cd55ee"
+    },
+    {
+      "path": "main.py",
+      "identical": false,
+      "windows_sha256": "7164457acdfd77acfbe26494f321db92a6aabcc97c0f47493204fed8cc0dd31c",
+      "mac_sha256": "b49b302e0164b2176a974f9c680615aa853f97abd5b6482267c1c7ce3c908294"
+    },
+    {
+      "path": "unshrimp/__init__.py",
+      "identical": true,
+      "windows_sha256": "d7ba5e34e662e01d3aab289d4bd29f1b45d9767579005248b5b5862db52f3c9e",
+      "mac_sha256": "d7ba5e34e662e01d3aab289d4bd29f1b45d9767579005248b5b5862db52f3c9e"
+    },
+    {
+      "path": "unshrimp/autostart.py",
+      "identical": false,
+      "windows_sha256": "bfc2dd71a08ebf7138fb41ce845f4d59bf668b7a2e2cf853c5c833b7c55a1076",
+      "mac_sha256": "489ae596e3a026289f54e662d4660586af7fa5bc0d19f1aeb5ba83d8aa84a872"
+    },
+    {
+      "path": "unshrimp/core/__init__.py",
+      "identical": true,
+      "windows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mac_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "unshrimp/core/baseline.py",
+      "identical": false,
+      "windows_sha256": "61a1879381236387e86459062f74a2e626d8847e64a9c07efd28012bb4e66724",
+      "mac_sha256": "a9bee23ece898b4a39d92135e210e8d7224844538e3a5dc258d0d68bfde94ea5"
+    },
+    {
+      "path": "unshrimp/core/breaks.py",
+      "identical": true,
+      "windows_sha256": "e5301b562898b1541a532b9556db904a47887034fabc0a30946b6f01a53598e5",
+      "mac_sha256": "e5301b562898b1541a532b9556db904a47887034fabc0a30946b6f01a53598e5"
+    },
+    {
+      "path": "unshrimp/core/calibration.py",
+      "identical": false,
+      "windows_sha256": "cb11e2c42771b41f3ec1c6e2aedcc42de7e4514f3e5b60672d79d05778350d26",
+      "mac_sha256": "697d554e942f26e8b194c217f3aec1ffb3cbee2240a1961b9f7f7d891bab3614"
+    },
+    {
+      "path": "unshrimp/core/history.py",
+      "identical": true,
+      "windows_sha256": "816f2d41239e43a674fbb19dd4f78a9bbd43de9289cb8e1ee779da982f512547",
+      "mac_sha256": "816f2d41239e43a674fbb19dd4f78a9bbd43de9289cb8e1ee779da982f512547"
+    },
+    {
+      "path": "unshrimp/core/idle.py",
+      "identical": false,
+      "windows_sha256": "7576727fbae87eab74f9bb196575165de5d875ffe740881d297e4dd9c031a179",
+      "mac_sha256": "d9204fbe3aaf54c58ee8e589e56f225f5887beb1e1545565a3be79ef4800865a"
+    },
+    {
+      "path": "unshrimp/core/rates.py",
+      "identical": true,
+      "windows_sha256": "6c07181b4c693e14cb5e4cb11aec8236ac8c71a4d009c90d44c3f38b0c2a9ad2",
+      "mac_sha256": "6c07181b4c693e14cb5e4cb11aec8236ac8c71a4d009c90d44c3f38b0c2a9ad2"
+    },
+    {
+      "path": "unshrimp/core/smoother.py",
+      "identical": true,
+      "windows_sha256": "4bc6cbd266f2390dcbed15b35b2203ab499c368b962def54c9596fadfdc4d779",
+      "mac_sha256": "4bc6cbd266f2390dcbed15b35b2203ab499c368b962def54c9596fadfdc4d779"
+    },
+    {
+      "path": "unshrimp/core/states.py",
+      "identical": false,
+      "windows_sha256": "2b23eb782e2ff8815a8139162cdc3d8bcf25d69e823dc92f2fa2128be391df15",
+      "mac_sha256": "977edad69f5659879cc4dc12793289667348477992270b614838ca7297f038d3"
+    },
+    {
+      "path": "unshrimp/diag.py",
+      "identical": false,
+      "windows_sha256": "128c7676092cc72562ca10daee6e6d0613fdc1e65171cf1cbe31029b4afc87ea",
+      "mac_sha256": "a89eede6fe9f86a1695c159a64e8c0dce3109a3eca852f65dd7c1c48f349c55f"
+    },
+    {
+      "path": "unshrimp/smoke.py",
+      "identical": false,
+      "windows_sha256": "82061ad1e68732482bf467466aa1bcc77d8646defa375d0206561e7ad0b68556",
+      "mac_sha256": "e22efb11cde5b8e27f1fce9be6c495d5f638bcd06cd68dbb09957df3f7c6894a"
+    },
+    {
+      "path": "unshrimp/storage/__init__.py",
+      "identical": true,
+      "windows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mac_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "unshrimp/storage/db.py",
+      "identical": true,
+      "windows_sha256": "cb096a51302d07e3389296606e78e3cb1c711dab032b1532278defd436a7ed24",
+      "mac_sha256": "cb096a51302d07e3389296606e78e3cb1c711dab032b1532278defd436a7ed24"
+    },
+    {
+      "path": "unshrimp/ui/__init__.py",
+      "identical": true,
+      "windows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mac_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "unshrimp/ui/app.py",
+      "identical": false,
+      "windows_sha256": "87e9bcd963a578ab5e6392a2f550204c6bb010a167984c0d0c1ce9cd992b46c7",
+      "mac_sha256": "ea4da53587ce3c17bab9452d71eae6db70e6b3ab5086f7616c4214e58e5f6e99"
+    },
+    {
+      "path": "unshrimp/ui/appearance.py",
+      "identical": true,
+      "windows_sha256": "773c62b4ec96b02244ff23982487ae0166323c3196def7893958256e2d031ac4",
+      "mac_sha256": "773c62b4ec96b02244ff23982487ae0166323c3196def7893958256e2d031ac4"
+    },
+    {
+      "path": "unshrimp/ui/assets.py",
+      "identical": true,
+      "windows_sha256": "12527fec328622628789a22051cefe0ea94842faa2b4ce234146248d9da700e4",
+      "mac_sha256": "12527fec328622628789a22051cefe0ea94842faa2b4ce234146248d9da700e4"
+    },
+    {
+      "path": "unshrimp/ui/break_prompt.py",
+      "identical": false,
+      "windows_sha256": "1a578238b9a4be6c7f0875069d5c5b6d69e6775737f59abc10519357c8184edb",
+      "mac_sha256": "711df84e2f6b61d2296fba5a9f58a3760f4ed37a7a024c67074ab3d6e3544129"
+    },
+    {
+      "path": "unshrimp/ui/countdown.py",
+      "identical": true,
+      "windows_sha256": "d3da9ef4ab7768a431d2a88ee6cd8c3c0490bdc6c141095df7cd41022889d134",
+      "mac_sha256": "d3da9ef4ab7768a431d2a88ee6cd8c3c0490bdc6c141095df7cd41022889d134"
+    },
+    {
+      "path": "unshrimp/ui/hud.py",
+      "identical": false,
+      "windows_sha256": "295b07bc6ed711d9371ae9bb6034c932a36eae1b3e9f755663fdb02525e27a2c",
+      "mac_sha256": "d250b9c8ca92e45f28b906573864dc30127adf604dac0652a961c2dd06871e83"
+    },
+    {
+      "path": "unshrimp/ui/icons.py",
+      "identical": false,
+      "windows_sha256": "c48ab3daec748c44a940fd68ee041df851a11d505beef77781f615a42bdcd32d",
+      "mac_sha256": "25b431d39704e765a1fb4331e9f550295040f2c9bb1bd1db4e88d17732635ba1"
+    },
+    {
+      "path": "unshrimp/ui/main_window.py",
+      "identical": false,
+      "windows_sha256": "320a5506f9d25bb0364653197a8aa87baebb6a9cfc2380da668c32330099509f",
+      "mac_sha256": "4cd4f535c000bef9265f40cce2285c104cdbd2c0b1c279cb29bcc4e8908bf3b6"
+    },
+    {
+      "path": "unshrimp/ui/mascot.py",
+      "identical": false,
+      "windows_sha256": "260423303fb7af1a0524a75127a022dd5b7318524c1f47aa41e9448e8fd5eac9",
+      "mac_sha256": "ec896c35875e6bae925268491b1f11ae001bd24f002d0516cf9262b057dc4d28"
+    },
+    {
+      "path": "unshrimp/ui/power.py",
+      "identical": false,
+      "windows_sha256": "4fcc07eed522916a3d5941d9998e10333180e44748af7895a9882c59899ba3df",
+      "mac_sha256": "c2b75717dcc1bbdd441feba2fe2719accc3e90f22c498ae3f8199cae44a47f6f"
+    },
+    {
+      "path": "unshrimp/ui/preview.py",
+      "identical": false,
+      "windows_sha256": "12215f70bc831109722b4d413826ec1bf8d2779c4771645f20ab73239138fec6",
+      "mac_sha256": "7bf41af3bdab6f527838598b576493ce3f11b0551d1a101d396b2b7735b19947"
+    },
+    {
+      "path": "unshrimp/ui/sections.py",
+      "identical": true,
+      "windows_sha256": "0ea88e195b1f0f2a30ce38a6c2b4ebcc26227da1921edf2155ac46c07745a6e2",
+      "mac_sha256": "0ea88e195b1f0f2a30ce38a6c2b4ebcc26227da1921edf2155ac46c07745a6e2"
+    },
+    {
+      "path": "unshrimp/ui/settings.py",
+      "identical": false,
+      "windows_sha256": "7ccb95ddd2e581b3615f99e8720110065d9b8452b40c7c13507fa9973339e5a5",
+      "mac_sha256": "3b334bf78acce250fc089d90876f21f1507d68cf1a47da5df584e72161c03c31"
+    },
+    {
+      "path": "unshrimp/ui/shrimp.py",
+      "identical": true,
+      "windows_sha256": "a5c47b7502ac0241533b99e9662b154ec968d926fcb93f859714f115e54f418f",
+      "mac_sha256": "a5c47b7502ac0241533b99e9662b154ec968d926fcb93f859714f115e54f418f"
+    },
+    {
+      "path": "unshrimp/ui/stats.py",
+      "identical": false,
+      "windows_sha256": "a085cf3bda0c1542afabe821245f375befea898cd2ba6593b5941aaae52fd7f0",
+      "mac_sha256": "b4132ce83ac5dfc39bb084a54c347a78855d08d0b02de4e0f5bf959bf01aaf19"
+    },
+    {
+      "path": "unshrimp/ui/status.py",
+      "identical": true,
+      "windows_sha256": "36a674480aba3677d6e0ff607dd5298cff8931522488d1c4352cde2c68a2dc3b",
+      "mac_sha256": "36a674480aba3677d6e0ff607dd5298cff8931522488d1c4352cde2c68a2dc3b"
+    },
+    {
+      "path": "unshrimp/ui/theme.py",
+      "identical": false,
+      "windows_sha256": "5d5ba9f7068decd83c8ad081d674a3d688a0ebb4550aa3adf2dcf3d327de749c",
+      "mac_sha256": "1ac090c2d0520c78a5923c6767e5efa654dcf8fd2c3b2d8ea141a480dbfb9ab6"
+    },
+    {
+      "path": "unshrimp/ui/tray.py",
+      "identical": false,
+      "windows_sha256": "14d35e5f4a0c4f5d05aa51d108080adb19c48abf1ab73c0fcc4c2c7ce0fd0f72",
+      "mac_sha256": "45365427b93a1f5f656896d4132c0af06729a236209d488d95b0048de3e04022"
+    },
+    {
+      "path": "unshrimp/ui/welcome.py",
+      "identical": false,
+      "windows_sha256": "f59890406e61021c166607182172b033f89f5d883ecd484fa5bf5c5664afcbab",
+      "mac_sha256": "5c4c20e4dd5379c473823f30a3d1b0280a36f4baa38104b426e7dbc5a3bfba9e"
+    },
+    {
+      "path": "unshrimp/vision/__init__.py",
+      "identical": true,
+      "windows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mac_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "unshrimp/vision/camera.py",
+      "identical": false,
+      "windows_sha256": "caca82c3102d4baefa1fd1f9e960629bd2ac1a7f04ef025cc7a33f719991a50f",
+      "mac_sha256": "a789515afde69641ae3bbf7e9fc575d1a5faacd93071104bafcfaf8b9d5f4d50"
+    },
+    {
+      "path": "unshrimp/vision/landmarks.py",
+      "identical": true,
+      "windows_sha256": "83a5682a3425da330ce5e20167272b20d0139f1d6dadc7f81538c3b3098fff16",
+      "mac_sha256": "83a5682a3425da330ce5e20167272b20d0139f1d6dadc7f81538c3b3098fff16"
+    },
+    {
+      "path": "unshrimp/vision/metrics.py",
+      "identical": true,
+      "windows_sha256": "424598bf67bab9a4729c497005e0ce81b8d621eed5776af9492f419a84c3e1b0",
+      "mac_sha256": "424598bf67bab9a4729c497005e0ce81b8d621eed5776af9492f419a84c3e1b0"
+    },
+    {
+      "path": "unshrimp/vision/worker.py",
+      "identical": false,
+      "windows_sha256": "2c82163e6749df8b7be3244bb247cafbed947d6c31fdd667307cecda6eefd85f",
+      "mac_sha256": "0b28a5da7c184f5abdf04848d19852776a4a44f54c3d6a60eb94bb65b1cc4ba5"
+    }
+  ],
+  "windows_test_functions": 307,
+  "missing_windows_test_functions": [],
+  "mac_only_modules": [
+    "unshrimp/ui/macos_power.py",
+    "unshrimp/ui/macos_windows.py"
+  ]
+}

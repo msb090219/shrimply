@@ -1,0 +1,133 @@
+{
+  "camera": 0,
+  "ok": true,
+  "steps": [
+    {
+      "step": "source_only_no_package_verification"
+    },
+    {
+      "step": "preview_only_preserves_pause_without_inference",
+      "previews": 2
+    },
+    {
+      "step": "calibration_receives_frames_without_normal_tracking",
+      "frames": 2
+    },
+    {
+      "step": "live_camera_and_shared_status",
+      "frames": 1,
+      "previews": 2
+    },
+    {
+      "step": "closing_preview_keeps_tracking_and_clears_image"
+    },
+    {
+      "step": "unavailable_device_shows_retry_and_clears_image",
+      "detail": "Could not open camera 9999. Is another app (Zoom/Teams) using it?"
+    },
+    {
+      "step": "retry_recovers_real_camera_and_mirror"
+    },
+    {
+      "step": "pause_with_open_mirror_keeps_preview_only",
+      "cycle": 1
+    },
+    {
+      "step": "pause_releases_camera",
+      "cycle": 1,
+      "stop_ms": 66.3
+    },
+    {
+      "step": "pause_with_open_mirror_keeps_preview_only",
+      "cycle": 2
+    },
+    {
+      "step": "pause_releases_camera",
+      "cycle": 2,
+      "stop_ms": 71.1
+    }
+  ],
+  "workers": [
+    {
+      "camera": 0,
+      "frames": 0,
+      "previews": 0,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 0,
+      "previews": 2,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 2,
+      "previews": 9,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 0,
+      "previews": 1,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 3,
+      "previews": 3,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 9999,
+      "frames": 0,
+      "previews": 0,
+      "errors": 1,
+      "error_messages": [
+        "Could not open camera 9999. Is another app (Zoom/Teams) using it?"
+      ]
+    },
+    {
+      "camera": 0,
+      "frames": 1,
+      "previews": 1,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 0,
+      "previews": 1,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 0,
+      "previews": 1,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 1,
+      "previews": 1,
+      "errors": 0,
+      "error_messages": []
+    },
+    {
+      "camera": 0,
+      "frames": 0,
+      "previews": 1,
+      "errors": 0,
+      "error_messages": []
+    }
+  ],
+  "power_events": [],
+  "scope": "Real camera in a source Qt host; source only. No desktop automation or physical disconnect. No frames saved."
+}

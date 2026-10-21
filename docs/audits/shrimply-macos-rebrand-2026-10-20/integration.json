@@ -1,0 +1,24 @@
+{
+  "upstream": "1f0253f0180cb53d6a55f4f504287272c494946e",
+  "rebrand_implementation": "e16ef8a",
+  "source_backup": "/Users/min-seo/Downloads/unshrimp/dist/install-backups/source-before-shrimply-20261020-213530.tar.gz",
+  "preserved_mac_functions": [
+    "shrimply/core/states.py:PostureStateMachine.reset_observations",
+    "shrimply/core/calibration.py:CalibrationSession._setup",
+    "shrimply/vision/camera.py:module.open_camera",
+    "shrimply/vision/camera.py:_MacCapture.read",
+    "shrimply/vision/worker.py:VisionWorker.run",
+    "shrimply/vision/worker.py:VisionWorker._emit_preview",
+    "shrimply/ui/app.py:ShrimplyApp._restart_worker",
+    "shrimply/ui/app.py:ShrimplyApp._on_worker_finished",
+    "shrimply/ui/app.py:ShrimplyApp._handle_event",
+    "shrimply/ui/app.py:ShrimplyApp.shutdown",
+    "shrimply/ui/settings.py:SettingsDialog._exercise_editor",
+    "shrimply/ui/mascot.py:MascotWindow._tick",
+    "shrimply/ui/hud.py:Hud.set_orientation",
+    "shrimply/ui/break_prompt.py:BreakPrompt.showEvent"
+  ],
+  "upstream_test_functions_retained": 310,
+  "origin": "https://github.com/msb090219/shrimply.git",
+  "scope": "Selected critical Mac fixes compare equal after mechanical namespace/brand normalization; current upstream named regressions retained"
+}

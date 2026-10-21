@@ -16,8 +16,8 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QImage, QPainter
 from PySide6.QtWidgets import QApplication
 
-from unshrimp.ui import theme
-from unshrimp.ui.shrimp import paint_shrimp
+from shrimply.ui import theme
+from shrimply.ui.shrimp import paint_shrimp
 
 W, H = 1280, 640
 OUT = ROOT / "assets" / "brand" / "banner.png"
@@ -40,7 +40,7 @@ def main() -> int:
 
     p.setPen(QColor(theme.TEXT))
     p.setFont(QFont("Segoe UI", 92, QFont.Black))
-    p.drawText(QRectF(70, 190, 620, 130), Qt.AlignLeft | Qt.AlignVCenter, "Unshrimp")
+    p.drawText(QRectF(70, 190, 620, 130), Qt.AlignLeft | Qt.AlignVCenter, "Shrimply")
     p.setPen(QColor(theme.SHRIMP))
     p.setFont(QFont("Segoe UI", 40, QFont.Bold))
     p.drawText(QRectF(74, 330, 620, 70), Qt.AlignLeft | Qt.AlignVCenter, "Don't get shrimped.")

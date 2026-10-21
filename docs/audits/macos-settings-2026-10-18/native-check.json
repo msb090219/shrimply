@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "qt_platform": "cocoa",
+  "camera_name": "FaceTime HD Camera (Built-in)",
+  "close_shortcut": "\u2318W",
+  "checks": [
+    "native_camera_enumeration",
+    "selection_preserved",
+    "command_3_navigation",
+    "command_w_closes_settings"
+  ]
+}

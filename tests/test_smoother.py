@@ -1,8 +1,8 @@
 """Tests for the time-windowed smoother + head-turn gate."""
 from __future__ import annotations
 
-from unshrimp.core.smoother import Smoother
-from unshrimp.vision.metrics import FrameSignals
+from shrimply.core.smoother import Smoother
+from shrimply.vision.metrics import FrameSignals
 
 
 def fs(pitch=5.0, yaw=0.0, roll=0.0, sink=0.72, lean=0.52, ok=True):

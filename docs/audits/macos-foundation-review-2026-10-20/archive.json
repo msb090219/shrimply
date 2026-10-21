@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "archive": "/Users/min-seo/Downloads/unshrimp/dist/macos-foundation-review/unshrimp-macos-x86_64-beta-candidate.zip",
+  "sha256": "692febabc697ef5ea24daa84c47eb9301d154ff104a030a4ace008a8997596b5",
+  "archive_bytes": 307952333,
+  "extracted_app": "/Users/min-seo/Downloads/unshrimp/dist/macos-foundation-review/extracted path with spaces/Unshrimp.app",
+  "extracted_strict_signature": true,
+  "frozen_smoke_exit": 0,
+  "path_without_development_tools": "/usr/bin:/bin:/usr/sbin:/sbin",
+  "scope": "Local Intel ZIP/extraction and synthetic inference; not clean-machine or quarantined-download acceptance"
+}

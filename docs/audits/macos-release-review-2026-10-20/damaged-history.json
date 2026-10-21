@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "scope": "Real source controller startup with a damaged SQLite file; only the error dialog is intercepted",
+  "exit_code": 1,
+  "error_dialog": "Cannot open the local history database. Check folder permissions and available disk space. Your existing data has not been replaced.\n\nData folder: <temporary profile>\n\nfile is not a database",
+  "database_preserved": true,
+  "instance_lock_released": true,
+  "camera_started": false
+}

@@ -1,11 +1,11 @@
-"""Tests for unshrimp.core.calibration — the guided 5-phase pipeline."""
+"""Tests for shrimply.core.calibration — the guided 5-phase pipeline."""
 from __future__ import annotations
 
 import math
 import pytest
 
-from unshrimp.core.calibration import CalibrationSession
-from unshrimp.vision.metrics import FrameSignals
+from shrimply.core.calibration import CalibrationSession
+from shrimply.vision.metrics import FrameSignals
 
 STEP = 0.5
 
@@ -52,6 +52,17 @@ def test_preparation_excludes_samples_and_pauses_when_tracking_is_lost():
     assert s._tall_total == 0
     run(s, frame(), 1., t)
     assert s._tall_total > 0
+
+
+def test_setup_requires_continuous_checks_after_a_delivery_stall():
+    session = CalibrationSession()
+    run(session, frame(), 5., 0.)
+    assert session.phase == "setup"
+    assert session.feed(frame(), 300.).phase == "setup"
+    # A new continuous six-second check is required after a missing interval.
+    assert session.feed(frame(), 300.5).phase == "setup"
+    _, results = run(session, frame(), 5.5, 300.5)
+    assert results[-1].phase == "tall"
 
 
 def test_structured_progress_uses_usable_time_and_preserves_it_through_gaps():
