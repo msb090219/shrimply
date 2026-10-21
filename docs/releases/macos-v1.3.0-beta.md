@@ -1,6 +1,7 @@
 # Shrimply 1.3.0 — Mac beta candidate
 
-Local staging notes. No Mac release has been published.
+Published with the [joint Shrimply 1.3.0 beta](https://github.com/msb090219/shrimply/releases/tag/v1.3.0) on 21 October 2026.
+The staging and acceptance details below distinguish completed checks from remaining tests.
 
 Shrimply is the new name for Unshrimp. The Mac app shares the Windows foundation
 and includes its updated Dashboard/calendar, embedded Settings, collapsible
@@ -83,6 +84,6 @@ longer-use checks, and dependency distribution review. Apple Silicon remains
 separate. Developer ID/notarization is deferred by choice for this unsigned beta.
 The full checklist is [Mac testing](../MACOS-TESTING.md).
 
-Publication requires a later explicit instruction. The Mac build workflow has
+Publication was explicitly authorized for the joint Windows/Mac beta. The Mac build workflow has
 read-only repository permissions and produces development artifacts; it does not
 create a GitHub release or upload release assets.

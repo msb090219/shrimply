@@ -4,13 +4,18 @@ Last reviewed: 21 October 2026.
 
 ## Mac pickup — 20 October
 
-- [ ] Publish the coordinated Shrimply 1.3.0 Windows/Mac beta, authorized on
+- [x] Publish the coordinated Shrimply 1.3.0 Windows/Mac beta, authorized on
   21 October. This supersedes the earlier hold on publishing. Keep Windows
   sourced from current main and Mac from its verified branch; preserve source
   provenance and both asset checksums. Use a compact Mac download label:
   macOS 15+ · Intel Macs. Physical clean-machine and Apple Silicon checks remain
   unverified; do not claim otherwise. Publish only after the Windows workflow
-  and existing Mac artifact checks pass.
+  and existing Mac artifact checks pass. Published: [joint beta](https://github.com/msb090219/shrimply/releases/tag/v1.3.0).
+  Windows release CI: 507 tests and packaged smoke pass; both ZIP checksums
+  match GitHub. Mac source is committed at `acdad79`; Windows tag uses `1f0253f`.
+  Separate Mac-branch Windows CI found a suggestions-list height regression
+  (last row clipped at Windows metrics). This is absent from released Windows
+  source; fix/verify it before any future Mac-to-Windows merge. Mac CI passes.
 
 - [ ] Run a private first-install check with one friend before the coordinated
   Windows/Mac release. Keep all artifacts local until explicitly authorized to
@@ -28,7 +33,7 @@ Last reviewed: 21 October 2026.
   Compatibility check found Qt 6.12 Mac binding binaries declaring macOS 26;
   Mac Qt is pinned to 6.10.2, retaining Windows 6.12.0. Actual native binding
   targets require macOS 15.0; use that deployment floor for the beta. Keep Windows native
-  acceptance separate; Mac-specific fix commit is pending; implementation remains in the local working tree.
+  acceptance separate; Mac implementation is committed at `acdad79`; current publication is recorded above.
   Completed: 573 tests passed, 2 Windows-only skips; dependency check, all
   44 bundled module/source matches, native deployment gate, strict signatures
   and extracted ZIP inference pass. Unsigned Intel 1.3.0 candidate installed as

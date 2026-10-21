@@ -1,5 +1,9 @@
 # Shrimply Mac rebrand and beta staging — 20–21 October 2026
 
+Publication update: the user subsequently authorized the joint beta.
+[Published release and verification](../joint-release-2026-10-21/README.md).
+The local-only statements below describe the original staging phase.
+
 This records local preparation only. No tag, release, release upload or remote
 source push was performed. The user selected an unsigned beta candidate and
 confirmed the installed app was closed for replacement.

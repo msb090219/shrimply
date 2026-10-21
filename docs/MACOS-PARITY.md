@@ -1,5 +1,9 @@
 # Shrimply Mac feature parity and Windows isolation
 
+21 October publication: [joint Windows/Mac beta](https://github.com/msb090219/shrimply/releases/tag/v1.3.0).
+Windows uses `1f0253f`; the verified Intel Mac uses `acdad79`. Source branches
+and build artifacts remain separate. Older staging statuses below are historical.
+
 Rebrand update: the Shrimply U21/M12 handoff is integrated from Windows
 `e16ef8a` through `1f0253f`. Current imports/spec/app identity use `shrimply` /
 `Shrimply.app`; data migrates from Unshrimp and the old folders are retained.
